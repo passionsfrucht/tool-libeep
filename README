@@ -1,0 +1,10 @@
+How to submit changes:
+ *) create a patch of your changes to the latest trunk in the Subversion tree.
+ *) send the patch in an e-mail to rsmies@ant-neuro.com. don't forget to include a description of your change in the body of the e-mail.
+
+How to enable the matlab importers:
+ *) run the configure script with the '--enable-matlab' option.
+ *) make sure the environment variable 'MATLAB' points to a working MATLAB installation
+
+ *) start MATLAB, make sure the (install dir)/share/matlab path is added to MATLAB
+ *) run [my_data] = read_eep_cnt('/path/to/my_data.cnt', 1, 1024) to read the first 1024 samples

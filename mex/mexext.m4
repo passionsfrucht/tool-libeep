@@ -58,6 +58,8 @@ else
 	ax_cv_mexext=mexsol
     elif test -f ax_c_test.mexmac ; then
 	ax_cv_mexext=mexmac
+    elif test -f ax_c_test.mexmaci ; then
+    ax_cv_mexext=mexmaci
     else
 	ax_cv_mexext=unknown
     fi

@@ -7,6 +7,7 @@ libeep_headers = eep/eepmisc.h \
 libavr_headers = avr/avr.h \
                  avr/avrcfg.h
 libcnt_headers = cnt/cnt.h \
+                 cnt/cntutils.h \
                  cnt/cnt_private.h \
                  cnt/cnt_version.h \
                  cnt/raw3.h \
@@ -22,6 +23,7 @@ libeep_sources = libeep/eepmisc.c \
 libavr_sources = libavr/avr.c \
                  libavr/avrcfg.c
 libcnt_sources = libcnt/cnt.c \
+                 libcnt/cntutils.c \
                  libcnt/trg.c \
                  libcnt/raw3.c \
                  libcnt/rej.c \

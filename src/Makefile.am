@@ -52,7 +52,6 @@ mostlyclean-local:
 ###############
 # matlab part #
 ###############
-if CONDMEX
 matlab_files = \
   ../mex/matlab/read_eep_cnt.m \
   ../mex/matlab/read_eep_avr.m \
@@ -60,33 +59,32 @@ matlab_files = \
   ../mex/matlab/read_eep_trial.m \
   ../mex/matlab/read_eep_rej.m \
   ../mex/matlab/write_eep_cnt.m
-matlab_DATA = ${matlab_files}
-matlab_DATA += \
-  ../mex/matlab/read_eep_cnt.${MEXEXT} \
-  ../mex/matlab/read_eep_avr.${MEXEXT} \
-  ../mex/matlab/write_eep_cnt.${MEXEXT}
+matlabdir = ${datadir}/matlab
 dist_matlab_DATA = \
   ${matlab_files} \
   ../mex/matlab/read_eep_avr.c \
   ../mex/matlab/read_eep_cnt.c \
   ../mex/matlab/read_eep_trg.c \
   ../mex/matlab/write_eep_cnt.c
-
+if CONDMEX
+matlab_DATA = ${matlab_files}
+matlab_DATA += \
+  ../mex/matlab/read_eep_cnt.${MEXEXT} \
+  ../mex/matlab/read_eep_avr.${MEXEXT} \
+  ../mex/matlab/write_eep_cnt.${MEXEXT}
 endif
-
-matlabdir = ${datadir}/matlab
 
 ###############
 # eeglab part #
 ###############
-if CONDMEX
 eeglab_files = \
   ../mex/eeglab/eegplugin_eepimport.m \
   ../mex/eeglab/loadeep_avg.m \
   ../mex/eeglab/loadeep.m \
   ../mex/eeglab/pop_loadeep_avg.m \
   ../mex/eeglab/pop_loadeep.m
-eeglab_DATA = ${eeglab_files}
 eeglabdir = ${datadir}/eeglab
 dist_eeglab_DATA = ${eeglab_files}
+if CONDMEX
+eeglab_DATA = ${eeglab_files}
 endif

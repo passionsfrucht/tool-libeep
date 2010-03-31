@@ -1,13 +1,11 @@
-AC_INIT(libeep, 3.3)
+AC_INIT(libeep, 3.3.162)
 AM_INIT_AUTOMAKE
 AC_CANONICAL_HOST
 
 ################
 # version info #
 ################
-FULL_VERSION=3.3.161
-PACKAGE_LIBRARY_VERSION=6:161:3
-AC_SUBST(FULL_VERSION)
+PACKAGE_LIBRARY_VERSION=6:162:3
 AC_SUBST(PACKAGE_LIBRARY_VERSION)
 
 #######################
@@ -55,7 +53,9 @@ AC_OUTPUT([Makefile src/Makefile test/Makefile libeep.pc])
 # debug info #
 ##############
 echo ----------------------------------------------------------------------
-echo $PACKAGE $VERSION - $PACKAGE_LIBRARY_VERSION
+echo PACKAGE.................. $PACKAGE
+echo VERSION.................. $VERSION
+echo PACKAGE_LIBRARY_VERSION.. $PACKAGE_LIBRARY_VERSION
 echo
 echo prefix....: $prefix
 echo host......: $host

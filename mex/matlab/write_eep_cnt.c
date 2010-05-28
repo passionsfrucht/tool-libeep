@@ -37,7 +37,7 @@ void
 mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
 
-  // these variables are MPI-ANT specific for reading the data
+  /* these variables are MPI-ANT specific for reading the data */
   char filename[256];
   char lab[8];
   int nchan;
@@ -50,7 +50,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   eegchan_t *channel_structure;
   int i,j;
 
-  // these variables are Matlab specific for interfacing
+  /* these variables are Matlab specific for interfacing */
   mxArray *mx_data;
   mxArray *mx_label;
   mxArray *mx_tmp;
@@ -122,11 +122,11 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
    * iterate through data *
    ************************/
   for(i=0;i<nsample;i++) {
-    // build buffer
+    /* build buffer */
     for(j=0;j<nchan;j++) {
-      buf[j] = mx_data_ptr[i*nchan+j] * 1000.0; // + sin( (double)i/(double)nsample * 6.14 * 20 ) * 100;
+      buf[j] = mx_data_ptr[i*nchan+j] * 1000.0; /* + sin( (double)i/(double)nsample * 6.14 * 20 ) * 100; */
     }
-    // write
+    /* write */
     if(eep_write_sraw(cnt, buf, 1) != CNTERR_NONE) {
       mexErrMsgTxt ("error writing sample");
     }

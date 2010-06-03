@@ -3,7 +3,8 @@ libeep_headers = eep/eepmisc.h \
                  eep/eepmem.h \
                  eep/eepio.h \
                  eep/var_string.h \
-                 eep/val.h
+                 eep/val.h \
+                 eep/winsafe.h
 libavr_headers = avr/avr.h \
                  avr/avrcfg.h
 libcnt_headers = cnt/cnt.h \

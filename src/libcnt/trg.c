@@ -31,10 +31,7 @@
 #include <cnt/trg.h>
 #include <eep/eepmem.h>
 
-#if defined(WIN32) && !defined(__CYGWIN__)
-#define strcasecmp stricmp
-#define snprintf _snprintf
-#endif
+#include <eep/winsafe.h>
 
 #ifdef COMPILE_RCS
 char RCS_trg_h[] = RCS_TRG_H;

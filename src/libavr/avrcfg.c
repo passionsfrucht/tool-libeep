@@ -34,11 +34,7 @@
 #include <avr/avrcfg.h>
 #include <eep/eepio.h>
 #include <eep/eepmem.h>
-
-#if defined(WIN32) && !defined(__CYGWIN__)
-#define strcasecmp stricmp
-#define snprintf _snprintf
-#endif
+#include <eep/winsafe.h>
 
 /*
 #define MS2SAMPLE(mstime, period) (((float) mstime) / (period) / 1000.0 + 0.5)

@@ -36,7 +36,7 @@
 #include <eep/eepmisc.h>
 #include <eep/eepraw.h>
 
-#if !defined(WIN32) || defined(__CYGWIN__)
+#if !defined(_MSC_VER)
 typedef long long __int64;
 #endif
 

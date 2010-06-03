@@ -31,6 +31,7 @@
 #include <eep/eepio.h>
 #include <eep/eepmem.h>
 #include <eep/eepraw.h>
+#include <eep/winsafe.h>
 
 #if defined(WIN32) && !defined(__CYGWIN__)
 #define strcasecmp stricmp

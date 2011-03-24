@@ -1,8 +1,11 @@
+if CONDMEX
+  DIR_MEX = mex
+endif
 if CONDTEST
   DIR_TEST = test
 endif
 
-SUBDIRS = src $(DIR_TEST)
+SUBDIRS = src $(DIR_MEX) $(DIR_TEST)
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = $(PACKAGE_NAME).pc

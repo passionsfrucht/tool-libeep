@@ -1,11 +1,11 @@
-AC_INIT(libeep, 3.3.163)
+AC_INIT(libeep, 3.3.164)
 AM_INIT_AUTOMAKE
 AC_CANONICAL_HOST
 
 ################
 # version info #
 ################
-PACKAGE_LIBRARY_VERSION=6:163:3
+PACKAGE_LIBRARY_VERSION=6:164:3
 AC_SUBST(PACKAGE_LIBRARY_VERSION)
 
 #######################
@@ -47,7 +47,7 @@ fi
 ###################
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES(libeep-config, chmod +x libeep-config)
-AC_OUTPUT([Makefile src/Makefile test/Makefile libeep.pc])
+AC_OUTPUT([Makefile src/Makefile mex/Makefile test/Makefile libeep.pc])
 
 ##############
 # debug info #

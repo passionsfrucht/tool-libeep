@@ -47,7 +47,7 @@ fi
 ###################
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES(libeep-config, chmod +x libeep-config)
-AC_OUTPUT([Makefile src/Makefile mex/Makefile test/Makefile libeep.pc])
+AC_OUTPUT([Makefile src/Makefile mex/Makefile test/Makefile libeep.pc src/eep/version.h])
 
 ##############
 # debug info #

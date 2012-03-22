@@ -45,29 +45,6 @@ else
      	ax_cv_mexext=unknown
     fi
     rm -f ax_c_test*
-
-#     if test -f ax_c_test.dll ; then
-# 	ax_cv_mexext=dll
-#     elif test -f ax_c_test.mex ; then
-# 	ax_cv_mexext=mex
-#     elif test -f ax_c_test.mexaxp ; then
-# 	ax_cv_mexext=mexaxp
-#     elif test -f ax_c_test.mexglx ; then
-# 	ax_cv_mexext=mexglx
-#     elif test -f ax_c_test.mexhp7 ; then
-# 	ax_cv_mexext=mexhp7
-#     elif test -f ax_c_test.mexhpux ; then
-# 	ax_cv_mexext=mexhpux
-#     elif test -f ax_c_test.mexrs6 ; then
-# 	ax_cv_mexext=mexrs6
-#     elif test -f ax_c_test.mexsg ; then
-# 	ax_cv_mexext=mexsg
-#     elif test -f ax_c_test.mexsol ; then
-# 	ax_cv_mexext=mexsol
-#     else
-# 	ax_cv_mexext=unknown
-#     fi
-    rm -f ax_c_test*
 fi])
 MEXEXT="$ax_cv_mexext"
 AC_SUBST([MEXEXT])

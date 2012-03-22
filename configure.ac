@@ -1,11 +1,11 @@
-AC_INIT(libeep, 3.3.164)
+AC_INIT(libeep, 3.3.165)
 AM_INIT_AUTOMAKE
 AC_CANONICAL_HOST
 
 ################
 # version info #
 ################
-PACKAGE_LIBRARY_VERSION=6:164:3
+PACKAGE_LIBRARY_VERSION=6:165:3
 AC_SUBST(PACKAGE_LIBRARY_VERSION)
 
 #######################

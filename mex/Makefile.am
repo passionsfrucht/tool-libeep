@@ -18,9 +18,15 @@ matlab_files = \
   matlab/read_eep_trial.m \
   matlab/read_eep_rej.m \
   matlab/write_eep_cnt.m
+matlab_sources = \
+  matlab/read_eep_avr.c \
+  matlab/read_eep_cnt.c \
+  matlab/read_eep_trg.c \
+  matlab/write_eep_cnt.c
 matlabdir = ${datadir}/matlab
 dist_matlab_DATA = \
-  ${matlab_files}
+  ${matlab_files} \
+  ${matlab_sources}
 if CONDMEX
 matlab_DATA = ${matlab_files}
 matlab_DATA += \
@@ -39,7 +45,8 @@ eeglab_files = \
   eeglab/pop_loadeep_avg.m \
   eeglab/pop_loadeep.m
 eeglabdir = ${datadir}/eeglab
-dist_eeglab_DATA = ${eeglab_files}
+dist_eeglab_DATA = \
+  ${eeglab_files}
 if CONDMEX
 eeglab_DATA = ${eeglab_files}
 endif

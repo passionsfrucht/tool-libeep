@@ -60,6 +60,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   mxArray *variance;
   mxArray *condlab;
   mxArray *condcol;
+  mxArray *psi;
   mxArray *trialc;
   mxArray *rejtrialc;
   const int nfields = 14;
@@ -73,9 +74,9 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     "xmax",                      /* xmin + samplec*period */
     "time",                      /*  */
     "data",                      /* data */
-    "variance",                  /* variance */
     "condlab",                   /* condlab */
     "condcol",                   /* condcol */
+    "psi",                       /* pre-stimulus interval */
     "trialc",                    /* trialc */
     "rejtrialc"};                /* rejtrialc */
 
@@ -112,6 +113,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   rejtrialc = mxCreateDoubleMatrix(1,1,mxREAL); *mxGetPr(rejtrialc) = (double)eep_get_total_trials(hdr) - eep_get_averaged_trials(hdr);
   condlab   = mxCreateString(eep_get_conditionlabel(hdr));
   condcol   = mxCreateString(eep_get_conditioncolor(hdr));
+  psi       = mxCreateDoubleMatrix(1,1,mxREAL); *mxGetPr(psi      ) = (double)eep_get_pre_stimulus_interval(hdr);
   data      = mxCreateDoubleMatrix(eep_get_chanc(hdr),eep_get_samplec(hdr),mxREAL);
   if(has_variance)
     variance  = mxCreateDoubleMatrix(eep_get_chanc(hdr),eep_get_samplec(hdr),mxREAL);
@@ -157,6 +159,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   mxSetField(plhs[0], 0, "rejtrialc", rejtrialc);
   mxSetField(plhs[0], 0, "condlab",   condlab  );
   mxSetField(plhs[0], 0, "condcol",   condcol  );
+  mxSetField(plhs[0], 0, "psi",       psi      );
   mxSetField(plhs[0], 0, "data",      data     );
   if(has_variance)
     mxSetField(plhs[0], 0, "variance",  variance );

@@ -12,16 +12,18 @@ mostlyclean-local:
 # matlab part #
 ###############
 matlab_files = \
-  matlab/read_eep_cnt.m \
   matlab/read_eep_avr.m \
+  matlab/read_eep_cnt.m \
+  matlab/read_eep_rej.m \
   matlab/read_eep_trg.m \
   matlab/read_eep_trial.m \
-  matlab/read_eep_rej.m \
+  matlab/write_eep_avr.m \
   matlab/write_eep_cnt.m
 matlab_sources = \
   matlab/read_eep_avr.c \
   matlab/read_eep_cnt.c \
   matlab/read_eep_trg.c \
+  matlab/write_eep_avr.c \
   matlab/write_eep_cnt.c
 matlabdir = ${datadir}/matlab
 dist_matlab_DATA = \
@@ -32,6 +34,7 @@ matlab_DATA = ${matlab_files}
 matlab_DATA += \
   matlab/read_eep_cnt.${MEXEXT} \
   matlab/read_eep_avr.${MEXEXT} \
+  matlab/write_eep_avr.${MEXEXT} \
   matlab/write_eep_cnt.${MEXEXT}
 endif
 

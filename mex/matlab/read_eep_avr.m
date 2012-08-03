@@ -17,6 +17,7 @@ function [dat] = read_eep_avr(fn);
 % eeg.variance  ... variance (nchan x npnt)
 % eeg.condlab   ... string with condition label
 % eeg.condcol   ... string with color code for condition
+% eeg.psi       ... pre-stimulus interval
 % eeg.trialc    ... total number of trial in original data
 % eeg.rejtrialc ... number of rejected trials
 %

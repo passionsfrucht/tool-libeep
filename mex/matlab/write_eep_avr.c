@@ -31,7 +31,7 @@
 #include <eep/eepmisc.h>		/* MPI-ANT specific */
 #include <cnt/cnt.h>		/* MPI-ANT specific */
 
-#define NAME "write_eep_cnt"
+#define NAME "write_eep_avr"
 
 void
 mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
@@ -42,16 +42,23 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   char lab[8];
   int nchan;
   int nsample;
+  int trialc;
+  int nsweeps;
+  char condlab[256];
+  char condcol[256];
+  float psi=0;
   float rate;
-  double *mx_data_ptr;
+  double *mx_data_ptr,
+         *mx_variance_ptr;
   FILE *fp;
-  sraw_t *buf;
-  eeg_t *cnt;
+  float *buf;
+  eeg_t *avr;
   eegchan_t *channel_structure;
   int i,j;
 
   /* these variables are Matlab specific for interfacing */
   mxArray *mx_data;
+  mxArray *mx_variance;
   mxArray *mx_label;
   mxArray *mx_tmp;
 
@@ -68,9 +75,20 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   nchan = (int)*(mxGetPr(mxGetField(prhs[1], 0, "nchan")));
   nsample = (int)*(mxGetPr(mxGetField(prhs[1], 0, "npnt")));
   rate = (float)(*mxGetPr(mxGetField(prhs[1], 0, "rate")));
-  mx_data = mxGetField(prhs[1], 0, "data");
+  trialc = (int)*(mxGetPr(mxGetField(prhs[1], 0, "trialc")));
+  nsweeps = (int)*(mxGetPr(mxGetField(prhs[1], 0, "nsweeps")));
+  mxGetString(mxGetField(prhs[1], 0, "condlab"), condlab, 256);
+  mxGetString(mxGetField(prhs[1], 0, "condcol"), condcol, 256);
+  if(mxGetField(prhs[1], 0, "psi")!=NULL) {
+    psi = (float)(*mxGetPr(mxGetField(prhs[1], 0, "psi")));
+  }
   mx_label = mxGetField(prhs[1], 0, "label");
+  mx_data=mxGetField(prhs[1], 0, "data");
+  mx_variance=mxGetField(prhs[1], 0, "variance");
   mx_data_ptr=mxGetPr(mx_data);
+  if(mx_variance!=NULL) {
+    mx_variance_ptr=mxGetPr(mx_variance);
+  }
 
   /******************
    * build channels *
@@ -80,19 +98,23 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     mexErrMsgTxt ("could not init channels");
   }
   for(i=0;i<nchan;i++) {
-
     mxGetString(mxGetCell(mx_label, i), lab, 8);
     eep_chan_set(channel_structure, i, lab , 1, 0.001, "uV");
   }
 
   /******************
-   * initialize cnt *
+   * initialize avr *
    ******************/
-
-  cnt=eep_init_from_values(1.0f/rate, nchan, channel_structure);
+  avr=eep_init_from_values(1.0f/rate, nchan, channel_structure);
   if(channel_structure==NULL) {
-    mexErrMsgTxt ("could not init cnt file");
+    mexErrMsgTxt ("could not init avr file");
   }
+
+  eep_set_total_trials(avr, trialc);
+  eep_set_averaged_trials(avr, nsweeps);
+  eep_set_conditionlabel(avr, condlab);
+  eep_set_conditioncolor(avr, condcol);
+  eep_set_pre_stimulus_interval(avr, psi);
 
   /*************
    * open file *
@@ -102,39 +124,57 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   if(fp==NULL) {
     mexErrMsgTxt ("Could not open file");
   }
-  if(eep_create_file(cnt, filename, fp, NULL, 0, "cnt matlab exporter")) {
-    mexErrMsgTxt ("Could not create cnt file");
+  if(eep_create_file(avr, filename, fp, NULL, 0, "avr matlab exporter")) {
+    mexErrMsgTxt ("Could not create avr file");
   }
   /**************************************
    * setup libeep to start writing data *
    **************************************/
-  if(eep_prepare_to_write(cnt, DATATYPE_EEG, 1024, NULL)) {
-    mexErrMsgTxt ("Could not setup cnt for writing data");
+  if(eep_prepare_to_write(avr, DATATYPE_AVERAGE, rate, NULL) != CNTERR_NONE) {
+    mexErrMsgTxt ("Could not setup avr for writing data");
   }
   /*******************
    * allocate buffer *
    *******************/
-  buf=(sraw_t*)malloc(CNTBUF_SIZE(cnt, 1));
+  buf=(float*)(malloc(CNTBUF_SIZE(avr, 1)));
   if(buf==NULL) {
     mexErrMsgTxt ("Could not alocate buffer");
   }
-  /************************
-   * iterate through data *
-   ************************/
+  /****************************
+   * iterate through data ... *
+   ****************************/
   for(i=0;i<nsample;i++) {
     /* build buffer */
     for(j=0;j<nchan;j++) {
       buf[j] = mx_data_ptr[i*nchan+j] * 1000.0;
     }
     /* write */
-    if(eep_write_sraw(cnt, buf, 1) != CNTERR_NONE) {
-      mexErrMsgTxt ("error writing sample");
+    if(eep_write_float(avr, buf, 1) != CNTERR_NONE) {
+      mexErrMsgTxt ("Could not write sample");
+    }
+  }
+  /********************
+   * ... and variance *
+   ********************/
+  if(mx_variance!=NULL) {
+    if(eep_prepare_to_write(avr, DATATYPE_STDDEV, rate, NULL) != CNTERR_NONE) {
+      mexErrMsgTxt ("Could not prepar variance data");
+    }
+    for(i=0;i<nsample;i++) {
+      /* build buffer */
+      for(j=0;j<nchan;j++) {
+        buf[j] = mx_variance_ptr[i*nchan+j] * 1000.0;
+      }
+      /* write */
+      if(eep_write_float(avr, buf, 1) != CNTERR_NONE) {
+        mexErrMsgTxt ("Could not write sample");
+      }
     }
   }
   /*************************
    * Done! shutdown nicely *
    *************************/
-  eep_finish_file(cnt);
+  eep_finish_file(avr);
   free(buf);
   fclose(fp);
 

@@ -36,8 +36,9 @@
 #include <avr/avr.h>
 #include <cnt/cnt_private.h>
 #include <cnt/cnt_version.h>
-#include <eep/eepraw.h>
+#include <eep/eepio.h>
 #include <eep/eepmem.h>
+#include <eep/eepraw.h>
 #include <eep/var_string.h>
 #include <eep/winsafe.h>
 
@@ -3497,110 +3498,6 @@ int eep_create_file_EEP20(eeg_t *dst, eeg_t *src, unsigned long delmask)
 
 /** debugging stuff */
 /* we do not want this prototype in raw3.h - therefore defined here */
-int decompepoch_mux_RAW3_CHECK(eeg_t *EEG, raw3_t *raw3, char *in, int length, sraw_t *out);
-
-int getepoch_RAW3_CHECK(eeg_t *EEG, slen_t epoch)
-{
-  slen_t insize, insamples, got;
-  char *inbuf;
-  storage_t *store = &EEG->store[DATATYPE_EEG];
-
-  int r;
-
-  /* how much bytes to read ? */
-  if (epoch == store->epochs.epochc - 1) {
-    insize = store->ch_data.size - store->epochs.epochv[epoch];
-    insamples = EEG->eep_header.samplec - epoch * store->epochs.epochl;
-  }
-  else {
-    insize = store->epochs.epochv[epoch + 1] - store->epochs.epochv[epoch];
-    insamples = store->epochs.epochl;
-  }
-
-#ifdef CNT_MMAP
-  inbuf = store->data_map + store->map_offset + store->epochs.epochv[epoch];
-#else
-  /* seek/read source file */
-  if (riff_seek(EEG->f, store->epochs.epochv[epoch], SEEK_SET, store->ch_data)) {
-    return CNTERR_FILE;
-  }
-  if ((r = fread(store->data.cbuf, 1, (size_t) insize, EEG->f)) != insize) {
-    NOT_IN_WINDOWS(fprintf(stderr, "cnt: read error: %d expected %d got!\n", insize, r));
-    return CNTERR_FILE;
-  }
-  inbuf = store->data.cbuf;
-#endif
-
-  got = decompepoch_mux_RAW3_CHECK(EEG, EEG->r3, inbuf, insamples, store->data.buf_int);
-  store->data.bufepoch = epoch;
-  store->data.readpos = 0;
-
-  if (got != insize) {
-    NOT_IN_WINDOWS(fprintf(stderr, "cnt: checksum error: got %d expected %d filepos %x epoch %d\n",
-                           got, insize, store->epochs.epochv[epoch], epoch));
-    return CNTERR_DATA;
-  }
-  else {
-    return CNTERR_NONE;
-  }
-}
-
-int putepoch_RAW3_CHECK(eeg_t *EEG)
-{
-  long cbufl;
-
-  FILE   *failedbuf;
-  long   dbufl;
-  static sraw_t *testbuf = NULL;
-  int    diff;
-  sraw_t *t1, *t2;
-  storage_t *store = &EEG->store[DATATYPE_EEG];
-
-  /* unwritten data in buffers ? - dump to file */
-  if (store->data.writepos != 0) {
-    /* write the filled buffers to file, reset buffers */
-    cbufl = compepoch_mux(EEG->r3, store->data.buf_int, (int) store->data.writepos, store->data.cbuf);
-    if (riff_write(store->data.cbuf, (size_t)cbufl, 1, EEG->f, &store->ch_data))
-      return CNTERR_FILE;
-
-    if (!testbuf)
-      testbuf = (sraw_t *) v_malloc(store->data.writepos * EEG->eep_header.chanc * sizeof(sraw_t), "raw3chk");
-    dbufl = decompepoch_mux_RAW3_CHECK(EEG, EEG->r3, store->data.cbuf, store->data.writepos, testbuf);
-
-    t1 = &(store->data.buf_int[EEG->eep_header.chanc * (store->data.writepos - 1)]);
-    t2 = &(testbuf[EEG->eep_header.chanc * (store->data.writepos - 1)]);
-
-    diff = memcmp(t1, t2, EEG->eep_header.chanc * 2);
-
-    if (cbufl != dbufl || diff) {
-      fprintf(stderr, "cnt: inconsistent compressed buffer - dump and die!\n");
-      failedbuf = fopen("raw3dump.hex", "wb");
-      if (failedbuf) {
-        fwrite(&cbufl, sizeof(long), 1, failedbuf);
-        fwrite(&dbufl, sizeof(long), 1, failedbuf);
-        fwrite(store->chanseq, EEG->eep_header.chanc * sizeof(short), 1, failedbuf);
-        fwrite(store->data.buf_int, store->data.writepos * EEG->eep_header.chanc * sizeof(sraw_t), 1, failedbuf);
-        fwrite(testbuf, store->data.writepos * EEG->eep_header.chanc * sizeof(sraw_t), 1, failedbuf);
-        fclose(failedbuf);
-      }
-      exit(1);
-    }
-
-    EEG->eep_header.samplec += store->data.writepos;
-    store->data.writepos = 0;
-
-    /* register access info for this buffer */
-    store->epochs.epochv = (int *)
-      v_realloc(store->epochs.epochv, (size_t) (store->epochs.epochc + 1) * sizeof(int), "epv");
-    store->epochs.epochv[store->epochs.epochc] = store->epochs.epvbuf;
-    store->epochs.epochc++;
-
-    /* prepare registering next buffer */
-    store->epochs.epvbuf += cbufl;
-  }
-
-  return CNTERR_NONE;
-}
 
 int eep_write_sraw_EEP20 (eeg_t *cnt, sraw_t *muxbuf, sraw_t *statusflags, slen_t n)
 {

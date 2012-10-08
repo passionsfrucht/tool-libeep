@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: libeep
 Description: A.N.T. erp package
 Requires:
-Version: @VERSION@
+Version: @LIBEEP_VERSION@
 Libs: -L${libdir} -leep -lm
-Cflags: -I${includedir}/@PACKAGE@-@VERSION@
+Cflags: -I${includedir}/@PACKAGE@-@LIBEEP_VERSION@

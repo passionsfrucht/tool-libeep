@@ -92,9 +92,6 @@ void syserror  (const char *fmt, ...);
   the eepmess.h *open funcs maintain a list of "autoremove" files here
   (the *error funcs need to know about this list for cleanup)
 */
-extern int    ar_filec;
-extern FILE **ar_file;
-extern char **ar_filename;
 void arv_fclear(void);
 
 /* -------------------------------------------------------------------

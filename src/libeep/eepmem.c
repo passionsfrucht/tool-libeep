@@ -36,6 +36,20 @@ char RCS_eepmem_h[] = RCS_EEPMEM_H;
 char RCS_eepmem_c[] = "$RCSFile: eepmem.c,v $ $Revision: 2415 $";
 #endif
 
+#ifdef BYPASS_V_FUNCTIONS
+void *v_calloc(size_t nmemb, size_t size, const char *mtypefrag) {
+  // fprintf(stderr, "%s, %s\n", __FUNCTION__, mtypefrag);
+  return calloc(nmemb, size);
+}
+void *v_malloc(size_t size, const char *mtypefrag) {
+  // fprintf(stderr, "%s, %s\n", __FUNCTION__, mtypefrag);
+  return malloc(size);
+}
+void *v_realloc(void *ptr, size_t size, const char *mtypefrag) {
+  // fprintf(stderr, "%s, %s\n", __FUNCTION__, mtypefrag);
+  return realloc(ptr, size);
+}
+#else
 void *v_calloc(size_t nmemb, size_t size, const char *mtypefrag)
 {
   void *p;
@@ -78,6 +92,8 @@ void *v_realloc(void *ptr, size_t size, const char *mtypefrag)
   if (size == 0) p = NULL;
   return p;
 }
+
+#endif
 
 char *v_strnew(const char *s, int extlen)
 {

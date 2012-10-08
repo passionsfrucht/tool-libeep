@@ -31,7 +31,7 @@ libcnt_sources = libcnt/cnt.c \
                  libcnt/rej.c \
                  libcnt/riff.c
 
-libeep_includedir=$(includedir)/$(PACKAGE)-$(VERSION)
+libeep_includedir=$(includedir)/$(PACKAGE)-$(LIBEEP_VERSION)
 nobase_libeep_include_HEADERS = ${libeep_headers} ${libavr_headers} ${libcnt_headers}
 noinst_HEADERS = ${libeep_private_headers}
 

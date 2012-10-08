@@ -221,10 +221,6 @@ void rej_set(rej_t *rej, slen_t start, slen_t length)
     effstart = start;
     efflength = length;
   }
-  /*
-  sprintf(messbuf,"%ld\t%ld\t%ld\t%ld\n",i, overlaps, effstart, efflength);
-  eepdebug(messbuf);
-  */
     
   /* nothing touched - insert a new rejection in table*/
   if (overlaps == 0) {
@@ -345,10 +341,6 @@ void rej_clear(rej_t *rej, slen_t start, slen_t length)
     if (   (*rejv)[i].start < start 
         && (*rejv)[i].start + (*rejv)[i].length > start + length)
     {
-      /*
-      sprintf(messbuf,"clear mid(split)\n");
-      eepdebug(messbuf);
-      */
       *rejv = (rejentry_t *)
         v_realloc(*rejv, (size_t) (*rejc + 1) * sizeof(rejentry_t), "rejv");
       memmove(&(*rejv)[i + 1], &(*rejv)[i], (size_t) (*rejc - i) * sizeof(rejentry_t));
@@ -364,10 +356,6 @@ void rej_clear(rej_t *rej, slen_t start, slen_t length)
       /* delete latter part of rejection ? */
       if (i < *rejc) {
         if ((*rejv)[i].start < start) {
-          /*
-          sprintf(messbuf,"clear back\n");
-          eepdebug(messbuf);
-          */
           (*rejv)[i].length = start - (*rejv)[i].start;
           i++; /* this one is handled - locate next in table */
         }
@@ -383,10 +371,6 @@ void rej_clear(rej_t *rej, slen_t start, slen_t length)
         del++;
       }
       if (del) {
-        /*
-        sprintf(messbuf,"clear full %ld\n", del);
-        eepdebug(messbuf);
-        */
         memmove(&(*rejv)[i], &(*rejv)[i + del],
           (size_t) (*rejc - i - del) * sizeof(rejentry_t));
         *rejv = (rejentry_t *)
@@ -397,10 +381,6 @@ void rej_clear(rej_t *rej, slen_t start, slen_t length)
       /* delete front part of next rejection left ? */
       if (i < *rejc) {
         if ((*rejv)[i].start < start + length) {
-          /*
-          sprintf(messbuf,"clear front\n");
-          eepdebug(messbuf);
-          */
           tmp = (*rejv)[i].start;
           (*rejv)[i].start = start + length;
           (*rejv)[i].length += tmp - (start + length);

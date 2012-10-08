@@ -32,10 +32,7 @@
 #include <stdio.h>
 
 #include <eep/eepmisc.h>
-
-#if defined(WIN32) && !defined(__CYGWIN__)
-#define strcasecmp stricmp
-#endif
+#include <eep/winsafe.h>
 
 /*
   EEP 2.0 flag word definitions

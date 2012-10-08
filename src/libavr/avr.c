@@ -33,11 +33,6 @@
 #include <eep/eepraw.h>
 #include <eep/winsafe.h>
 
-#if defined(WIN32) && !defined(__CYGWIN__)
-#define strcasecmp stricmp
-#define snprintf _snprintf
-#endif
-
 #ifdef COMPILE_RCS
 char RCS_avr_h[] = RCS_AVR_H;
 char RCS_avr_c[] = "$RCSfile: avr.c,v $ $Revision: 2415 $";

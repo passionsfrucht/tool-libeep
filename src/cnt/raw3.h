@@ -54,9 +54,9 @@ typedef struct {
 /* set Verbose on for raw3 error checking (use with care!) */
 void raw3_setVerbose(int onoff);
 /* for each epoch, the ERR_FLAG_EPOCH can be set */
-short raw3_ERR_FLAG_EPOCH(void);
+short raw3_get_ERR_FLAG_EPOCH();
 /* therefore, reset using the following function */
-void raw3_reset_ERR_FLAG_EPOCH(void);
+void  raw3_set_ERR_FLAG_EPOCH(short);
 
 /*
   prepare data compression for chanc * length signal data blocks

@@ -232,6 +232,11 @@ int    ar_filec    = 0;
 FILE **ar_file     = NULL;
 char **ar_filename = NULL;
 
+#ifdef BYPASS_V_FUNCTIONS
+void arv_fclear(void) {
+  // fprintf(stderr, "%s\n", __FUNCTION__);
+}
+#else
 void arv_fclear(void)
 {
   int i;
@@ -256,6 +261,8 @@ void arv_fclear(void)
   v_free(ar_file); ar_file = NULL;
   ar_filec = 0;
 }
+
+#endif
 
 /* configuration preprocessing -----------------------------------------*/
 

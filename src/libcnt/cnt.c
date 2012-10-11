@@ -2848,7 +2848,7 @@ void eep_get_time_struct(double t, double f, struct tm *tm) {
   time_t epoch;
 
   epoch=eep_get_time_epoch(t, f);
-  memcpy(tm, gmtime(&epoch), sizeof(struct tm));
+  memcpy(tm, localtime(&epoch), sizeof(struct tm));
 }
 
 /*****************************************************************************/
@@ -2869,22 +2869,16 @@ eep_get_recording_startdate_epoch(eeg_t *cnt) {
 }
 
 void eep_get_recording_startdate_string(eeg_t *cnt, char *s) {
-#if 0
-  time_t epoch;
-  epoch=eep_get_recording_startdate_epoch(cnt);
-  strcpy(s, ctime(&epoch));
-#else
   struct tm recording_time;
   eep_get_recording_startdate_struct(cnt, &recording_time);
   strcpy(s, asctime(&recording_time));
-#endif
 }
 
 void eep_get_recording_startdate_struct(eeg_t *cnt, struct tm *tm) {
   time_t epoch;
 
   epoch=eep_get_recording_startdate_epoch(cnt);
-  memcpy(tm, gmtime(&epoch), sizeof(struct tm));
+  memcpy(tm, localtime(&epoch), sizeof(struct tm));
 }
 
 void eep_set_recording_startdate_epoch(eeg_t *cnt, time_t epoch) {
@@ -2892,12 +2886,8 @@ void eep_set_recording_startdate_epoch(eeg_t *cnt, time_t epoch) {
 
   if(eep_has_recording_info(cnt)) {
     eep_get_recording_info(cnt, &rec_inf);
-//  printf("%s(%i) %s: rec_inf.m_startDate: %f\n", __FILE__, __LINE__, __FUNCTION__, rec_inf.m_startDate);
-//  printf("%s(%i) %s: rec_inf.m_startFraction: %f\n", __FILE__, __LINE__, __FUNCTION__, rec_inf.m_startFraction);
     eep_unixdate_to_exceldate(epoch, &rec_inf.m_startDate, &rec_inf.m_startFraction);
     eep_set_recording_info(cnt, &rec_inf);
-//  printf("%s(%i) %s: rec_inf.m_startDate: %f\n", __FILE__, __LINE__, __FUNCTION__, rec_inf.m_startDate);
-//  printf("%s(%i) %s: rec_inf.m_startFraction: %f\n", __FILE__, __LINE__, __FUNCTION__, rec_inf.m_startFraction);
   }
 }
 

@@ -1,4 +1,4 @@
-AC_INIT(libeep, 3.3.168)
+AC_INIT(libeep, 3.3.169)
 AM_INIT_AUTOMAKE([subdir-objects silent-rules])
 AC_CANONICAL_HOST
 
@@ -6,7 +6,7 @@ AC_CANONICAL_HOST
 # version info #
 ################
 AC_SUBST(LIBEEP_VERSION, [$VERSION])
-PACKAGE_LIBRARY_VERSION=6:168:3
+PACKAGE_LIBRARY_VERSION=6:169:3
 AC_SUBST(PACKAGE_LIBRARY_VERSION)
 
 #######################

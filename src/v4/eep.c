@@ -44,7 +44,7 @@ _libeep_free(int handle) {
   _libeep_entry_map[handle]=NULL;
 }
 ///////////////////////////////////////////////////////////////////////////////
-char *
+const char *
 libeep_get_version() {
   return LIBEEP_VERSION;
 }
@@ -104,19 +104,19 @@ libeep_get_channel_count(int handle) {
   return eep_get_chanc(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
-char *
+const char *
 libeep_get_channel_label(int handle, int index) {
   struct _libeep_entry * obj=_libeep_get_object(handle);
   return eep_get_chan_label(obj->eep, index);
 }
 ///////////////////////////////////////////////////////////////////////////////
-char *
+const char *
 libeep_get_channel_unit(int handle, int index) {
   struct _libeep_entry * obj=_libeep_get_object(handle);
   return eep_get_chan_unit(obj->eep, index);
 }
 ///////////////////////////////////////////////////////////////////////////////
-char *
+const char *
 libeep_get_channel_reference(int handle, int index) {
   struct _libeep_entry * obj=_libeep_get_object(handle);
   return eep_get_chan_reflab(obj->eep, index);
@@ -205,4 +205,49 @@ libeep_get_samples(int handle, long from, long to) {
   if(eep_has_data_of_type(obj->eep, DATATYPE_AVERAGE)) { return _libeep_get_samples_avr(obj ,from, to); }
   if(eep_has_data_of_type(obj->eep, DATATYPE_EEG))     { return _libeep_get_samples_cnt(obj ,from, to); }
   return NULL;
+}
+///////////////////////////////////////////////////////////////////////////////
+long
+libeep_get_zero_offset(int handle) {
+  struct _libeep_entry * obj=_libeep_get_object(handle);
+  if(eep_has_data_of_type(obj->eep, DATATYPE_AVERAGE)) {
+    return (int)(libeep_get_sample_frequency(handle) * eep_get_pre_stimulus_interval(obj->eep));
+  }
+  return 0;
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_condition_label(int handle) {
+  struct _libeep_entry * obj=_libeep_get_object(handle);
+  if(eep_has_data_of_type(obj->eep, DATATYPE_AVERAGE)) {
+    return eep_get_conditionlabel(obj->eep);
+  }
+  return "none";
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_condition_color(int handle) {
+  struct _libeep_entry * obj=_libeep_get_object(handle);
+  if(eep_has_data_of_type(obj->eep, DATATYPE_AVERAGE)) {
+    return eep_get_conditioncolor(obj->eep);
+  }
+  return "none";
+}
+///////////////////////////////////////////////////////////////////////////////
+long
+libeep_get_trials_total(int handle) {
+  struct _libeep_entry * obj=_libeep_get_object(handle);
+  if(eep_has_data_of_type(obj->eep, DATATYPE_AVERAGE)) {
+    return eep_get_total_trials(obj->eep);
+  }
+  return 0;
+}
+///////////////////////////////////////////////////////////////////////////////
+long
+libeep_get_trials_averaged(int handle) {
+  struct _libeep_entry * obj=_libeep_get_object(handle);
+  if(eep_has_data_of_type(obj->eep, DATATYPE_AVERAGE)) {
+    return eep_get_averaged_trials(obj->eep);
+  }
+  return 0;
 }

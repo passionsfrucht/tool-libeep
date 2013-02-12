@@ -2,60 +2,93 @@
 #define __libeep_v4_eep_h__
 
 /**
- * v4 of the libeep header provides a simplified interface to the libeep
+ * @file v4/eep.h
+ * @brief v4 of the libeep header provides a simplified interface to the libeep
  * project. It exposes no details of the internal structure
  *****/
 
 /**
- * init library
+ * @brief init library
  */
 void libeep_init();
 /**
- * exit library
+ * @brief exit library
  */
 void libeep_exit();
 /**
- * get version
- * @return version, do not free this string
+ * @brief get library version
+ * @return version(do not free this string)
  */
-char * libeep_get_version();
+const char * libeep_get_version();
 /**
- * open file for reading
+ * @brief open file for reading
+ # @param filename the filename to the CNT or AVR to open
  * @return -1 on error, handle otherwise
  */
-int libeep_read(const char *);
+int libeep_read(const char *filename);
 /**
- * close data file
+ * @brief close data file
+ * @param handle handle to open
  */
-void libeep_close(int);
+void libeep_close(int handle);
 /**
- * get the number of channels
+ * @brief get the number of channels
  */
 int libeep_get_channel_count(int);
 /**
- * get a channel name
+ * @brief get a channel label
+ * @return a channel label(do not free this string)
  */
-char * libeep_get_channel_label(int, int);
+const char * libeep_get_channel_label(int, int);
 /**
- * get a channel name
+ * @brief get a channel unit
+ * @return a channel unit(do not free this string)
  */
-char * libeep_get_channel_unit(int, int);
+const char * libeep_get_channel_unit(int, int);
 /**
- * get a channel name
+ * @brief get a channel reference
+ * @return a channel reference(do not free this string)
  */
-char * libeep_get_channel_reference(int, int);
+const char * libeep_get_channel_reference(int, int);
 /**
- * get the sample frequency
+ * @brief get the sample frequency
+ * @return sample frequency in Hz
  */
 float libeep_get_sample_frequency(int);
 /**
- * get the number of samples
+ * @brief get the number of samples
+ * @return number of samples
  */
 long libeep_get_sample_count(int);
 /**
- * get data samples
- * @return dynamically allocated array of samples or NULL on failure. Result should be free'd.
+ * @brief get data samples
+ * @return dynamically allocated array of samples or NULL on failure(Result should be free'd)
  */
 float * libeep_get_samples(int, long, long);
+/**
+ * @brief get zero offset(averages only)
+ * @return offset of sample where event occurred
+ */
+long libeep_get_zero_offset(int);
+/**
+ * @brief get condition label(averages only)
+ * @return condition label(do not free this string)
+ */
+const char * libeep_get_condition_label(int);
+/**
+ * @brief get condition color(averages only)
+ * @return condition color(do not free this string)
+ */
+const char * libeep_get_condition_color(int);
+/**
+ * @brief get total number of trials(averages only)
+ * @return total number of trials
+ */
+long libeep_get_trials_total(int);
+/**
+ * @brief get averaged number of trials(averages only)
+ * @return averaged number of trials
+ */
+long libeep_get_trials_averaged(int);
 
 #endif

@@ -7,6 +7,11 @@ public class demo_read {
       int handle=com.antneuro.libeep.read(filename);
       if(handle!=-1) {
         System.out.printf("data file: %s\n", filename);
+        System.out.printf("  zero offset: %s\n", com.antneuro.libeep.get_zero_offset(handle));
+        System.out.printf("  trials total: %s\n", com.antneuro.libeep.get_trials_total(handle));
+        System.out.printf("  trials averaged: %s\n", com.antneuro.libeep.get_trials_averaged(handle));
+        System.out.printf("  condition label: %s\n", com.antneuro.libeep.get_condition_label(handle));
+        System.out.printf("  condition color: %s\n", com.antneuro.libeep.get_condition_color(handle));
         System.out.printf("  sample frequency: %s\n", com.antneuro.libeep.get_sample_frequency(handle));
         System.out.printf("  sample count: %s\n", com.antneuro.libeep.get_sample_count(handle));
         System.out.printf("  channels:");

@@ -85,3 +85,28 @@ Java_com_antneuro_libeep_get_1samples(JNIEnv *env, jclass, jint handle, jlong fr
   env->SetFloatArrayRegion(result, 0, n*(to-from), fill);
   return result;
 }
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jlong JNICALL
+Java_com_antneuro_libeep_get_1zero_1offset(JNIEnv *, jclass, jint handle) {
+  return libeep_get_zero_offset(handle);
+}
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jstring JNICALL
+Java_com_antneuro_libeep_get_1condition_1label(JNIEnv *env, jclass, jint handle) {
+  return env->NewStringUTF(libeep_get_condition_label(handle));
+}
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jstring JNICALL
+Java_com_antneuro_libeep_get_1condition_1color(JNIEnv *env, jclass, jint handle) {
+  return env->NewStringUTF(libeep_get_condition_color(handle));
+}
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jlong JNICALL
+Java_com_antneuro_libeep_get_1trials_1total (JNIEnv *, jclass, jint handle) {
+  return libeep_get_trials_total(handle);
+}
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jlong JNICALL
+Java_com_antneuro_libeep_get_1trials_1averaged (JNIEnv *, jclass, jint handle) {
+  return libeep_get_trials_averaged(handle);
+}

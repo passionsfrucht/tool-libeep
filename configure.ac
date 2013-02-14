@@ -20,14 +20,16 @@ AC_PROG_INSTALL
 ###########################
 # check configure options #
 ###########################
-AC_ARG_ENABLE(matlab,        [  --enable-matlab          build matlab importers], condmex=yes,  condmex=no)
-AC_ARG_ENABLE(test,          [  --enable-test            build test utils      ],condtest=yes, condtest=no)
+AC_ARG_ENABLE(matlab,        [  --enable-matlab          build matlab importers], condmex=yes, condmex=no)
+AC_ARG_ENABLE(test,          [  --enable-test            build test utils      ], condtest=yes, condtest=no)
+AC_ARG_ENABLE(v4,            [  --enable-v4              install v4 headers    ], condv4=yes, condv4=no)
 
 #################
 # check enables #
 #################
-AM_CONDITIONAL(CONDTEST, test x$condtest = xyes)
 AM_CONDITIONAL(CONDMEX, test x$condmex = xyes)
+AM_CONDITIONAL(CONDTEST, test x$condtest = xyes)
+AM_CONDITIONAL(CONDV4, test x$condv4 = xyes)
 
 ################
 # check matlab #

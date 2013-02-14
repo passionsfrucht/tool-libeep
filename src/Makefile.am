@@ -32,12 +32,17 @@ libcnt_sources = libcnt/cnt.c \
                  libcnt/riff.c
 
 libeep_includedir=$(includedir)/$(PACKAGE)-$(LIBEEP_VERSION)
+if CONDV4
+libeep_sources += v4/eep.c
+nobase_libeep_include_HEADERS = v4/eep.h
+else
 nobase_libeep_include_HEADERS = ${libeep_headers} ${libavr_headers} ${libcnt_headers}
 noinst_HEADERS = ${libeep_private_headers}
+endif
 
 lib_LTLIBRARIES = libeep.la
 
-libeep_private_headers =
+# libeep_private_headers =
 libeep_la_LIBADD =
 libeep_la_LDFLAGS = -version-info $(PACKAGE_LIBRARY_VERSION)
 libeep_la_SOURCES = ${libeep_sources} ${libavr_sources} ${libcnt_sources}

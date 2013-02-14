@@ -5,7 +5,8 @@ libeep_headers = eep/eepmisc.h \
                  eep/var_string.h \
                  eep/val.h \
                  eep/version.h \
-                 eep/winsafe.h
+                 eep/winsafe.h \
+                 v4/eep.h
 libavr_headers = avr/avr.h \
                  avr/avrcfg.h
 libcnt_headers = cnt/cnt.h \
@@ -21,7 +22,8 @@ libeep_sources = libeep/eepmisc.c \
                  libeep/eepmem.c \
                  libeep/eepio.c \
                  libeep/var_string.c \
-                 libeep/val.c
+                 libeep/val.c \
+                 v4/eep.c
 libavr_sources = libavr/avr.c \
                  libavr/avrcfg.c
 libcnt_sources = libcnt/cnt.c \
@@ -32,13 +34,8 @@ libcnt_sources = libcnt/cnt.c \
                  libcnt/riff.c
 
 libeep_includedir=$(includedir)/$(PACKAGE)-$(LIBEEP_VERSION)
-if CONDV4
-libeep_sources += v4/eep.c
-nobase_libeep_include_HEADERS = v4/eep.h
-else
 nobase_libeep_include_HEADERS = ${libeep_headers} ${libavr_headers} ${libcnt_headers}
 noinst_HEADERS = ${libeep_private_headers}
-endif
 
 lib_LTLIBRARIES = libeep.la
 

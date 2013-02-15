@@ -76,16 +76,10 @@ void raw3_setVerbose(int onoff)
 #define RAW3_TIME2_32 10
 #define RAW3_CHAN_32  11
 
-
-
-
 /*
   find the number of bits needed to store the passed (signed!) value
 */
 
-#ifdef __GNUC__
-inline
-#endif
 int bitc(sraw_t x)
 {
   static int nbits[128] = {
@@ -122,7 +116,6 @@ int huffman_size(int *bitfreq, int n, int *nbits, int *nexcbits)
   int lmin = 1000000000;
   int lcur;
   int  i, j, nexc;
-
 
   /* don't store with one bit per sample point */
   bitfreq[2] += bitfreq[1]; bitfreq[1] = 0;
@@ -317,7 +310,6 @@ int huffman(sraw_t *in, int n, int method, int nbits, int nexcbits,
     }
   }
 
-
   else if (method == RAW3_COPY_32) {
     nout = 1;
     for (nin = 0; nin < n; nin++) {
@@ -334,7 +326,6 @@ int huffman(sraw_t *in, int n, int method, int nbits, int nexcbits,
 
   return nout;
 }
-
 
 int dehuffman16(unsigned char *in, int n, int *method, sraw_t *out)
 {
@@ -673,7 +664,6 @@ int dehuffman(unsigned char *in, int n, int *method, sraw_t *out)
   }
 }
 
-
 /* ---------------------------------------------------------------------
   take native raw data vectors (neighbors)
   calc the residuals using the supported methods
@@ -688,7 +678,6 @@ int compchan(raw3_t *raw3, sraw_t *last, sraw_t *cur, int n, char *out)
   raw3res_t *rc;
   sraw_t *res, *restime=NULL;
   int *hst;
-
 
   /* don't care about short vectors in each loop - force copy instead */
   if (n < 8) {
@@ -716,7 +705,6 @@ int compchan(raw3_t *raw3, sraw_t *last, sraw_t *cur, int n, char *out)
       res = rc->res;
       hst = rc->hst;
       memset(hst, 0, 33 * sizeof(int));
-
 
       switch (mi) {
 	case 0:
@@ -890,7 +878,6 @@ int decompepoch_mux(raw3_t *raw3, char *in, int length, sraw_t *out)
   sraw_t *tmp, *chanbase, *last, *cur;
   int samplepos;
   int insize = 0;
-
 
   cur = raw3->cur;
   last = raw3->last;

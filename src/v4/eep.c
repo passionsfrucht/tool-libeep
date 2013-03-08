@@ -3,7 +3,6 @@
 #include <stdio.h>
 // libeep
 #include <v4/eep.h>
-#include <eep/version.h>
 #include <cnt/cnt.h>
 ///////////////////////////////////////////////////////////////////////////////
 struct _libeep_entry {
@@ -63,6 +62,8 @@ int
 libeep_read(const char *filename) {
   int status;
   int handle=_libeep_allocate();
+  int channel_id;
+  int channel_count;
   struct _libeep_entry * obj=_libeep_get_object(handle);
   // open file
   obj->file=fopen(filename, "rb");
@@ -77,8 +78,7 @@ libeep_read(const char *filename) {
     return -1;
   }
   // read channel scale
-  int channel_id,
-      channel_count=eep_get_chanc(obj->eep);
+  channel_count=eep_get_chanc(obj->eep);
   obj->scales=(float *)malloc(sizeof(float) * channel_count);
   for(channel_id=0;channel_id<channel_count;channel_id++) {
     obj->scales[channel_id]=(float)eep_get_chan_scale(obj->eep, channel_id);
@@ -123,6 +123,18 @@ libeep_get_channel_reference(int handle, int index) {
 }
 ///////////////////////////////////////////////////////////////////////////////
 float
+libeep_get_channel_scale(int handle, int index) {
+  struct _libeep_entry * obj=_libeep_get_object(handle);
+  return eep_get_chan_scale(obj->eep, index);
+}
+///////////////////////////////////////////////////////////////////////////////
+int
+libeep_get_channel_index(int handle, const char *chan) {
+  struct _libeep_entry * obj=_libeep_get_object(handle);
+  return eep_get_chan_index(obj, chan);
+}
+///////////////////////////////////////////////////////////////////////////////
+float
 libeep_get_sample_frequency(int handle) {
   struct _libeep_entry * obj=_libeep_get_object(handle);
   return 1.0 / eep_get_period(obj->eep);
@@ -136,24 +148,30 @@ libeep_get_sample_count(int handle) {
 ///////////////////////////////////////////////////////////////////////////////
 float *
 _libeep_get_samples_avr(struct _libeep_entry * obj, long from, long to) {
+  float *buffer_unscaled,
+        *buffer_scaled;
+  const float * ptr_src,
+              * ptr_scales;
+        float * ptr_dst;
+  int n;
+  int w;
   // seek
   if(eep_seek(obj->eep, DATATYPE_AVERAGE, from, 0)) {
     return NULL;
   }
   // get unscaled data
-  float *buffer_unscaled;
   buffer_unscaled = (float *)malloc(CNTBUF_SIZE(obj->eep, to-from));
   if(eep_read_float(obj->eep, DATATYPE_AVERAGE, buffer_unscaled, to-from)) {
     free(buffer_unscaled);
     return NULL;
   }
   // scale data
-  float * buffer_scaled = (float *)malloc(sizeof(float) * (to-from) * eep_get_chanc(obj->eep));
-  const float * ptr_src=buffer_unscaled,
-              * ptr_scales=obj->scales;
-        float * ptr_dst=buffer_scaled;
-  int n=eep_get_chanc(obj->eep) * (to-from),
-      w = 0;
+  buffer_scaled = (float *)malloc(sizeof(float) * (to-from) * eep_get_chanc(obj->eep));
+  ptr_src=buffer_unscaled,
+  ptr_scales=obj->scales;
+  ptr_dst=buffer_scaled;
+  n=eep_get_chanc(obj->eep) * (to-from);
+  w = 0;
   while(n--) {
     if(!w) {
       w=to-from;
@@ -169,24 +187,30 @@ _libeep_get_samples_avr(struct _libeep_entry * obj, long from, long to) {
 ///////////////////////////////////////////////////////////////////////////////
 float *
 _libeep_get_samples_cnt(struct _libeep_entry * obj, long from, long to) {
+  sraw_t *buffer_unscaled;
+  float * buffer_scaled;
+  const sraw_t * ptr_src;
+  const float  * ptr_scales;
+        float  * ptr_dst;
+  int n;
+  int w;
   // seek
   if(eep_seek(obj->eep, DATATYPE_EEG, from, 0)) {
     return NULL;
   }
   // get unscaled data
-  sraw_t *buffer_unscaled;
   buffer_unscaled = (sraw_t *)malloc(CNTBUF_SIZE(obj->eep, to-from));
   if(eep_read_sraw(obj->eep, DATATYPE_EEG, buffer_unscaled, to-from)) {
     free(buffer_unscaled);
     return NULL;
   }
   // scale data
-  float * buffer_scaled = (float *)malloc(sizeof(float) * (to-from) * eep_get_chanc(obj->eep));
-  const sraw_t * ptr_src=buffer_unscaled;
-  const float  * ptr_scales=obj->scales;
-        float  * ptr_dst=buffer_scaled;
-  int n=eep_get_chanc(obj->eep) * (to-from),
-      w = 0;
+  buffer_scaled = (float *)malloc(sizeof(float) * (to-from) * eep_get_chanc(obj->eep));
+  ptr_src=buffer_unscaled;
+  ptr_scales=obj->scales;
+  ptr_dst=buffer_scaled;
+  n=eep_get_chanc(obj->eep) * (to-from);
+  w = 0;
   while(n--) {
     if(!w) {
       w=to-from;

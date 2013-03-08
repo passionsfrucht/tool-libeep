@@ -1,5 +1,0 @@
-#ifndef __libeep_eep_version_h__
-#define __libeep_eep_version_h__
-
-#define LIBEEP_VERSION "@LIBEEP_VERSION@"
-#endif

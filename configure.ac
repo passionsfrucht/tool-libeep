@@ -6,6 +6,7 @@ AC_CANONICAL_HOST
 # version info #
 ################
 AC_SUBST(LIBEEP_VERSION, [$VERSION])
+AC_DEFINE(LIBEEP_VERSION, [VERSION])
 PACKAGE_LIBRARY_VERSION=6:169:3
 AC_SUBST(PACKAGE_LIBRARY_VERSION)
 
@@ -22,14 +23,12 @@ AC_PROG_INSTALL
 ###########################
 AC_ARG_ENABLE(matlab,        [  --enable-matlab          build matlab importers], condmex=yes, condmex=no)
 AC_ARG_ENABLE(test,          [  --enable-test            build test utils      ], condtest=yes, condtest=no)
-AC_ARG_ENABLE(v4,            [  --enable-v4              install v4 headers    ], condv4=yes, condv4=no)
 
 #################
 # check enables #
 #################
 AM_CONDITIONAL(CONDMEX, test x$condmex = xyes)
 AM_CONDITIONAL(CONDTEST, test x$condtest = xyes)
-AM_CONDITIONAL(CONDV4, test x$condv4 = xyes)
 
 ################
 # check matlab #
@@ -50,7 +49,7 @@ fi
 ###################
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES(libeep-config, chmod +x libeep-config)
-AC_OUTPUT([Makefile src/Makefile mex/Makefile test/Makefile libeep.pc src/eep/version.h])
+AC_OUTPUT([Makefile src/Makefile mex/Makefile test/Makefile libeep.pc])
 
 ##############
 # debug info #

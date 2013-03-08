@@ -51,6 +51,16 @@ const char * libeep_get_channel_unit(int, int);
  */
 const char * libeep_get_channel_reference(int, int);
 /**
+ * @brief get the channel scaling
+ * @return scaling of the channel name
+ */
+float libeep_get_channel_scale(int, int);
+/**
+ * @brief get the channel index
+ * @return an index to the channel name
+ */
+int libeep_get_channel_index(int, const char *);
+/**
  * @brief get the sample frequency
  * @return sample frequency in Hz
  */

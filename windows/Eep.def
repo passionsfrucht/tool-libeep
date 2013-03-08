@@ -73,6 +73,25 @@ EXPORTS
   free_eep_bar
   init_eep_bar
   is_rejected
+  libeep_close
+  libeep_exit
+  libeep_get_channel_count
+  libeep_get_channel_index
+  libeep_get_channel_label
+  libeep_get_channel_reference
+  libeep_get_channel_scale
+  libeep_get_channel_unit
+  libeep_get_condition_color
+  libeep_get_condition_label
+  libeep_get_sample_count
+  libeep_get_sample_frequency
+  libeep_get_samples
+  libeep_get_trials_averaged
+  libeep_get_trials_total
+  libeep_get_version
+  libeep_get_zero_offset
+  libeep_init
+  libeep_read
   raw3_get_ERR_FLAG_0
   raw3_get_ERR_FLAG_16
   raw3_get_ERR_FLAG_EPOCH

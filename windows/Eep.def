@@ -20,6 +20,7 @@ EXPORTS
   eepdebug
   EEPDebug
   eeperror
+  eep_fclose
   eep_finish_file
   eep_free
   eep_get_averaged_trials
@@ -39,12 +40,14 @@ EXPORTS
   eep_get_name
   eep_get_period
   eep_get_pre_stimulus_interval
+  eep_get_rate
   eep_get_recording_info
   eep_get_recording_startdate_string
   eep_get_recording_startdate_struct
   eep_get_samplec
   eep_get_total_trials
   eep_get_trg
+  eep_has_data_of_type
   eep_has_recording_info
   eep_init_from_copy
   eep_init_from_file

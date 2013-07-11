@@ -22,10 +22,18 @@ void libeep_exit();
 const char * libeep_get_version();
 /**
  * @brief open file for reading
- # @param filename the filename to the CNT or AVR to open
+ * @param filename the filename to the CNT or AVR to open
  * @return -1 on error, handle otherwise
  */
 int libeep_read(const char *filename);
+/**
+ * @brief open cnt file for writing
+ * @param filename the filename to the CNT or AVR to open
+ * @param rate the sampling rate(in Hz)
+ * @param nchan the number of channels
+ * @return -1 on error, handle otherwise
+ */
+int libeep_write_cnt(const char *filename, int rate, int nchan);
 /**
  * @brief close data file
  * @param handle handle to open
@@ -75,6 +83,13 @@ long libeep_get_sample_count(int);
  * @return dynamically allocated array of samples or NULL on failure(Result should be free'd)
  */
 float * libeep_get_samples(int, long, long);
+/**
+ * @brief add data samples
+ * @param handle handle
+ * @param data pointer to float array
+ * @param n number of items in array
+ */
+void libeep_add_samples(int handle, const float *data, int n);
 /**
  * @brief get zero offset(averages only)
  * @return offset of sample where event occurred

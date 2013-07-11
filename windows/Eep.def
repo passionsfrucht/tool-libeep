@@ -6,19 +6,20 @@ EXPORTS
   arv_fclear
   asciiread
   asciiwrite
+  avr_var_valid
   cfg_get_eepcolor
   cfg_line_norm
+  cfg_put_eepcolorstr
   compepoch_mux
   decompchan
   eep_append_history
-  EEPBar
   eep_byteswap_8_double_safe
   eep_chan_init
   eep_chan_set
   eep_chan_set_reflab
+  eepcolortbl
   eep_create_file
   eepdebug
-  EEPDebug
   eeperror
   eep_fclose
   eep_finish_file
@@ -26,8 +27,10 @@ EXPORTS
   eep_get_averaged_trials
   eep_get_chanc
   eep_get_chan_index
+  eep_get_chan_iscale
   eep_get_chan_label
   eep_get_chan_reflab
+  eep_get_chan_rscale
   eep_get_chan_scale
   eep_get_chanseq
   eep_get_chan_unit
@@ -44,6 +47,7 @@ EXPORTS
   eep_get_recording_info
   eep_get_recording_startdate_string
   eep_get_recording_startdate_struct
+  eep_get_sample0
   eep_get_samplec
   eep_get_total_trials
   eep_get_trg
@@ -52,15 +56,26 @@ EXPORTS
   eep_init_from_copy
   eep_init_from_file
   eep_init_from_values
-  eepio_doslf
-  eepio_quiet
+  eepio_getbar
+  eepio_getdebug
+  eepio_getlog
+  eepio_getverbose
+  eepio_setbar
+  eepio_setdebug
+  eepio_setlog
+  eepio_setmessorigin
+  eepio_setverbose
   eeplog
-  eepmess_log
   eep_prepare_to_write
+  eep_print_wrap
   eep_read_float
+  eep_read_float_channel
   eep_read_sraw
   eep_seek
   eep_set_averaged_trials
+  eep_set_chan_iscale
+  eep_set_chan_label
+  eep_set_chan_rscale
   eep_set_conditioncolor
   eep_set_conditionlabel
   eep_set_period
@@ -68,9 +83,11 @@ EXPORTS
   eep_set_recording_info
   eep_set_recording_startdate_epoch
   eep_set_recording_startdate_struct
+  eep_set_sample0
   eep_set_total_trials
   eep_set_trg
   eepstatus
+  eepstdout
   eep_write_float
   eep_write_sraw
   free_eep_bar
@@ -108,6 +125,7 @@ EXPORTS
   rej_get_c
   rej_init
   rej_set
+  reorder_memory
   riff_seek
   riff_write
   show_eep_bar
@@ -131,7 +149,10 @@ EXPORTS
   varstr_set
   v_calloc
   v_free_d2d
+  v_free_s2d
   v_malloc
   v_malloc_d2d
+  v_malloc_s2d
   v_realloc
+  v_strcat
   v_strnew

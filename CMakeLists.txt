@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(LIBEEP_VERSION "3.3.169")
+set(prefix ${CMAKE_INSTALL_PREFIX})
+set(PACKAGE libeep)
 
 project(libeep-${LIBEEP_VERSION})
 
@@ -8,6 +10,8 @@ add_definitions(-DLIBEEP_VERSION="${LIBEEP_VERSION}")
 if(UNIX)
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+  configure_file(libeep.pc.in ${CMAKE_BINARY_DIR}/libeep.pc)
+  install(FILES ${CMAKE_BINARY_DIR}/libeep.pc DESTINATION lib/pkgconfig)
 endif()
 if(WIN32)
   set(Eep_def windows/Eep.def)

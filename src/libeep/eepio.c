@@ -42,15 +42,17 @@
 char RCS_eepio_h[] = RCS_EEPIO_H;
 char RCS_eepio_c[] = "$RCSfile: eepio.c,v $ $Revision: 2415 $";
 
-int eepio_quiet = 0;
-int eepio_doslf = 0;
+int eepio_verbose = 1;
+int eepio_debug   = 0;
+int eepio_bar     = 1;
+int eepio_log     = 0;
 
 int eepstdout(const char *fmt, ...)
 {
   int n = 0;
   va_list va;
 
-  if (!eepio_quiet) {
+  if(eepio_getverbose()) {
     va_start(va, fmt);
     n = vprintf(fmt, va);
     va_end(va);
@@ -63,7 +65,7 @@ int eepstderr(const char *fmt, ...)
   int n = 0;
   va_list va;
 
-  if (!eepio_quiet) {
+  if(eepio_getverbose()) {
     va_start(va, fmt);
     n = vfprintf(stderr, fmt, va);
     va_end(va);
@@ -74,13 +76,12 @@ int eepstderr(const char *fmt, ...)
 /* 
   configure output and keep track of output state 
 */
-int     EEPDebug = 0;
-int     EEPBar = 1;
 int     EEPBarOn = 0;
 slen_t  EEPBarTotal;
 slen_t  EEPBarCurrent;
-int     eepmess_log = 0;
-char    messorigin[32] = "libeep: ";
+
+#define MESSORIGIN_MAX  256
+char    messorigin[MESSORIGIN_MAX] = "libeep: ";
 
 /* printf wrappers --------------------------------------- */
 
@@ -88,13 +89,14 @@ void eeplog(const char *fmt, ...)
 {
   va_list va;
   
-  if (eepio_quiet)
+  if(!eepio_getverbose()) {
     return;
+  }
     
   va_start(va, fmt);
   vprintf(fmt, va);
   va_end(va);
-  if (eepmess_log) {
+  if(eepio_getlog()) {
     va_start(va, fmt);
     vfprintf(stderr, fmt, va);
     va_end(va);
@@ -105,7 +107,7 @@ void eepdebug(const char *fmt, ...)
 {
   va_list va;
 
-  if (EEPDebug) {
+  if(eepio_getdebug) {
     va_start(va, fmt);
     vfprintf(stderr, fmt, va);
     va_end(va);
@@ -116,8 +118,10 @@ void eepstatus(const char *fmt, ...)
 {
   va_list va;
 
-  if (eepio_quiet)
+  if(!eepio_getverbose()) {
     return;
+  }
+
   if (EEPBarOn)
     free_eep_bar();
 
@@ -131,8 +135,10 @@ void sysstatus(const char *fmt, ...)
 {
   va_list va;
 
-  if (eepio_quiet)
+  if(!eepio_getverbose()) {
     return;
+  }
+
   if (EEPBarOn)
     free_eep_bar();
 
@@ -150,7 +156,7 @@ void eeperror(const char *fmt, ...)
 {
   va_list va;
 
-  if (!eepio_quiet) {
+  if(eepio_getverbose()) {
     if (EEPBarOn)
       free_eep_bar();
 
@@ -168,7 +174,7 @@ void syserror(const char *fmt, ...)
 {
   va_list va;
 
-  if (!eepio_quiet) {
+  if(eepio_getverbose()) {
     if (EEPBarOn)
       free_eep_bar();
 
@@ -186,6 +192,55 @@ void syserror(const char *fmt, ...)
   exit(1);
 }
 
+void eepio_setverbose(int arg) {
+  eepio_verbose=arg;
+}
+
+int  eepio_getverbose() {
+  if(getenv("EEPIO_QUIET")) {
+    return 0;
+  }
+  return eepio_verbose;
+}
+
+void eepio_setdebug(int arg) {
+  eepio_debug=arg;
+}
+
+int  eepio_getdebug() {
+  if(getenv("EEPIO_DEBUG")) {
+    return 1;
+  }
+  return eepio_debug;
+}
+
+void eepio_setbar(int arg) {
+  eepio_bar=arg;
+}
+
+int  eepio_getbar() {
+  if(getenv("EEPIO_NOBAR")) {
+    return 0;
+  }
+  return eepio_bar;
+}
+
+void eepio_setlog(int arg) {
+  eepio_log=arg;
+}
+
+int  eepio_getlog() {
+  if(getenv("EEPIO_LOG")) {
+    return 1;
+  }
+  return eepio_log;
+}
+
+void eepio_setmessorigin(const char *mname) {
+  strncpy(messorigin, mname, MESSORIGIN_MAX-2);
+  strcat(messorigin, ": ");
+}
+
 /* the status indicator -------------------------------------------- */
 
 void init_eep_bar(slen_t total)
@@ -194,7 +249,7 @@ void init_eep_bar(slen_t total)
   
   EEPBarCurrent = 0;
   EEPBarTotal = total;
-  if (EEPBar) {
+  if(eepio_getbar()) {
     EEPBarOn = 1;
     sprintf(line, "%sprocessing\n  ", messorigin);
     eepstderr(line);
@@ -209,7 +264,7 @@ void show_eep_bar(slen_t current)
   old = EEPBarCurrent * 73 / EEPBarTotal;
   newval = current * 73 / EEPBarTotal;
   EEPBarCurrent = current;
-  if (EEPBar) {
+  if(eepio_getbar()) {
     for (i = old; i < newval; i++) {
       eepstderr("*");
     }
@@ -218,7 +273,7 @@ void show_eep_bar(slen_t current)
 
 void free_eep_bar(void)
 {
-  if (EEPBar) {
+  if(eepio_getbar()) {
     eepstderr("\n");
     EEPBarOn = 0;
   }

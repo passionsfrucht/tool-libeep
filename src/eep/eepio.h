@@ -67,17 +67,6 @@ char *cfg_line_norm_cs(char *line);
     sys...:add perror output to status message
 */
 
-/* global flags to control log func details */
-extern int eepio_quiet;
-extern int eepio_doslf; /* can be set but is ignored */
-extern int eepio_log;
-
-extern int EEPDebug;
-extern int EEPBar;
-extern int eepmess_log;
-#define MESSORIGIN_SIZE 32
-extern char messorigin[MESSORIGIN_SIZE];
-
 int  eepstdout(const char *fmt, ...);
 int  eepstderr(const char *fmt, ...);
 
@@ -87,6 +76,16 @@ void eepstatus (const char *fmt, ...);
 void sysstatus (const char *fmt, ...);
 void eeperror  (const char *fmt, ...);
 void syserror  (const char *fmt, ...);
+
+void eepio_setverbose(int); // whether to show messages
+int  eepio_getverbose();
+void eepio_setdebug(int);   // whether to show debug messages
+int  eepio_getdebug();
+void eepio_setbar(int);     // whether to show progress bar
+int  eepio_getbar();
+void eepio_setlog(int);     // whether to log
+int  eepio_getlog();
+void eepio_setmessorigin(const char *);
 
 /* 
   the eepmess.h *open funcs maintain a list of "autoremove" files here

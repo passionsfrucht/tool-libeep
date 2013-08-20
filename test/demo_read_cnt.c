@@ -19,7 +19,7 @@ handle_file(const char *filename) {
   /**************
    * initialize *
    **************/
-  _libeep_file=fopen(filename, "r");
+  _libeep_file=eepio_fopen(filename, "r");
   if(_libeep_file == NULL) {
     fprintf(stderr, "could not open %s\n", filename);
     return;
@@ -71,7 +71,7 @@ handle_file(const char *filename) {
    ***********/
   eep_free(_libeep_cnt);
   free(_libeep_muxbuf);
-  fclose(_libeep_file);
+  eepio_fclose(_libeep_file);
 }
 ///////////////////////////////////////////////////////////////////////////////
 int

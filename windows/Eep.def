@@ -56,6 +56,12 @@ EXPORTS
   eep_init_from_copy
   eep_init_from_file
   eep_init_from_values
+  eepio_fopen
+  eepio_fclose
+  eepio_fseek
+  eepio_ftell
+  eepio_fread
+  eepio_fwrite
   eepio_getbar
   eepio_getdebug
   eepio_getlog

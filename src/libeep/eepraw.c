@@ -46,10 +46,10 @@ char RCS_eepraw_c[] = "$RCSfile: eepraw.c,v $ $Revision: 2415 $";
 
 int _read_64(FILE *f, char *v) {
 #if EEP_BYTE_ORDER == EEP_LITTLE_ENDIAN
-  return fread(v, 8, 1, f);
+  return eepio_fread(v, 8, 1, f);
 #else
   register char c;
-  if (!fread(v, 8, 1, f)) return 0;
+  if (!eepio_fread(v, 8, 1, f)) return 0;
   c = v[0]; v[0] = v[7]; v[7] = c;
   c = v[1]; v[1] = v[6]; v[6] = c;
   c = v[2]; v[2] = v[5]; v[5] = c;
@@ -60,10 +60,10 @@ int _read_64(FILE *f, char *v) {
 
 int _read_32(FILE *f, char *v) {
 #if EEP_BYTE_ORDER == EEP_LITTLE_ENDIAN
-  return fread(v, 4, 1, f);
+  return eepio_fread(v, 4, 1, f);
 #else
   register char c;
-  if (!fread(v, 4, 1, f)) return 0;
+  if (!eepio_fread(v, 4, 1, f)) return 0;
   c = v[0]; v[0] = v[3]; v[3] = c;
   c = v[1]; v[1] = v[2]; v[2] = c;
   return 1;
@@ -72,10 +72,10 @@ int _read_32(FILE *f, char *v) {
 
 int _read_16(FILE *f, char *v) {
 #if EEP_BYTE_ORDER == EEP_LITTLE_ENDIAN
-  return fread(v, 2, 1, f);
+  return eepio_fread(v, 2, 1, f);
 #else
   register char c;
-  if (!fread(v, 2, 1, f)) return 0;
+  if (!eepio_fread(v, 2, 1, f)) return 0;
   c = v[0]; v[0] = v[1]; v[1] = c;
   return 1;
 #endif
@@ -95,7 +95,7 @@ int _write_64(FILE *f, const char *v) {
   tmp[6]=v[1];
   tmp[7]=v[0];
 #endif
-  return fwrite(tmp, 8, 1, f);
+  return eepio_fwrite(tmp, 8, 1, f);
 }
 
 int read_u64(FILE *f, uint64_t *v) {
@@ -126,20 +126,20 @@ int write_s32 (FILE *f, int v)
 {
   char out[4];
   swrite_s32(out, v);
-  return fwrite((char *) out, 4, 1, f);
+  return eepio_fwrite((char *) out, 4, 1, f);
 }
 
 int write_u32 (FILE *f, unsigned int v)
 {
   char out[4];
   swrite_s32(out, v);
-  return fwrite((char *) out, 4, 1, f);
+  return eepio_fwrite((char *) out, 4, 1, f);
 }
 
 int read_u16 (FILE *f, int *v)
 {
   unsigned char in[2];
-  if (!fread((char *) in, 2, 1, f)) return 0;
+  if (!eepio_fread((char *) in, 2, 1, f)) return 0;
   *v = (unsigned int) in[0] + (in[1] << 8);
   return 1;
 }
@@ -147,7 +147,7 @@ int read_u16 (FILE *f, int *v)
 int read_s16  (FILE *f, int *v)
 {
   unsigned char in[2];
-  if (!fread((char *) in, 2, 1, f)) return 0;
+  if (!eepio_fread((char *) in, 2, 1, f)) return 0;
 
   /* negative value ? */
   if (in[1] & 0x80) {
@@ -170,14 +170,14 @@ int write_u16(FILE *f, int v)
 {
   char out[2];
   swrite_s16(out, v);
-  return fwrite((char *) out, 2, 1, f);
+  return eepio_fwrite((char *) out, 2, 1, f);
 }
 
 int write_s16(FILE *f, int v)
 {
   char out[2];
   swrite_s16(out, v);
-  return fwrite((char *) out, 2, 1, f);
+  return eepio_fwrite((char *) out, 2, 1, f);
 }
 
 int read_f32 (FILE *f, float *v) {
@@ -192,7 +192,7 @@ int write_f32(FILE *f, float v)
   c = tmp[0]; tmp[0] = tmp[3]; tmp[3] = c;
   c = tmp[1]; tmp[1] = tmp[2]; tmp[2] = c;
 #endif
-  return fwrite(tmp, 4, 1, f);
+  return eepio_fwrite(tmp, 4, 1, f);
 }
 
 int read_f64(FILE *f, double *v) {
@@ -209,7 +209,7 @@ int write_f64(FILE *f, double v)
   c = tmp[2]; tmp[2] = tmp[5]; tmp[5] = c;
   c = tmp[3]; tmp[3] = tmp[4]; tmp[4] = c;
 #endif
-  return fwrite(tmp, 8, 1, f);
+  return eepio_fwrite(tmp, 8, 1, f);
 }
 
 void swrite_f32  (char *s, float v)
@@ -259,7 +259,7 @@ int vread_s16(FILE *f, sraw_t *buf, int n)
   register int j, status;
   register unsigned char *tmp = (unsigned char *) buf;
   
-  status = fread(tmp, 2, n, f);
+  status = eepio_fread(tmp, 2, n, f);
   if (status != n)
     return status;
   
@@ -282,7 +282,7 @@ int vwrite_s16(FILE *f, sraw_t *buf, int n)
     tmp[2*j] = (unsigned char) (buf[j]);
     tmp[2*j+1] = (unsigned char) (buf[j] >> 8);
   }
-  nr = fwrite(tmp, 2, n, f);
+  nr = eepio_fwrite(tmp, 2, n, f);
 
   /* reestablish original byte order */
   for (j = 0; j < n; j++) {                                                     
@@ -298,10 +298,10 @@ int vread_f32(FILE *f, float *buf, int n)
   register char *tmp = (char *) buf;
 
 #if EEP_FLOAT_ORDER == EEP_LITTLE_ENDIAN
-  return fread(tmp, 4, n, f);
+  return eepio_fread(tmp, 4, n, f);
 #else
   
-  int status = fread(tmp, 4, n, f);
+  int status = eepio_fread(tmp, 4, n, f);
   register int j;
   register char *w,c;
 
@@ -330,7 +330,7 @@ int vwrite_f32(FILE *f, float *buf, int n)
     c = w[0]; w[0] = w[3]; w[3] = c;
     c = w[1]; w[1] = w[2]; w[2] = c;
   }
-  nr = fwrite(tmp, 4, n, f);
+  nr = eepio_fwrite(tmp, 4, n, f);
 
   /* reestablish original byte order */
   for (j = 0; j < n; j++) {
@@ -342,14 +342,14 @@ int vwrite_f32(FILE *f, float *buf, int n)
   return nr; 
 #endif
 
-  return fwrite(tmp, 4, n, f);
+  return eepio_fwrite(tmp, 4, n, f);
 }
 
 int vread_s32(FILE *f, sraw_t *buf, int n)
 {
   register int j, status;
 
-  status = fread(buf, 4, n, f);
+  status = eepio_fread(buf, 4, n, f);
   if (status != n)
     return status;
   

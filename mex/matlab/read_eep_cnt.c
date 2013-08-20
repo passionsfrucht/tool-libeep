@@ -76,7 +76,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   length = se-sb+1;
 
   /* open the data file */
- if ((fp = fopen(filename, "rb"))==NULL)
+ if ((fp = eepio_fopen(filename, "rb"))==NULL)
     mexErrMsgTxt ("Could not open file");
 
   /* read header information */
@@ -141,7 +141,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 
   /* close the file */
   eep_free(hdr);
-  fclose(fp);
+  eepio_fclose(fp);
   free(buf);
 
   return;

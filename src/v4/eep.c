@@ -81,7 +81,7 @@ libeep_read(const char *filename) {
   int channel_count;
   struct _libeep_entry * obj=_libeep_get_object(handle, om_none);
   // open file
-  obj->file=fopen(filename, "rb");
+  obj->file=eepio_fopen(filename, "rb");
   if(obj->file==NULL) {
     fprintf(stderr, "libeep: cannot open(1) %s\n", filename);
     return -1;
@@ -114,7 +114,7 @@ libeep_write_cnt(const char *filename, int rate, int nchan) {
   int channel_id;
   struct _libeep_entry * obj=_libeep_get_object(handle, om_none);
   // open file
-  obj->file=fopen(filename, "wb");
+  obj->file=eepio_fopen(filename, "wb");
   if(obj->file==NULL) {
     fprintf(stderr, "libeep: cannot open(1) %s\n", filename);
     return -1;
@@ -168,7 +168,7 @@ libeep_close(int handle) {
   // close scales
   free(_libeep_entry_map[handle]->scales);
   // cleanup
-  fclose(obj->file);
+  eepio_fclose(obj->file);
   _libeep_free(handle);
 }
 ///////////////////////////////////////////////////////////////////////////////

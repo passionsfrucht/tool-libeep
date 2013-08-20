@@ -25,6 +25,8 @@
  *                                                                              *
  *******************************************************************************/
 
+#define _FILE_OFFSET_BITS 64
+
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
@@ -361,6 +363,28 @@ char *cfg_line_norm_cs(char *line)
   free(buf);
 
   return line;
+}
+
+/*
+ * file IO
+ */
+FILE * eepio_fopen(const char *path, const char *mode) {
+  return fopen(path, mode);
+}
+int eepio_fclose(FILE *f) {
+  return fclose(f);
+}
+size_t eepio_fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+  return fread(ptr, size, nmemb, stream);
+}
+size_t eepio_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
+  return fwrite(ptr, size, nmemb, stream);
+}
+int eepio_fseek(FILE *stream, uint64_t offset, int whence) {
+  return fseek(stream, offset, whence);
+}
+uint64_t eepio_ftell(FILE *stream) {
+  return ftell(stream);
 }
 
 void eep_print_wrap(FILE* out, const char* text, int len)

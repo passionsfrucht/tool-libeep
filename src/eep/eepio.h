@@ -100,6 +100,17 @@ void init_eep_bar(slen_t total);
 void show_eep_bar(slen_t current);
 void free_eep_bar(void);
 
+/*
+ * file IO
+ */
+FILE     * eepio_fopen(const char *, const char *);
+int        eepio_fclose(FILE *);
+size_t     eepio_fread(void *, size_t, size_t, FILE *);
+size_t     eepio_fwrite(const void *, size_t, size_t, FILE *);
+int        eepio_fseek(FILE *, uint64_t, int);
+uint64_t   eepio_ftell(FILE *);
+
+
 /* A function to print a text wrapped at len characters */
 void eep_print_wrap(FILE* out, const char* text, int len);
 

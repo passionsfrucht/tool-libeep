@@ -62,7 +62,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   mxGetString(prhs[0], filename, 256);
 
   /* open the data file */
- if ((trigger_file = fopen(filename, "r"))==NULL)
+ if ((trigger_file = eepio_fopen(filename, "r"))==NULL)
     mexErrMsgTxt ("Could not open file");
 
   trigger_info = trg_file_read_unchecked(trigger_file, &period, &chanc);
@@ -97,7 +97,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     mxSetField(data, i, "type", type );
 
   }
-  fclose(trigger_file);
+  eepio_fclose(trigger_file);
 
   plhs[0]  = data;
 

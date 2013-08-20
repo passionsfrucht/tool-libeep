@@ -29,17 +29,10 @@
 #define RIFF64_H
 
 #include <stdio.h>
-#include <stdint.h>
 
 #include <cnt/riff.h>
 
-struct chunk64 {
-  fourcc_t         id;
-  uint64_t         start;
-  uint64_t         size;
-  struct chunk64 * parent;
-};
-typedef struct chunk64 chunk64_t;
+typedef chunk_t chunk64_t;
 
 /*
   check 'RIFF' tag, formtype is set on return

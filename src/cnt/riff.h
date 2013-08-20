@@ -30,6 +30,7 @@
 #define RCS_RIFF_H "$RCSfile: riff.h,v $ $Revision: 1762 $"
 
 #include <stdio.h>
+#include <stdint.h>
 
 /* RIFF access return values */
 #define RIFFERR_NONE 0
@@ -52,8 +53,8 @@ typedef unsigned int fourcc_t;
 */
 struct chunk {
   fourcc_t      id;
-  int           start;
-  int           size;
+  uint64_t      start;
+  uint64_t      size;
   struct chunk  *parent;
 };
 typedef struct chunk chunk_t;

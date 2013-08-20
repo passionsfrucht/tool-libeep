@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(LIBEEP_VERSION "3.3.169")
+set(LIBEEP_VERSION "3.3.170")
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(PACKAGE libeep)
 
@@ -20,18 +20,19 @@ endif(WIN32)
 add_library(Eep SHARED
   src/libavr/avr.c
   src/libavr/avrcfg.c
-  src/libcnt/cntutils.c
   src/libcnt/cnt.c
+  src/libcnt/cntutils.c
   src/libcnt/raw3.c
   src/libcnt/rej.c
+  src/libcnt/riff64.c
   src/libcnt/riff.c
   src/libcnt/trg.c
-  src/libeep/eepmisc.c
   src/libeep/eepio.c
   src/libeep/eepmem.c
-  src/libeep/var_string.c
+  src/libeep/eepmisc.c
   src/libeep/eepraw.c
   src/libeep/val.c
+  src/libeep/var_string.c
   src/v4/eep.c
   ${Eep_def}
 )

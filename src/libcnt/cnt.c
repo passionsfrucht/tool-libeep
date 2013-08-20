@@ -209,16 +209,23 @@ int gethead_RAW3(eeg_t *EEG)
 {
   FILE *f = EEG->f;
   int nread = 0,
-      nread_last = 0;
+      nread_last = 0,
+      nread_total;
   char line[128];
   char histline[2048];
   double rate = -1.0;
   int chan;
 
+  if(EEG->mode==CNT_RIFF) {
+    nread_total=EEG->eeph.size;
+  } else {
+    nread_total=EEG->eeph64.size;
+  }
   do {
     fgets(line, 128, f); nread += strlen(line);
 
     if (*line == '[') {
+      // fprintf(stderr, "header line: %s\n", line);
       if (strstr(line, "[File Version]")) {
         fgets(line, 128, f); nread += strlen(line);
         sscanf(line, "%d.%d", &EEG->eep_header.fileversion_major, &EEG->eep_header.fileversion_minor);
@@ -232,10 +239,12 @@ int gethead_RAW3(eeg_t *EEG)
       else if (strstr(line, "[Samples]")) {
         fgets(line, 128, f); nread += strlen(line);
         sscanf(line, "%d", &EEG->eep_header.samplec);
+        // fprintf(stderr, "EEG->eep_header.samplec: %i\n", EEG->eep_header.samplec);
       }
       else if (strstr(line, "[Channels]")) {
         fgets(line, 128, f); nread += strlen(line);
         sscanf(line, "%hd", &EEG->eep_header.chanc);
+        // fprintf(stderr, "EEG->eep_header.chanc: %i\n", EEG->eep_header.chanc);
       }
       else if (strstr(line, "[Basic Channel Data]")) {
         if (EEG->eep_header.chanc < 1)
@@ -324,7 +333,7 @@ int gethead_RAW3(eeg_t *EEG)
       break;
     }
     nread_last=nread;
-  } while (nread < EEG->eeph.size);
+  } while (nread < nread_total); // EEG->eeph.size);
 
   return ferror(f);
 }
@@ -449,9 +458,15 @@ int getepoch_impl(eeg_t *cnt, eep_datatype_e type, slen_t epoch)
   inbuf = store->data_map + store->map_offset + store->epochs.epochv[epoch];
 #else
   /* seek/read source file */
-  RET_ON_RIFFERROR(riff_seek(cnt->f, store->epochs.epochv[epoch], SEEK_SET, store->ch_data), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_seek(cnt->f, store->epochs.epochv[epoch], SEEK_SET, store->ch_data), CNTERR_FILE);
+    RET_ON_RIFFERROR(riff_read(store->data.cbuf, sizeof(char), insize, cnt->f, store->ch_data), CNTERR_FILE);
+  } else {
+/* MARKER */ fprintf(stderr, "%s(%i)\n", __FILE__, __LINE__);
+    RET_ON_RIFFERROR(riff64_seek(cnt->f, store->epochs.epochv[epoch], SEEK_SET, store->ch64_data), CNTERR_FILE);
+    RET_ON_RIFFERROR(riff64_read(store->data.cbuf, sizeof(char), insize, cnt->f, store->ch64_data), CNTERR_FILE);
+  }
 
-  RET_ON_RIFFERROR(riff_read(store->data.cbuf, sizeof(char), insize, cnt->f, store->ch_data), CNTERR_FILE);
   inbuf=store->data.cbuf;
 #endif
   store->data.bufepoch = epoch;
@@ -520,7 +535,11 @@ int putepoch_impl(eeg_t *cnt)
     }
 
     /* write the filled buffers to file, reset buffers */
-    RET_ON_RIFFERROR(riff_write(store->data.cbuf, sizeof(char), to_write, cnt->f, &store->ch_data), CNTERR_FILE);
+    if(cnt->mode==CNT_RIFF) {
+      RET_ON_RIFFERROR(riff_write(store->data.cbuf, sizeof(char), to_write, cnt->f, &store->ch_data), CNTERR_FILE);
+    } else {
+      RET_ON_RIFFERROR(riff64_write(store->data.cbuf, sizeof(char), to_write, cnt->f, &store->ch64_data), CNTERR_FILE);
+    }
 
     if (DATATYPE_TIMEFREQ == cnt->current_datachunk )
       cnt->tf_header.samplec += store->data.writepos;
@@ -907,7 +926,12 @@ eeg_t *eep_init_from_file(const char *fname, FILE *f, int *status)
     *status = CNTERR_FILE;
   }
   else {
-    if (!strncmp("RIFF", filetag, 4) && !strncmp("CNT ", &filetag[8], 4))
+/*
+    fprintf(stderr, "filetag 'CNT ': %i\n", strncmp("CNT ", &filetag[8], 4));
+    fprintf(stderr, "filetag 'CNTX': %i\n", strncmp("CNTX", &filetag[8], 4));
+    fprintf(stderr, "filetag 'CNTX': %i\n", strncmp("CNTX", &filetag[12], 4));
+*/
+    if (!strncmp("RIFF", filetag, 4) && (!strncmp("CNT ", &filetag[8], 4) || !strncmp("CNTX", &filetag[12], 4)) )
       *status = cntopen_RAW3(cnt);
     else if (!strncmp(TAG_EEP20, filetag, strlen(TAG_EEP20)))
       *status = cntopen_EEP20(cnt);
@@ -917,6 +941,8 @@ eeg_t *eep_init_from_file(const char *fname, FILE *f, int *status)
       *status = cntopen_AVR(cnt);
     else
       *status = CNTERR_DATA;
+
+    // fprintf(stderr, "status: %i\n", *status);
   }
 
   if (*status != CNTERR_NONE) {
@@ -931,16 +957,26 @@ eeg_t *eep_init_from_file(const char *fname, FILE *f, int *status)
 
 int read_trigger_chunk(eeg_t *EEG)
 {
-  if (riff_open(EEG->f, &EEG->evt, FOURCC_evt, EEG->cnt)) {
+  int riff_open_result;
+  if(EEG->mode==CNT_RIFF) {
+    riff_open_result = riff_open(EEG->f, &EEG->evt, FOURCC_evt, EEG->cnt);
+  } else {
+    riff_open_result = riff64_open(EEG->f, &EEG->evt64, FOURCC_evt, EEG->cnt64);
+  }
+
+  if(riff_open_result) {
     /* only issue warning when in debug mode - and when not in windows */
     NOT_IN_WINDOWS(eepdebug("cnt: warning - no <evt > chunk found in %s!\n", EEG->fname));
     EEG->trg = trg_init();
-  }
-  else {
+  } else {
     long i, j;
 
     EEG->trg = trg_init();
-    EEG->trg->c = get_chunk_size(EEG->evt) / 12;
+    if(EEG->mode==CNT_RIFF) {
+      EEG->trg->c = riff_get_chunk_size(EEG->evt) / 12;
+    } else {
+      EEG->trg->c = riff64_get_chunk_size(EEG->evt64) / 12;
+    }
     EEG->trg->v = (trgentry_t *)
       v_malloc((size_t) EEG->trg->c * sizeof(trgentry_t), "trgv");
     EEG->trg->cmax = EEG->trg->c;
@@ -975,8 +1011,13 @@ int read_epoch_chunk(eeg_t *EEG, storage_t *store)
 {
   slen_t epoch;
 
-  RET_ON_RIFFERROR(riff_list_open(EEG->f, &store->ch_toplevel, store->fourcc, EEG->cnt), CNTERR_DATA);
-  RET_ON_RIFFERROR(riff_open(EEG->f, &store->ch_ep, FOURCC_ep, store->ch_toplevel), CNTERR_DATA);
+  if(EEG->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_list_open(EEG->f, &store->ch_toplevel, store->fourcc, EEG->cnt), CNTERR_DATA);
+    RET_ON_RIFFERROR(riff_open(EEG->f, &store->ch_ep, FOURCC_ep, store->ch_toplevel), CNTERR_DATA);
+  } else {
+    RET_ON_RIFFERROR(riff64_list_open(EEG->f, &store->ch64_toplevel, store->fourcc, EEG->cnt64), CNTERR_DATA);
+    RET_ON_RIFFERROR(riff64_open(EEG->f, &store->ch64_ep, FOURCC_ep, store->ch64_toplevel), CNTERR_DATA);
+  }
   read_s32(EEG->f, &store->epochs.epochl);
   store->epochs.epochc = store->ch_ep.size / 4 - 1;
   if (store->epochs.epochc <= 0 || store->epochs.epochl <= 0)
@@ -1013,8 +1054,13 @@ int read_chanseq_chunk(eeg_t *EEG, storage_t *store, int expected_length)
 {
   int chanin, compchan;
 
-  RET_ON_RIFFERROR(riff_list_open(EEG->f, &store->ch_toplevel, store->fourcc, EEG->cnt), CNTERR_DATA);
-  RET_ON_RIFFERROR(riff_open(EEG->f, &store->ch_chan, FOURCC_chan, store->ch_toplevel), CNTERR_DATA);
+  if(EEG->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_list_open(EEG->f, &store->ch_toplevel, store->fourcc, EEG->cnt), CNTERR_DATA);
+    RET_ON_RIFFERROR(riff_open(EEG->f, &store->ch_chan, FOURCC_chan, store->ch_toplevel), CNTERR_DATA);
+  } else {
+    RET_ON_RIFFERROR(riff64_list_open(EEG->f, &store->ch64_toplevel, store->fourcc, EEG->cnt64), CNTERR_DATA);
+    RET_ON_RIFFERROR(riff64_open(EEG->f, &store->ch64_chan, FOURCC_chan, store->ch64_toplevel), CNTERR_DATA);
+  }
   if (store->ch_chan.size != expected_length * sizeof(short))
     return CNTERR_DATA;
   store->chanseq = (short *) v_malloc(expected_length * sizeof(short), "tf_chanseq");
@@ -1027,9 +1073,7 @@ int read_chanseq_chunk(eeg_t *EEG, storage_t *store, int expected_length)
 
 }
 
-
-int cntopen_RAW3(eeg_t *EEG)
-{
+int _cntopen_raw3(eeg_t *EEG) {
   int i;
   FILE *f = EEG->f;
   fourcc_t formtype;
@@ -1037,8 +1081,6 @@ int cntopen_RAW3(eeg_t *EEG)
 
   /* Open the CNT file, and check if it really is a valid CNT file */
   RET_ON_RIFFERROR(riff_form_open(f, &EEG->cnt, &formtype), CNTERR_DATA);
-  if (FOURCC_CNT != formtype)
-    return CNTERR_DATA;
   RET_ON_RIFFERROR(riff_open(f, &dummychunk, FOURCC_eeph, EEG->cnt), CNTERR_DATA);
 
   EEG->mode = CNT_RIFF;
@@ -1076,6 +1118,69 @@ int cntopen_RAW3(eeg_t *EEG)
   return CNTERR_NONE;
 }
 
+int _cntopen_raw3_64(eeg_t *EEG) {
+  int i;
+  FILE *f = EEG->f;
+  fourcc_t formtype;
+  chunk64_t dummychunk;
+
+  /* Open the CNT file, and check if it really is a valid CNT file */
+  RET_ON_RIFFERROR(riff64_form_open(f, &EEG->cnt64, &formtype), CNTERR_DATA);
+  RET_ON_RIFFERROR(riff64_open(f, &dummychunk, FOURCC_eeph, EEG->cnt64), CNTERR_DATA);
+
+  EEG->mode = CNTX_RIFF;
+
+  /* There should always be an EEP header */
+  RET_ON_RIFFERROR(riff64_open(f, &EEG->eeph64, FOURCC_eeph, EEG->cnt64), CNTERR_DATA);
+  if (gethead_RAW3(EEG)) {
+    return CNTERR_FILE;
+  }
+  // The file contains Time/Freq data, so there MUST be a Time Freq. Header */
+  if (RIFFERR_NONE == riff64_list_open(f, &dummychunk, FOURCC_tfd, EEG->cnt64)) {
+/* MARKER */ fprintf(stderr, "unsupported time-frequency data: %s(%i)\n", __FILE__, __LINE__);
+  }
+
+  /* Check major file version (if it is larger then the library version,
+    we can't read this file) */
+  if (EEG->eep_header.fileversion_major > CNTVERSION_MAJOR)
+    return CNTERR_DATA;
+
+  /* read trigger table (event list) */
+  RET_ON_CNTERROR(read_trigger_chunk(EEG));
+
+  /* Read recording info - if it's there */
+  EEG->recording_info = (record_info_t*) malloc (sizeof(record_info_t));
+  if (NULL != EEG->recording_info)
+      if (CNTERR_NONE != read_recinfo_chunk(EEG, EEG->recording_info))
+        v_free(EEG->recording_info);
+
+  for (i = 0; i < NUM_DATATYPES; i++)
+    init_data_store(EEG, (eep_datatype_e) i);
+
+  return CNTERR_NONE;
+}
+
+int cntopen_RAW3(eeg_t *EEG) {
+  fourcc_t formtype;
+
+  fseek(EEG->f, 8, SEEK_SET);
+  fread(&formtype, 4, 1, EEG->f);
+  if(formtype==FOURCC_CNT) {
+/* MARKER */ fprintf(stderr, "%s(%i)\n", __FILE__, __LINE__);
+    return _cntopen_raw3(EEG);
+  }
+
+  fseek(EEG->f, 12, SEEK_SET);
+  fread(&formtype, 4, 1, EEG->f);
+  if(formtype==FOURCC_CNTX) {
+/* MARKER */ fprintf(stderr, "%s(%i)\n", __FILE__, __LINE__);
+    return _cntopen_raw3_64(EEG);
+  }
+
+/* MARKER */ fprintf(stderr, "%s(%i)\n", __FILE__, __LINE__);
+  return CNTERR_DATA;
+}
+
 /* derive a new eeg structure from opened source ------------------------- */
 
 eeg_t *eep_init_from_copy(eeg_t *src)
@@ -1108,7 +1213,7 @@ eeg_t *eep_init_from_copy(eeg_t *src)
   }
 
   /* copy compression stuff */
-  if (dst->mode == CNT_RIFF && src->store[DATATYPE_TIMEFREQ].initialized)
+  if ( (dst->mode == CNT_RIFF || dst->mode == CNTX_RIFF) && src->store[DATATYPE_TIMEFREQ].initialized)
   {
     /*for (i = 0; i < NUM_DATATYPES; i++)
     {
@@ -1177,16 +1282,7 @@ eeg_t *eep_init_from_copy(eeg_t *src)
 }
 
 /* create a output cnt file according to the initialized(!) dst eeg_t ---- */
-
-int eep_create_file_EEP20(eeg_t *dst, eeg_t *src, unsigned long delmask);
-
-int eep_create_file(eeg_t *dst, const char *fname, FILE *f,
-           eeg_t *src, unsigned long delmask, const char *registry)
-{
-  #ifdef LIBEEP_HAVE_EEPCMD
-  // initialized in eepcmd::InitClassArg()
-  // extern char* eep_module_cmdline;
-  #endif
+int eep_create_file(eeg_t *dst, const char *fname, FILE *f, eeg_t *src, unsigned long delmask, const char *registry) {
   long forgetmask = 0;
 
   /* register file info */
@@ -1197,9 +1293,6 @@ int eep_create_file(eeg_t *dst, const char *fname, FILE *f,
 
   /* extend history */
   eep_append_history(dst, registry);
-  #ifdef LIBEEP_HAVE_EEPCMD
-  // eep_append_history(dst, eep_module_cmdline);
-  #endif
 
   /* initiate the dest file riff tree */
   RET_ON_RIFFERROR(riff_form_new(f, &dst->cnt, FOURCC_CNT), CNTERR_FILE);
@@ -1219,6 +1312,28 @@ int eep_create_file(eeg_t *dst, const char *fname, FILE *f,
   /*for (i = 0; i < NUM_DATATYPES; i++)
     if (dst->store[i].initialized)
       return eep_prepare_to_write(dst, i);*/
+
+  return CNTERR_NONE;
+}
+
+int eep_create_file64(eeg_t *dst, const char *fname, FILE *f, const char *registry) {
+  long forgetmask = 0;
+
+  /* register file info */
+  dst->mode = CNTX_RIFF;
+  dst->f = f;
+  dst->fname = (char *) v_malloc(strlen(fname) + 1,"fname");
+  strcpy(dst->fname, fname);
+
+  /* extend history */
+  eep_append_history(dst, registry);
+
+  /* initiate the dest file riff tree */
+  RET_ON_RIFFERROR(riff64_form_new(f, &dst->cnt64, FOURCC_CNTX), CNTERR_FILE);
+
+  /* Write the Recording info chunk, if one is specified */
+  if (NULL != dst->recording_info)
+    RET_ON_CNTERROR(write_recinfo_chunk(dst, dst->recording_info));
 
   return CNTERR_NONE;
 }
@@ -1255,13 +1370,24 @@ int write_chanseq_chunk(eeg_t *cnt, storage_t* store, int num_chans)
 {
   int chan;
   char outchan[2];
-  RET_ON_RIFFERROR(riff_new(cnt->f, &store->ch_chan, FOURCC_chan, &store->ch_toplevel), CNTERR_FILE);
-  for (chan = 0; chan < num_chans; chan++)
-  {
-    swrite_s16(outchan, store->chanseq[chan]);
-    RET_ON_RIFFERROR(riff_write(outchan, 2, 1, cnt->f, &store->ch_chan), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_new(cnt->f, &store->ch_chan, FOURCC_chan, &store->ch_toplevel), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_new(cnt->f, &store->ch64_chan, FOURCC_chan, &store->ch64_toplevel), CNTERR_FILE);
   }
-  RET_ON_RIFFERROR(riff_close(cnt->f, store->ch_chan), CNTERR_FILE);
+  for (chan = 0; chan < num_chans; chan++) {
+    swrite_s16(outchan, store->chanseq[chan]);
+    if(cnt->mode==CNT_RIFF) {
+      RET_ON_RIFFERROR(riff_write(outchan, 2, 1, cnt->f, &store->ch_chan), CNTERR_FILE);
+    } else {
+      RET_ON_RIFFERROR(riff64_write(outchan, 2, 1, cnt->f, &store->ch64_chan), CNTERR_FILE);
+    }
+  }
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_close(cnt->f, store->ch_chan), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_close(cnt->f, store->ch64_chan), CNTERR_FILE);
+  }
   return CNTERR_NONE;
 }
 
@@ -1270,15 +1396,30 @@ int write_epoch_chunk(eeg_t *cnt, storage_t *store)
   char outepoch[4];
   long epoch;
 
-  RET_ON_RIFFERROR(riff_new(cnt->f, &store->ch_ep, FOURCC_ep, &store->ch_toplevel), CNTERR_FILE);
-  swrite_s32(outepoch, store->epochs.epochl);
-  RET_ON_RIFFERROR(riff_write(outepoch, 4, 1, cnt->f, &store->ch_ep), CNTERR_FILE);
-  for (epoch = 0; epoch < store->epochs.epochc; epoch++)
-  {
-    swrite_s32(outepoch, store->epochs.epochv[epoch]);
-    RET_ON_RIFFERROR(riff_write(outepoch, 4, 1, cnt->f, &store->ch_ep), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_new(cnt->f, &store->ch_ep, FOURCC_ep, &store->ch_toplevel), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_new(cnt->f, &store->ch64_ep, FOURCC_ep, &store->ch64_toplevel), CNTERR_FILE);
   }
-  RET_ON_RIFFERROR(riff_close(cnt->f, store->ch_ep), CNTERR_FILE);
+  swrite_s32(outepoch, store->epochs.epochl);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_write(outepoch, 4, 1, cnt->f, &store->ch_ep), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_write(outepoch, 4, 1, cnt->f, &store->ch64_ep), CNTERR_FILE);
+  }
+  for (epoch = 0; epoch < store->epochs.epochc; epoch++) {
+    swrite_s32(outepoch, store->epochs.epochv[epoch]);
+    if(cnt->mode==CNT_RIFF) {
+      RET_ON_RIFFERROR(riff_write(outepoch, 4, 1, cnt->f, &store->ch_ep), CNTERR_FILE);
+    } else {
+      RET_ON_RIFFERROR(riff64_write(outepoch, 4, 1, cnt->f, &store->ch64_ep), CNTERR_FILE);
+    }
+  }
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_close(cnt->f, store->ch_ep), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_close(cnt->f, store->ch64_ep), CNTERR_FILE);
+  }
   return CNTERR_NONE;
 }
 
@@ -1287,17 +1428,29 @@ int write_eeph_chunk(eeg_t *cnt)
   var_string textbuf;
   int retcode;
   /* Create the EEPH chunk */
-  RET_ON_RIFFERROR(riff_new(cnt->f, &cnt->eeph, FOURCC_eeph, &cnt->cnt), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_new(cnt->f, &cnt->eeph, FOURCC_eeph, &cnt->cnt), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_new(cnt->f, &cnt->eeph64, FOURCC_eeph, &cnt->cnt64), CNTERR_FILE);
+  }
   textbuf = varstr_construct(); /* Create header string */
   if (NULL == textbuf)
     return CNTERR_MEM;
   writehead_RAW3(cnt, textbuf); /* Fill header string */
-  retcode = riff_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->eeph); /* Write header to chunk */
+  if(cnt->mode==CNT_RIFF) {
+    retcode = riff_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->eeph); /* Write header to chunk */
+  } else {
+    retcode = riff64_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->eeph64); /* Write header to chunk */
+  }
   varstr_destruct(textbuf); /* Destroy header string */
   if (RIFFERR_NONE != retcode) /* Return on writing error */
   return CNTERR_FILE;
 
-  RET_ON_RIFFERROR(riff_close(cnt->f, cnt->eeph), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_close(cnt->f, cnt->eeph), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_close(cnt->f, cnt->eeph64), CNTERR_FILE);
+  }
   return CNTERR_NONE;
 }
 
@@ -1307,14 +1460,26 @@ int write_trigger_chunk(eeg_t *cnt)
   long i;
   char out[12]; /* 4 byte sample nr + 8 char trg code */
 
-  RET_ON_RIFFERROR(riff_new(cnt->f, &cnt->evt, FOURCC_evt, &cnt->cnt), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_new(cnt->f, &cnt->evt, FOURCC_evt, &cnt->cnt), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_new(cnt->f, &cnt->evt64, FOURCC_evt, &cnt->cnt64), CNTERR_FILE);
+  }
   for (i = 0; i < trg->c; i++)
   {
     swrite_s32(out, trg->v[i].sample);
     strncpy(&out[4], trg->v[i].code, 8);
-    RET_ON_RIFFERROR(riff_write(out, 12, 1, cnt->f, &cnt->evt), CNTERR_FILE);
+    if(cnt->mode==CNT_RIFF) {
+      RET_ON_RIFFERROR(riff_write(out, 12, 1, cnt->f, &cnt->evt), CNTERR_FILE);
+    } else {
+      RET_ON_RIFFERROR(riff64_write(out, 12, 1, cnt->f, &cnt->evt64), CNTERR_FILE);
+    }
   }
-  RET_ON_RIFFERROR(riff_close(cnt->f, cnt->evt), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_close(cnt->f, cnt->evt), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_close(cnt->f, cnt->evt64), CNTERR_FILE);
+  }
   return CNTERR_NONE;
 }
 
@@ -1323,17 +1488,29 @@ int write_tfh_chunk(eeg_t *cnt)
   var_string textbuf;
   int retcode;
   /* Create the TFH chunk */
-  RET_ON_RIFFERROR(riff_new(cnt->f, &cnt->tfh, FOURCC_tfh, &cnt->cnt), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_new(cnt->f, &cnt->tfh, FOURCC_tfh, &cnt->cnt), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_new(cnt->f, &cnt->tfh64, FOURCC_tfh, &cnt->cnt64), CNTERR_FILE);
+  }
   textbuf = varstr_construct(); /* Create header string */
   if (NULL == textbuf)
     return CNTERR_MEM;
-  writehead_TFH(&cnt->tf_header, textbuf); /* Fill header string */
-  retcode = riff_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->tfh); /* Write header to chunk */
+  if(cnt->mode==CNT_RIFF) {
+    writehead_TFH(&cnt->tf_header, textbuf); /* Fill header string */
+    retcode = riff_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->tfh); /* Write header to chunk */
+  } else {
+/* MARKER */ fprintf(stderr, "unsupported time-frequency data: %s(%i)\n", __FILE__, __LINE__);
+  }
   varstr_destruct(textbuf); /* Destroy header string */
   if (RIFFERR_NONE != retcode) /* Return on writing error */
   return CNTERR_FILE;
 
-  RET_ON_RIFFERROR(riff_close(cnt->f, cnt->tfh), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_close(cnt->f, cnt->tfh), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_close(cnt->f, cnt->tfh64), CNTERR_FILE);
+  }
   return CNTERR_NONE;
 }
 
@@ -1342,7 +1519,11 @@ int write_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo)
   var_string textbuf;
   int retcode;
   char line[512];
-  RET_ON_RIFFERROR(riff_new(cnt->f, &cnt->info, FOURCC_info, &cnt->cnt), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_new(cnt->f, &cnt->info, FOURCC_info, &cnt->cnt), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_new(cnt->f, &cnt->info64, FOURCC_info, &cnt->cnt64), CNTERR_FILE);
+  }
 
   textbuf = varstr_construct();
   if (NULL == textbuf)
@@ -1388,12 +1569,20 @@ int write_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo)
   snprintf(line, 512, "[Comment]\n%s\n", recinfo->m_szComment);
   varstr_append(textbuf, line);
 
-  retcode = riff_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->info);
+  if(cnt->mode==CNT_RIFF) {
+    retcode = riff_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->info);
+  } else {
+    retcode = riff64_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->info64);
+  }
   varstr_destruct(textbuf);
   if (RIFFERR_NONE != retcode) /* Return on writing error */
     return CNTERR_FILE;
 
-  RET_ON_RIFFERROR(riff_close(cnt->f, cnt->info), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_close(cnt->f, cnt->info), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_close(cnt->f, cnt->info64), CNTERR_FILE);
+  }
   return CNTERR_NONE;
 }
 
@@ -1401,7 +1590,11 @@ int read_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo) {
   int this_chunk_contains_binary_data=1;
   long file_position;
 
-  RET_ON_RIFFERROR(riff_open(cnt->f, &cnt->info, FOURCC_info, cnt->cnt), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_open(cnt->f, &cnt->info, FOURCC_info, cnt->cnt), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_open(cnt->f, &cnt->info64, FOURCC_info, cnt->cnt64), CNTERR_FILE);
+  }
 
   memset((void*)recinfo, 0, sizeof(record_info_t));
 
@@ -1475,7 +1668,11 @@ int read_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo) {
     fseek(cnt->f, file_position, SEEK_SET);
     // Unfortunately, there exist CNT files without version numbers, which might have
     // recording info in binary format. We only read the 'start_time' here (first few bytes);
-    RET_ON_RIFFERROR(riff_read((char *) recinfo, sizeof(double), 2, cnt->f, cnt->info), CNTERR_FILE);
+    if(cnt->mode==CNT_RIFF) {
+      RET_ON_RIFFERROR(riff_read((char *) recinfo, sizeof(double), 2, cnt->f, cnt->info), CNTERR_FILE);
+    } else {
+      RET_ON_RIFFERROR(riff64_read((char *) recinfo, sizeof(double), 2, cnt->f, cnt->info64), CNTERR_FILE);
+    }
     recinfo->m_startDate=eep_byteswap_8_double_safe(recinfo->m_startDate);
     recinfo->m_startFraction=eep_byteswap_8_double_safe(recinfo->m_startFraction);
     // The other fields will stay empty
@@ -1549,6 +1746,7 @@ int eep_finish_file(eeg_t *EEG)
       break;
 
     case CNT_RIFF:
+    case CNTX_RIFF:
       if (!EEG->finalized)
         for (i=0; i < NUM_DATATYPES; i++)
           if (EEG->store[i].data.writeflag)
@@ -1610,6 +1808,7 @@ int eep_seek(eeg_t *EEG, eep_datatype_e type, slen_t s, int relative)
       break;
 
     case CNT_RIFF:
+    case CNTX_RIFF:
       r = eep_seek_impl(EEG, type, s, relative);
       break;
 
@@ -1622,7 +1821,8 @@ int eep_seek(eeg_t *EEG, eep_datatype_e type, slen_t s, int relative)
 
 int init_data_store(eeg_t *cnt, eep_datatype_e type)
 {
-  chunk_t dummychunk;
+  chunk_t   dummychunk;
+  chunk64_t dummychunk64;
   int chanseq_len = 0;
   storage_t *store = &cnt->store[type];
 
@@ -1631,7 +1831,11 @@ int init_data_store(eeg_t *cnt, eep_datatype_e type)
     chanseq_len *= 2 * cnt->tf_header.componentc;
 
   /* Open top-level chunk */
-  RET_ON_RIFFERROR(riff_list_open(cnt->f, &dummychunk, store->fourcc, cnt->cnt), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_list_open(cnt->f, &dummychunk, store->fourcc, cnt->cnt), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_list_open(cnt->f, &dummychunk64, store->fourcc, cnt->cnt64), CNTERR_FILE);
+  }
 
   /* read chunk channel sequence */
   RET_ON_CNTERROR(read_chanseq_chunk(cnt, store, chanseq_len));
@@ -1668,7 +1872,11 @@ int init_data_store(eeg_t *cnt, eep_datatype_e type)
   }
 
   /* open data area and fill first buffer */
-  RET_ON_RIFFERROR(riff_open(cnt->f, &store->ch_data, FOURCC_data, store->ch_toplevel), CNTERR_DATA);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_open(cnt->f, &store->ch_data, FOURCC_data, store->ch_toplevel), CNTERR_DATA);
+  } else {
+    RET_ON_RIFFERROR(riff64_open(cnt->f, &store->ch64_data, FOURCC_data, store->ch64_toplevel), CNTERR_DATA);
+  }
 
 #ifdef CNT_MMAP
   RET_ON_CNTERROR(mmap_data_chunk(cnt->f, store));
@@ -1735,6 +1943,7 @@ int eep_read_sraw (eeg_t *cnt, eep_datatype_e type, sraw_t *muxbuf, slen_t n)
       return CNTERR_NONE;
 
     case CNT_RIFF:
+    case CNTX_RIFF:
       if (type != DATATYPE_EEG) {
         return CNTERR_BADREQ; /* All other types have float data */
       }
@@ -1802,6 +2011,7 @@ int eep_write_sraw (eeg_t *cnt, sraw_t *muxbuf, slen_t n)
       return CNTERR_BADREQ; /* Use eep_write_sraw_EEP20 instead */
 
     case CNT_RIFF:
+    case CNTX_RIFF:
       if ((DATATYPE_EEG != cnt->current_datachunk) || (!cnt->store[cnt->current_datachunk].initialized)) {
         return CNTERR_BADREQ; /* No RAW3 data or chunk not initialized */
       }
@@ -1852,7 +2062,7 @@ void eep_set_period(eeg_t *cnt, double period)
   cnt->eep_header.period = period;
 
   /* raw3 epoch length */
-  if (cnt->mode == CNT_RIFF) {
+  if (cnt->mode == CNT_RIFF || cnt->mode == CNTX_RIFF) {
     cnt->store[DATATYPE_EEG].epochs.epochl = MIN(eep_get_rate(cnt), 100);
   }
 
@@ -2067,9 +2277,17 @@ int eep_switch_to_write(eeg_t *cnt, eep_datatype_e type)
     chanseq_len *= 2 * cnt->tf_header.componentc;
   if (DATATYPE_UNDEFINED != cnt->current_datachunk)
     RET_ON_CNTERROR(close_data_chunk(cnt, 0, &cnt->store[cnt->current_datachunk]));
-  RET_ON_RIFFERROR(riff_list_new(cnt->f, &store->ch_toplevel, store->fourcc, &cnt->cnt), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_list_new(cnt->f, &store->ch_toplevel, store->fourcc, &cnt->cnt), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_list_new(cnt->f, &store->ch64_toplevel, store->fourcc, &cnt->cnt64), CNTERR_FILE);
+  }
   RET_ON_CNTERROR(write_chanseq_chunk(cnt, store, chanseq_len));
-  RET_ON_RIFFERROR(riff_new(cnt->f, &store->ch_data, FOURCC_data, &store->ch_toplevel), CNTERR_FILE);
+  if(cnt->mode==CNT_RIFF) {
+    RET_ON_RIFFERROR(riff_new(cnt->f, &store->ch_data, FOURCC_data, &store->ch_toplevel), CNTERR_FILE);
+  } else {
+    RET_ON_RIFFERROR(riff64_new(cnt->f, &store->ch64_data, FOURCC_data, &store->ch64_toplevel), CNTERR_FILE);
+  }
   store->data.writeflag = 1;
 
   cnt->current_datachunk = type;
@@ -2084,7 +2302,10 @@ int eep_prepare_to_write(eeg_t *cnt, eep_datatype_e type, slen_t epochl, short *
   if (type == DATATYPE_TIMEFREQ)
     seq_len *= cnt->tf_header.componentc;
 
-  cnt->mode = CNT_RIFF;
+/*
+  fprintf(stderr, "preparing to write with mode == %i\n", cnt->mode);
+  cnt->mode = CNT_RIFF; // why is this needed?
+*/
 
   eep_clear_epochs(cnt, store);
   store->epochs.epochl = epochl;
@@ -2373,7 +2594,7 @@ int decrease_chunksize(FILE* f, chunk_t* chunk, long to_subtract)
   {
       x->size -= to_subtract;
       fseek(f, x->start, SEEK_SET);
-      RET_ON_RIFFERROR(put_chunk(f, *x), CNTERR_FILE);
+      RET_ON_RIFFERROR(riff_put_chunk(f, *x), CNTERR_FILE);
     x = x->parent;
   }
   fseek(f, filepos, SEEK_SET);
@@ -2385,7 +2606,11 @@ int close_data_chunk(eeg_t *cnt, int finalize, storage_t *store /*, chunk_mode_e
 {
     if (finalize)
       RET_ON_CNTERROR(putepoch_impl(cnt));
-    RET_ON_RIFFERROR(riff_close(cnt->f, store->ch_data), CNTERR_FILE);
+    if(cnt->mode==CNT_RIFF) {
+      RET_ON_RIFFERROR(riff_close(cnt->f, store->ch_data), CNTERR_FILE);
+    } else {
+      RET_ON_RIFFERROR(riff64_close(cnt->f, store->ch64_data), CNTERR_FILE);
+    }
     /* write epochtable */
     RET_ON_CNTERROR(write_epoch_chunk(cnt, store));
 
@@ -3346,10 +3571,11 @@ int saveold_EEP20(eeg_t *dst, eeg_t *src, unsigned long delmask)
       return CNTERR_NONE;
 
     case CNT_RIFF:
+      // TODO check for 64-bit riff version
       while (!(s = riff_fetch(src->f, &srcchunk, &listid, src->cnt, child))) {
 
         /* forget all except of nsh if not masked */
-        id = get_chunk_id(srcchunk);
+        id = riff_get_chunk_id(srcchunk);
         forget = (id != FOURCC_nsh || delmask & FORGET_nsh);
 
         if (!forget) {
@@ -3407,10 +3633,12 @@ int saveold_RAW3(eeg_t *dst, eeg_t *src, unsigned long delmask)
 
     /* raw3 src? - copy all (unknown) chunks which are not in delmask */
     case CNT_RIFF:
+/* MARKER */ fprintf(stderr, "%s(%i)\n", __FILE__, __LINE__);
+      // TODO check for 64-bit riff version 
       while (!(s = riff_fetch(src->f, &srcchunk, &listid, src->cnt, child))) {
 
         /* found a chunk, forget it ? */
-        id = get_chunk_id(srcchunk);
+        id = riff_get_chunk_id(srcchunk);
         forget = ((id == FOURCC_info) && (delmask & FORGET_info))
               || ((id == FOURCC_nsh)  && (delmask & FORGET_nsh))
               || ((id == FOURCC_evt)  && (delmask & FORGET_evt))

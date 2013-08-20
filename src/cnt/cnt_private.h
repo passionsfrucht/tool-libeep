@@ -30,6 +30,7 @@
 #include <cnt/cnt.h>
 #include <cnt/raw3.h>
 #include <cnt/riff.h>
+#include <cnt/riff64.h>
 #include <eep/var_string.h>
 #include <eep/val.h>
 
@@ -126,6 +127,10 @@ typedef struct {
   chunk_t ch_chan;     /* Channel sequence subchunk of toplevel chunk */
   chunk_t ch_data;     /* (Compressed) data subchunk of toplevel chunk */
   chunk_t ch_ep;       /* Epochs subchunk of toplevel chunk */
+  chunk64_t ch64_toplevel;
+  chunk64_t ch64_chan;
+  chunk64_t ch64_data;
+  chunk64_t ch64_ep;
 
   cnt_epoch_t epochs; /* Struct holding the epoch data for this TL chunk */
   cnt_data_t data;    /* Struct representing data from the 'data' chunk */
@@ -173,6 +178,11 @@ struct eeg_dummy_t {
   chunk_t tfh;  /* Time/frequency Header chunk */
   chunk_t evt;  /* Event-list chunk */
   chunk_t info; /* Recording-information chunk */
+  chunk64_t cnt64;
+  chunk64_t eeph64;
+  chunk64_t tfh64;
+  chunk64_t evt64;
+  chunk64_t info64;
 
   /*chunk_mode_e active_chunk_mode;*/ /* type of data reading/writing */
   eep_datatype_e current_datachunk; /* Chunk we're currently writing */

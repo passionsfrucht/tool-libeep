@@ -9,13 +9,14 @@ libeep_headers = eep/eepmisc.h \
 libavr_headers = avr/avr.h \
                  avr/avrcfg.h
 libcnt_headers = cnt/cnt.h \
-                 cnt/cntutils.h \
                  cnt/cnt_private.h \
+                 cnt/cntutils.h \
                  cnt/cnt_version.h \
                  cnt/raw3.h \
-                 cnt/trg.h \
                  cnt/rej.h \
-                 cnt/riff.h
+                 cnt/riff64.h \
+                 cnt/riff.h \
+                 cnt/trg.h
 libeep_sources = libeep/eepmisc.c \
                  libeep/eepraw.c \
                  libeep/eepmem.c \
@@ -27,10 +28,11 @@ libavr_sources = libavr/avr.c \
                  libavr/avrcfg.c
 libcnt_sources = libcnt/cnt.c \
                  libcnt/cntutils.c \
-                 libcnt/trg.c \
                  libcnt/raw3.c \
                  libcnt/rej.c \
-                 libcnt/riff.c
+                 libcnt/riff64.c \
+                 libcnt/riff.c \
+                 libcnt/trg.c
 
 libeep_includedir=$(includedir)/$(PACKAGE)-$(LIBEEP_VERSION)
 nobase_libeep_include_HEADERS = ${libeep_headers} ${libavr_headers} ${libcnt_headers}

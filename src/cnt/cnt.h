@@ -54,6 +54,7 @@
 /* #define CNT_TF     5 */ /* Time/frequency mode (*no* EEG (RAW3) data in file!) */
 /* #define CNT_TFRAW3 6 */ /* Both RAW3 + Time Frequency mode (e.g. both EEG + FFT/wavelet data) */
 /* #define CNT_RAWF   7 */ /* AVR files saved in RIFF format just like CNT files (new style AVR's) */
+#define CNTX_RIFF  8 /* 64-bit RIFF data type */
 
 
 /*
@@ -80,6 +81,7 @@
                                    such as reading data from an integer chunk using a float function */
 
 #define FOURCC_CNT  FOURCC('C', 'N', 'T', ' ')
+#define FOURCC_CNTX FOURCC('C', 'N', 'T', 'X')
 #define FOURCC_nsh  FOURCC('n', 's', 'h', ' ')
 
 typedef enum
@@ -200,8 +202,8 @@ eeg_t *eep_init_from_copy(eeg_t *src);
 #define FORGET_stdd 0x00000100
 #define FORGET_imp  0x00000200
 
-int eep_create_file(eeg_t *dst, const char *fname, FILE *f,
-               eeg_t *src, unsigned long delmask, const char *registry);
+int eep_create_file(eeg_t *dst, const char *fname, FILE *f, eeg_t *src, unsigned long delmask, const char *registry);
+int eep_create_file64(eeg_t *dst, const char *fname, FILE *f, const char *registry);
 
 
 /*

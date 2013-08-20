@@ -29,6 +29,7 @@
 #define EEPRAW_H
 #define RCS_EEPRAW_H "$RCSfile: eepraw.h,v $ $Revision: 2415 $"
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include <eep/eepmisc.h>
@@ -74,6 +75,8 @@
   to read/write one item from/to file, (in several binary headers)
   return: 0 on error, 1 on success (fread/fwrite return)
 */
+int read_s64 (FILE *f, int64_t *v);
+int read_u64 (FILE *f, uint64_t *v);
 int read_s32 (FILE *f, int *v);
 int read_u32 (FILE *f, unsigned int *v);
 int read_s16 (FILE *f, int *v);
@@ -81,6 +84,8 @@ int read_u16 (FILE *f, int *v);
 int read_f32 (FILE *f, float *v);
 int read_f64 (FILE *f, double *v);
 
+int write_s64  (FILE *f, int64_t v);
+int write_u64  (FILE *f, uint64_t v);
 int write_s32  (FILE *f, int v);
 int write_u32  (FILE *f, unsigned int v);
 int write_s16  (FILE *f, int v);

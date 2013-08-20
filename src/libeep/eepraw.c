@@ -44,26 +44,74 @@ char RCS_eepraw_c[] = "$RCSfile: eepraw.c,v $ $Revision: 2415 $";
         ((unsigned short int)((((unsigned short int)(x) & 0x00ff) << 8) | \
                               (((unsigned short int)(x) & 0xff00) >> 8)))
 
-int read_s32  (FILE *f, int *v)
-{
+int _read_64(FILE *f, char *v) {
 #if EEP_BYTE_ORDER == EEP_LITTLE_ENDIAN
-  return fread((char *) v, 4, 1, f);
+  return fread(v, 8, 1, f);
 #else
-  if (!fread((char *) v, 4, 1, f)) return 0;
-  *v = SWAP32(*v);
+  register char c;
+  if (!fread(v, 8, 1, f)) return 0;
+  c = v[0]; v[0] = v[7]; v[7] = c;
+  c = v[1]; v[1] = v[6]; v[6] = c;
+  c = v[2]; v[2] = v[5]; v[5] = c;
+  c = v[3]; v[3] = v[4]; v[4] = c;
   return 1;
 #endif
 }
 
-int read_u32  (FILE *f, unsigned int *v)
-{
+int _read_32(FILE *f, char *v) {
 #if EEP_BYTE_ORDER == EEP_LITTLE_ENDIAN
-  return fread((char *) v, 4, 1, f);
+  return fread(v, 4, 1, f);
 #else
-  if (!fread((char *) v, 4, 1, f)) return 0;
-  *v = SWAP32(*v);
+  register char c;
+  if (!fread(v, 4, 1, f)) return 0;
+  c = v[0]; v[0] = v[3]; v[3] = c;
+  c = v[1]; v[1] = v[2]; v[2] = c;
   return 1;
 #endif
+}
+
+int _read_16(FILE *f, char *v) {
+#if EEP_BYTE_ORDER == EEP_LITTLE_ENDIAN
+  return fread(v, 2, 1, f);
+#else
+  register char c;
+  if (!fread(v, 2, 1, f)) return 0;
+  c = v[0]; v[0] = v[1]; v[1] = c;
+  return 1;
+#endif
+}
+
+int _write_64(FILE *f, const char *v) {
+#if EEP_BYTE_ORDER == EEP_LITTLE_ENDIAN
+  const char *tmp=v;
+#else
+  char tmp[8];
+  tmp[0]=v[7];
+  tmp[1]=v[6];
+  tmp[2]=v[5];
+  tmp[3]=v[4];
+  tmp[4]=v[3];
+  tmp[5]=v[2];
+  tmp[6]=v[1];
+  tmp[7]=v[0];
+#endif
+  return fwrite(tmp, 8, 1, f);
+}
+
+int read_u64(FILE *f, uint64_t *v) {
+  return _read_64(f, (char *)v);
+}
+
+int write_u64(FILE *f, uint64_t v) {
+  return _write_64(f, (char *)&v);
+}
+
+int read_s32(FILE *f, int *v) {
+  return _read_32(f, (char *)v);
+}
+
+int read_u32(FILE *f, unsigned int *v) {
+  return _read_32(f, (char *)v);
 }
 
 void swrite_s32(char *s, int v)
@@ -132,33 +180,8 @@ int write_s16(FILE *f, int v)
   return fwrite((char *) out, 2, 1, f);
 }
 
-/*
-void c2dos_single(char *s, float v)
-{
-  char *x = (char *) &v;
-#if EEP_BYTE_ORDER == EEP_LITTLE_ENDIAN
-  v = SWAP32(v);
-#endif
-  s[0] = x[0];
-  s[1] = x[1];
-  s[2] = x[2];
-  s[3] = x[3];
-}
-*/
-
-
-int read_f32 (FILE *f, float *v)
-{
-#if EEP_FLOAT_ORDER == EEP_LITTLE_ENDIAN
-  return fread((char *) v, 4, 1, f);
-#else
-  register char *tmp = (char *) v;
-  register char c;
-  if (!fread(tmp, 4, 1, f)) return 0;
-  c = tmp[0]; tmp[0] = tmp[3]; tmp[3] = c;
-  c = tmp[1]; tmp[1] = tmp[2]; tmp[2] = c;
-  return 1;
-#endif
+int read_f32 (FILE *f, float *v) {
+  return _read_32(f, (char *)v);
 }
 
 int write_f32(FILE *f, float v)
@@ -172,20 +195,8 @@ int write_f32(FILE *f, float v)
   return fwrite(tmp, 4, 1, f);
 }
 
-int read_f64(FILE *f, double *v)
-{
-#if EEP_FLOAT_ORDER == EEP_LITTLE_ENDIAN
-  return fread((char *) v, 8, 1, f);
-#else
-  register char *tmp = (char *) v;
-  register char c;
-  if (!fread(tmp, 8, 1, f)) return 0;
-  c = tmp[0]; tmp[0] = tmp[7]; tmp[7] = c;
-  c = tmp[1]; tmp[1] = tmp[6]; tmp[6] = c;
-  c = tmp[2]; tmp[2] = tmp[5]; tmp[5] = c;
-  c = tmp[3]; tmp[3] = tmp[4]; tmp[4] = c;
-  return 1;
-#endif
+int read_f64(FILE *f, double *v) {
+  return _read_64(f, (char *)v);
 }
 
 int write_f64(FILE *f, double v)
@@ -214,8 +225,7 @@ void swrite_f32  (char *s, float v)
 #endif
 }
 
-void sread_f32   (char *s, float *v)
-{
+void sread_f32(char *s, float *v) {
   register char *tmp = (char *) v;
 #if EEP_FLOAT_ORDER == EEP_BIG_ENDIAN
   tmp[0] = s[3];

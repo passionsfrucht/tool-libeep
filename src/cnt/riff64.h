@@ -25,48 +25,27 @@
  *                                                                              *
  *******************************************************************************/
 
-#ifndef RIFF_H
-#define RIFF_H
-#define RCS_RIFF_H "$RCSfile: riff.h,v $ $Revision: 1762 $"
+#ifndef RIFF64_H
+#define RIFF64_H
 
 #include <stdio.h>
+#include <stdint.h>
 
-/* RIFF access return values */
-#define RIFFERR_NONE 0
-#define RIFFERR_FILE 1     /* fread/fwrite failed */
-#define RIFFERR_NOCHUNK 2  /* expected chunk not found */
-#define RIFFERR_TREE 3     /* inconsistencies in riff data */
+#include <cnt/riff.h>
 
-/* 32 bit unsigned type for FOURCC's */
-typedef unsigned int fourcc_t;
-
-/* converts 4 8bit digits to fourcc_t */
-#define FOURCC(a,b,c,d) (  ((fourcc_t) a)       | ((fourcc_t) b <<  8) | \
-                           ((fourcc_t) c) << 16 | ((fourcc_t) d << 24)     )
-
-
-/*
-  chunk information structure,
-  caller need no direct access to its members, but is resposible for unique
-  instances  of chunk_t for all chunks in riff
-*/
-struct chunk {
-  fourcc_t      id;
-  int           start;
-  int           size;
-  struct chunk  *parent;
+struct chunk64 {
+  fourcc_t         id;
+  uint64_t         start;
+  uint64_t         size;
+  struct chunk64 * parent;
 };
-typedef struct chunk chunk_t;
-
-/* the standard FOURCC tags and formats known by the library*/
-#define FOURCC_RIFF FOURCC('R', 'I', 'F', 'F')
-#define FOURCC_LIST FOURCC('L', 'I', 'S', 'T')
+typedef struct chunk64 chunk64_t;
 
 /*
   check 'RIFF' tag, formtype is set on return
   caller is responsible for readable stream
 */
-int riff_form_open(FILE *f, chunk_t *chunk, fourcc_t *formtype);
+int riff64_form_open(FILE *f, chunk64_t *chunk, fourcc_t *formtype);
 
 /*
   scan riff for specified chunk in a valid list or form parent
@@ -74,15 +53,14 @@ int riff_form_open(FILE *f, chunk_t *chunk, fourcc_t *formtype);
   you have to look active for each chunk you want to read (climb
   the tree by subsequent calls to riff_open, riff_list_open)
 */
-int riff_list_open(FILE *f, chunk_t *chunk, fourcc_t listtype, chunk_t parent);
-int riff_open(FILE *f, chunk_t *chunk, fourcc_t id, chunk_t parent);
+int riff64_list_open(FILE *f, chunk64_t *chunk, fourcc_t listtype, chunk64_t parent);
+int riff64_open(FILE *f, chunk64_t *chunk, fourcc_t id, chunk64_t parent);
 
 /*
   unspecific search; returns the riff id (and listid for <LIST>) of a subchunk;
   you can call this until RIFF_NOCHUNK is returned
 */
-int riff_fetch(FILE *f, chunk_t *chunk, fourcc_t *listid,
-               chunk_t parent, int child);
+int riff64_fetch(FILE *f, chunk64_t *chunk, fourcc_t *listid, chunk64_t parent, int child);
 
 /*
   creating new chunks:
@@ -114,19 +92,19 @@ NOTE: It seems riff_new and other functions do not longer position themselves at
       of the file with "fseek(f, 0, SEEK_END)", or it may possible overwrite previous
       chunks. I am not sure why this is done, but there probably is some reason. -- jwiskerke
 */
-int riff_form_new(FILE *f, chunk_t *chunk, fourcc_t formtype);
-int riff_list_new(FILE *f, chunk_t *chunk, fourcc_t listtype, chunk_t *parent);
+int riff64_form_new(FILE *f, chunk64_t *chunk, fourcc_t formtype);
+int riff64_list_new(FILE *f, chunk64_t *chunk, fourcc_t listtype, chunk64_t *parent);
 
-int riff_new(FILE *f, chunk_t *chunk, fourcc_t chunktype, chunk_t *parent);
+int riff64_new(FILE *f, chunk64_t *chunk, fourcc_t chunktype, chunk64_t *parent);
 /*
   write the size of the chunk into file, if dumptree is nonzero the
   parents data are written too,
   last riff_close must set dumptree
   dumptree always if you don't know which one is the last
 */
-int riff_close(FILE *f, chunk_t chunk);
+int riff64_close(FILE *f, chunk64_t chunk);
 
-int riff_put_chunk(FILE *f, chunk_t out);
+int riff64_put_chunk(FILE *f, chunk64_t out);
 
 /*
   random access functions
@@ -136,11 +114,11 @@ int riff_put_chunk(FILE *f, chunk_t out);
   riff_seek works like fseek with "whence" in the chunk data area
   (supported only for read access!)
 */
-int riff_write(const char *buf, size_t size, size_t num_items, FILE *f, chunk_t *chunk);
-int riff_read(char *buf, size_t size, size_t num_items, FILE *f, chunk_t chunk);
-int riff_seek(FILE *f, long offset, int whence, chunk_t chunk);
+int riff64_write(const char *buf, size_t size, size_t num_items, FILE *f, chunk64_t *chunk);
+int riff64_read(char *buf, size_t size, size_t num_items, FILE *f, chunk64_t chunk);
+int riff64_seek(FILE *f, uint64_t offset, int whence, chunk64_t chunk);
 
-long     riff_get_chunk_size(chunk_t chunk);
-fourcc_t riff_get_chunk_id(chunk_t chunk);
+uint64_t riff64_get_chunk_size(chunk64_t chunk);
+fourcc_t riff64_get_chunk_id(chunk64_t chunk);
 
 #endif

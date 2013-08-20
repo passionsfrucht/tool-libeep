@@ -33,7 +33,7 @@
 /* Versioning information:
    4.0 - introduction of file versioning. We start at 4.0 to avoid confusion
          with existing (implicit) version numbers.
-   4.1 - [please fill in your changes here]
+   4.1 - 64-bit chunk sizes for large files
 */
 
 #endif /* ifndef CNT_VERSION_H */

@@ -25,6 +25,8 @@
  *                                                                              *
  *******************************************************************************/
 
+#include <inttypes.h>
+
 #include <cnt/riff64.h>
 #include <eep/eepio.h>
 #include <eep/eepraw.h>
@@ -44,10 +46,11 @@
 
 void
 _riff64_dump_chunk(const chunk64_t *c) {
-  fprintf(stderr, "chunk64:\n");
-  fprintf(stderr, "  id...... %c%c%c%c\n", ((char *)&c->id)[0], ((char *)&c->id)[1], ((char *)&c->id)[2], ((char *)&c->id)[3]);
-  fprintf(stderr, "  start... %i\n", c->start);
-  fprintf(stderr, "  size.... %i\n", c->size);
+  fprintf(stderr, "chunk(");
+  fprintf(stderr, " fcc=%c%c%c%c", ((char *)&c->id)[0], ((char *)&c->id)[1], ((char *)&c->id)[2], ((char *)&c->id)[3]);
+  fprintf(stderr, ", start=%10" PRIu64, c->start);
+  fprintf(stderr, ", size=%10" PRIu64, c->size);
+  fprintf(stderr, ")\n");
 /*
   if(c->parent) {
     fprintf(stderr, "  parent.. %c%c%c%c\n", ((char *)&c->parent->id)[0], ((char *)&c->parent->id)[1], ((char *)&c->parent->id)[2], ((char *)&c->parent->id)[3]);
@@ -83,17 +86,20 @@ int _riff64_get_chunk(FILE *f, chunk64_t *in) {
   in->start = eepio_ftell(f);
   _riff64_get_id(f, &(in->id));
   read_u64(f, &(in->size));
-/*
-  fprintf(stderr, "%s:", __FUNCTION__);
+#ifdef RIFF_DEBUG
+  fprintf(stderr, "%s(%i): ", __FUNCTION__, __LINE__);
   _riff64_dump_chunk(in);
-*/
+#endif
   return ferror(f);
 }
 
 int _riff64_put_chunk(FILE *f, chunk64_t out) {
   _riff64_put_id(f, out.id);
   write_u64(f, out.size);
-
+#ifdef RIFF_DEBUG
+  fprintf(stderr, "%s(%i): ", __FUNCTION__, __LINE__);
+  _riff64_dump_chunk(&out);
+#endif
   return ferror(f);
 }
 
@@ -114,8 +120,8 @@ int riff64_form_open(FILE *f, chunk64_t *chunk, fourcc_t *formtype) {
 int riff64_list_open(FILE *f, chunk64_t *chunk, fourcc_t listtype, chunk64_t parent) {
   fourcc_t curlisttype;
   char match = 0;
-  long nextchunk = 0;
-  long skipsize = 0;
+  uint64_t nextchunk = 0;
+  uint64_t skipsize = 0;
 
   /* locate the start of our tree level (the parents data area) */
 
@@ -148,8 +154,8 @@ int riff64_list_open(FILE *f, chunk64_t *chunk, fourcc_t listtype, chunk64_t par
 
 int riff64_open(FILE *f, chunk64_t *chunk, fourcc_t id, chunk64_t parent) {
   char match = 0;
-  long nextchunk = 0;
-  long skipsize = 0;
+  uint64_t nextchunk = 0;
+  uint64_t skipsize = 0;
 
   /* go to parent data area */
   eepio_fseek(f, parent.start + PARENT64HEADER_SIZE, SEEK_SET);
@@ -177,7 +183,7 @@ int riff64_open(FILE *f, chunk64_t *chunk, fourcc_t id, chunk64_t parent) {
 
 int riff64_fetch(FILE *f, chunk64_t *chunk, fourcc_t *listid, chunk64_t parent, int child) {
   int s, i = 0;
-  long got = 0;
+  uint64_t got = 0;
 
   /* locate parent data area start */
   eepio_fseek(f, parent.start + PARENT64HEADER_SIZE, SEEK_SET);
@@ -240,14 +246,17 @@ int riff64_list_new(FILE *f, chunk64_t *chunk, fourcc_t listtype, chunk64_t *par
 
 int riff64_new(FILE *f, chunk64_t *chunk, fourcc_t chunktype, chunk64_t *parent) {
   chunk64_t *x;
-
-  /*eepio_fseek(f, 0, SEEK_END);*/
-
+/*
+  uint64_t ft_save = eepio_ftell(f);
+  eepio_fseek(f, 0, SEEK_END);
+*/
   chunk->id = chunktype;
   chunk->start = eepio_ftell(f);
   chunk->parent = parent;
   chunk->size = 0;
-
+/*
+  eepio_fseek(f, ft_save, SEEK_SET);
+*/
   if (_riff64_put_chunk(f, *chunk)) return RIFFERR_FILE;
   x = chunk;
   while (x->parent != NULL) {
@@ -259,15 +268,21 @@ int riff64_new(FILE *f, chunk64_t *chunk, fourcc_t chunktype, chunk64_t *parent)
 }
 
 int riff64_close(FILE *f, chunk64_t chunk) {
-  long fillbytes;
-  long start;
+  uint64_t fillbytes;
+  uint64_t start;
   chunk64_t *x;
   char junk = '\0';
-
+#ifdef RIFF_DEBUG
+  fprintf(stderr, "%s(%i): ", __FUNCTION__, __LINE__);
+  _riff64_dump_chunk(&chunk);
+#endif
   /*eepio_fseek(f, 0, SEEK_END);*/
   start = eepio_ftell(f);
   fillbytes = start & 0x01;
-
+#ifdef RIFF_DEBUG
+  fprintf(stderr, "%s(%i): ", __FUNCTION__, __LINE__);
+  _riff64_dump_chunk(&chunk);
+#endif
   /* write the chunk header */
   eepio_fseek(f, chunk.start, SEEK_SET);
   if (_riff64_put_chunk(f, chunk)) return RIFFERR_FILE;
@@ -290,7 +305,7 @@ int riff64_close(FILE *f, chunk64_t chunk) {
 }
 
 int riff64_write(const char *buf, size_t size, size_t num_items, FILE *f, chunk64_t *chunk) {
-  long sizeinc = size * num_items;
+  uint64_t sizeinc = size * num_items;
 
   // fprintf(stderr, "%s: @%i: %c%c%c%c\n", __FUNCTION__, eepio_ftell(f), ((char *)&chunk->id)[0], ((char *)&chunk->id)[1], ((char *)&chunk->id)[2], ((char *)&chunk->id)[3]);
 

@@ -26,6 +26,10 @@
  *******************************************************************************/
 
 #define _FILE_OFFSET_BITS 64
+#define _LARGEFILE64_SOURCE
+
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <string.h>
 #include <ctype.h>
@@ -381,10 +385,24 @@ size_t eepio_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
   return fwrite(ptr, size, nmemb, stream);
 }
 int eepio_fseek(FILE *stream, uint64_t offset, int whence) {
-  return fseek(stream, offset, whence);
+  // fprintf(stderr, "%s to %i\n", __FUNCTION__, offset);
+#if WIN32
+  return _fseeki64(stream, offset, whence);
+#else
+  return fseeko(stream, offset, whence);
+#endif
 }
 uint64_t eepio_ftell(FILE *stream) {
-  return ftell(stream);
+#if WIN32
+  uint64_t rv = _fseeki64(stream);
+#else
+  uint64_t rv = ftello(stream);
+#endif
+  if( rv == (uint64_t)-1 ) {
+    fprintf(stderr, "%s returns -1: %s\n", __FUNCTION__, strerror(errno));
+    exit(-1);
+  }
+  return rv;
 }
 
 void eep_print_wrap(FILE* out, const char* text, int len)

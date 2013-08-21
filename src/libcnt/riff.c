@@ -76,7 +76,10 @@ int _riff_get_chunk(FILE *f, chunk_t *in)
 {
   in->start = eepio_ftell(f);
   _riff_get_id(f, &(in->id));
-  read_u32(f, &(in->size));
+
+  unsigned int tmp;
+  read_u32(f, &tmp);
+  in->size = tmp;
 
   return ferror(f);
 }
@@ -84,7 +87,9 @@ int _riff_get_chunk(FILE *f, chunk_t *in)
 int riff_put_chunk(FILE *f, chunk_t out)
 {
   _riff_put_id(f, out.id);
-  write_u32(f, out.size);
+
+  unsigned int tmp = out.size;
+  write_u32(f, tmp);
 
   return ferror(f);
 }
@@ -110,7 +115,7 @@ int riff_list_open(FILE *f, chunk_t *chunk, fourcc_t listtype, chunk_t parent)
   char match = 0;
   long nextchunk = 0;
   long skipsize = 0;
-  
+
   /* locate the start of our tree level (the parents data area) */
 
   eepio_fseek(f, parent.start + PARENTHEADER_SIZE, SEEK_SET);
@@ -132,12 +137,12 @@ int riff_list_open(FILE *f, chunk_t *chunk, fourcc_t listtype, chunk_t parent)
       nextchunk = chunk->size + (chunk->size & 0x01);
     }
   } while (!match && skipsize < parent.size - 1);
-  
+
   if (match)
     return RIFFERR_NONE;
   else
     return RIFFERR_NOCHUNK;
-  
+
 }
 
 int riff_open(FILE *f, chunk_t *chunk, fourcc_t id, chunk_t parent)
@@ -145,10 +150,10 @@ int riff_open(FILE *f, chunk_t *chunk, fourcc_t id, chunk_t parent)
   char match = 0;
   long nextchunk = 0;
   long skipsize = 0;
-  
+
   /* go to parent data area */
   eepio_fseek(f, parent.start + PARENTHEADER_SIZE, SEEK_SET);
-  
+
   /* loop true the childs on this level, no recursion into tree! */
   do {
     eepio_fseek(f, nextchunk, SEEK_CUR);
@@ -170,15 +175,15 @@ int riff_open(FILE *f, chunk_t *chunk, fourcc_t id, chunk_t parent)
 
 }
 
-int riff_fetch(FILE *f, chunk_t *chunk, fourcc_t *listid, 
+int riff_fetch(FILE *f, chunk_t *chunk, fourcc_t *listid,
                chunk_t parent, int child)
 {
   int s, i = 0;
   long got = 0;
-  
+
   /* locate parent data area start */
   eepio_fseek(f, parent.start + PARENTHEADER_SIZE, SEEK_SET);
-  
+
   s = _riff_get_chunk(f, chunk);
   while (!s && i != child && got + chunk->size < parent.size)
   {
@@ -187,7 +192,7 @@ int riff_fetch(FILE *f, chunk_t *chunk, fourcc_t *listid,
     s = _riff_get_chunk(f, chunk);
     i++;
   }
-  
+
   if (s || got + chunk->size > parent.size) {
     return RIFFERR_NOCHUNK;
   }
@@ -201,7 +206,7 @@ int riff_fetch(FILE *f, chunk_t *chunk, fourcc_t *listid,
 int riff_form_new(FILE *f, chunk_t *chunk, fourcc_t formtype)
 {
   rewind(f);
-  
+
   chunk->id = FOURCC_RIFF;
   chunk->parent = NULL;
   chunk->start = 0;
@@ -300,18 +305,18 @@ int riff_write(const char *buf, size_t size, size_t num_items,
   return RIFFERR_NONE;
 }
 
-int riff_read(char *buf, size_t size, size_t num_items, 
+int riff_read(char *buf, size_t size, size_t num_items,
                     FILE *f, chunk_t chunk)
 {
   if (eepio_fread(buf, size, num_items, f) != num_items) return RIFFERR_FILE;
-  
+
   return RIFFERR_NONE;
 }
 
 int riff_seek(FILE *f, long offset, int whence, chunk_t chunk)
 {
   long effpos=0;
-  
+
   switch (whence) {
     case SEEK_SET: effpos = chunk.start + CHUNKHEADER_SIZE + offset;
                    break;

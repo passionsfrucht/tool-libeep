@@ -110,7 +110,6 @@ size_t     eepio_fwrite(const void *, size_t, size_t, FILE *);
 int        eepio_fseek(FILE *, uint64_t, int);
 uint64_t   eepio_ftell(FILE *);
 
-
 /* A function to print a text wrapped at len characters */
 void eep_print_wrap(FILE* out, const char* text, int len);
 

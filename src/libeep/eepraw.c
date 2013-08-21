@@ -114,6 +114,18 @@ int read_u32(FILE *f, unsigned int *v) {
   return _read_32(f, (char *)v);
 }
 
+void swrite_u64(char *s, uint64_t v)
+{
+  s[0] = (char) v;
+  s[1] = (char) (v >> 8);
+  s[2] = (char) (v >> 16);
+  s[3] = (char) (v >> 24);
+  s[4] = (char) (v >> 32);
+  s[5] = (char) (v >> 40);
+  s[6] = (char) (v >> 48);
+  s[7] = (char) (v >> 56);
+}
+
 void swrite_s32(char *s, int v)
 {
   s[0] = (char) v;

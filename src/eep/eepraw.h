@@ -96,6 +96,7 @@ int write_f64(FILE *f, double v);
 /*
   to write one item into memory
 */
+void swrite_u64  (char *s, uint64_t v);
 void swrite_s32  (char *s, int v);
 void swrite_s16  (char *s, int v);
 

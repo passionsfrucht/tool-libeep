@@ -36,9 +36,9 @@
 
 #define RCS_CNT_H "$RCSfile: cnt.h,v $ $Revision: 2415 $"
 
-#include <eep/eepmisc.h>
 #include <time.h>
-/* #include <unistd.h> */
+#include <stdint.h>
+#include <eep/eepmisc.h>
 #include <cnt/trg.h>
 #include <eep/val.h>
 
@@ -137,10 +137,8 @@ typedef struct eeg_dummy_t eeg_t;
   in preparation to eep_init_from_values()
 */
 eegchan_t *eep_chan_init(short chanc);
-void       eep_chan_set (eegchan_t *chanv, short chan,
-                         const char *lab, double iscale, double rscale, const char *runit);
-void       eep_chan_set_reflab(eegchan_t *chanv, short chan, 
-                         const char *reflab);
+void       eep_chan_set (eegchan_t *chanv, short chan, const char *lab, double iscale, double rscale, const char *runit);
+void       eep_chan_set_reflab(eegchan_t *chanv, short chan, const char *reflab);
 
 void eep_free(eeg_t *cnt);
 
@@ -220,7 +218,7 @@ int eep_finish_file(eeg_t *cnt);
   This is specificly meant for use when an eep file is closed at one point and closed at
   anothor.
 
-  return: status 
+  return: status
 */
 int eep_fclose(eeg_t *cnt);
 
@@ -244,7 +242,7 @@ int eep_fclose(eeg_t *cnt);
 #define FLOAT_CNTBUF_SIZE(cnt, n) (eep_get_chanc(cnt) * (n) * sizeof(float))
 #define FLOAT_CNTBUF_ARRAYSIZE(cnt, n) (eep_get_chanc(cnt) * (n))
 
-int eep_seek   (eeg_t *cnt, eep_datatype_e type, slen_t sample, int relative);
+int eep_seek   (eeg_t *cnt, eep_datatype_e type, uint64_t sample, int relative);
 int eep_read_sraw   (eeg_t *cnt, eep_datatype_e type, sraw_t *muxbuf, slen_t n);
 int eep_read_float  (eeg_t *cnt, eep_datatype_e type, float  *muxbuf, slen_t n);
 /* For writing, the datatype depends on what has been set by eep_prepare_to_write(some_datatype) */
@@ -273,7 +271,7 @@ void           eep_set_period(eeg_t *cnt, double period);
 short          eep_get_chanc(eeg_t *cnt);
 /* void           set_cnt_chanc(eeg_t *cnt, short chanc, eegchan_t *chanv); */
 void           eep_dup_chan(eeg_t *cnt, short chan, char *newlab);
-slen_t         eep_get_samplec(eeg_t *cnt);
+uint64_t       eep_get_samplec(eeg_t *cnt);
 
 int            eep_get_chan_index(eeg_t *cnt, const char *lab);  /* case insens., -1 if not found */
 

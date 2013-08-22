@@ -44,8 +44,6 @@
 #define CHUNK64HEADER_SIZE 12
 #define PARENT64HEADER_SIZE 16
 
-// #define RIFF_DEBUG
-
 void
 _riff64_dump_chunk(const chunk64_t *c) {
   fprintf(stderr, "chunk(");

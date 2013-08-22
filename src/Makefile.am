@@ -1,9 +1,10 @@
 libeep_headers = eep/eepmisc.h \
-                 eep/eepraw.h \
-                 eep/eepmem.h \
                  eep/eepio.h \
-                 eep/var_string.h \
+                 eep/eepmem.h \
+                 eep/eepraw.h \
+                 eep/stdint.h \
                  eep/val.h \
+                 eep/var_string.h \
                  eep/winsafe.h \
                  v4/eep.h
 libavr_headers = avr/avr.h \

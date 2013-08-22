@@ -28,6 +28,8 @@
 #include <string.h>
 
 #include <eep/eepraw.h>
+#include <eep/eepio.h>
+
 
 #ifdef COMPILE_RCS
 char RCS_eepraw_h[] = RCS_EEPRAW_H;

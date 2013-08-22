@@ -30,7 +30,7 @@
 #define RCS_RIFF_H "$RCSfile: riff.h,v $ $Revision: 1762 $"
 
 #include <stdio.h>
-#include <stdint.h>
+#include <eep/stdint.h>
 
 /* RIFF access return values */
 #define RIFFERR_NONE 0

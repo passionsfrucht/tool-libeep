@@ -97,7 +97,7 @@ typedef struct {
 
   /* RIFF hacking/trickery. See make_partial_output_consistent() */
   /* Don't EVER touch this unless you know exactly what it does. */
-  long            chunk_size;
+  uint64_t        chunk_size;
 } tf_header_t;
 
 /* Standard EEP headers */
@@ -117,7 +117,7 @@ typedef struct {
 
   /* RIFF hacking/trickery. See make_partial_output_consistent() */
   /* Don't EVER touch this unless you know exactly what it does. */
-  long chunk_size;
+  uint64_t chunk_size;
 } eep_header_t;
 
 typedef struct {

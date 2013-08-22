@@ -74,26 +74,24 @@ int _riff_put_id(FILE *f, fourcc_t out)
 
 int _riff_get_chunk(FILE *f, chunk_t *in)
 {
+  uint32_t tmp;
+
   in->start = eepio_ftell(f);
   _riff_get_id(f, &(in->id));
 
-  {
-    uint32_t tmp;
-    read_u32(f, &tmp);
-    in->size = tmp;
-  }
+  read_u32(f, &tmp);
+  in->size = tmp;
 
   return ferror(f);
 }
 
 int riff_put_chunk(FILE *f, chunk_t out)
 {
+  uint32_t itmp;
   _riff_put_id(f, out.id);
 
-  {
-    uint32_t tmp = out.size;
-    write_u32(f, tmp);
-  }
+  itmp = out.size;
+  write_u32(f, itmp);
 
   return ferror(f);
 }

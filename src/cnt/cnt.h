@@ -37,7 +37,7 @@
 #define RCS_CNT_H "$RCSfile: cnt.h,v $ $Revision: 2415 $"
 
 #include <time.h>
-#include <stdint.h>
+#include <eep/stdint.h>
 #include <eep/eepmisc.h>
 #include <cnt/trg.h>
 #include <eep/val.h>

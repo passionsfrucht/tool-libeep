@@ -112,7 +112,7 @@ void eepdebug(const char *fmt, ...)
 {
   va_list va;
 
-  if(eepio_getdebug) {
+  if(eepio_getdebug()) {
     va_start(va, fmt);
     vfprintf(stderr, fmt, va);
     va_end(va);

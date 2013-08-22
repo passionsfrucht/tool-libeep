@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <math.h>
 
-#include <stdint.h>
+#include <eep/stdint.h>
 #include <eep/inttypes.h>
 #include <string.h>
 #include <ctype.h>
@@ -212,8 +212,8 @@ int gethead_RAW3(eeg_t *EEG)
 {
   FILE *f = EEG->f;
   int nread = 0,
-      nread_last = 0,
-      nread_total;
+      nread_last = 0;
+  uint64_t nread_total;
   char line[128];
   char histline[2048];
   double rate = -1.0;
@@ -1014,17 +1014,15 @@ int read_trigger_chunk(eeg_t *EEG)
 
 int read_epoch_chunk(eeg_t *EEG, storage_t *store)
 {
+  int32_t itmp;
   uint64_t epoch;
 
   if(EEG->mode==CNT_RIFF) {
     RET_ON_RIFFERROR(riff_list_open(EEG->f, &store->ch_toplevel, store->fourcc, EEG->cnt), CNTERR_DATA);
     RET_ON_RIFFERROR(riff_open(EEG->f, &store->ch_ep, FOURCC_ep, store->ch_toplevel), CNTERR_DATA);
 
-    {
-      int32_t itmp;
-      read_s32(EEG->f, &itmp);
-      store->epochs.epochl = itmp;
-    }
+    read_s32(EEG->f, &itmp);
+    store->epochs.epochl = itmp;
 
     store->epochs.epochc = store->ch_ep.size / 4 - 1;
   } else {
@@ -1610,7 +1608,7 @@ int write_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo)
 
 int read_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo) {
   int this_chunk_contains_binary_data=1;
-  long file_position;
+  uint64_t file_position;
 
   if(cnt->mode==CNT_RIFF) {
     RET_ON_RIFFERROR(riff_open(cnt->f, &cnt->info, FOURCC_info, cnt->cnt), CNTERR_FILE);
@@ -1801,7 +1799,7 @@ int eep_seek(eeg_t *EEG, eep_datatype_e type, uint64_t s, int relative)
   // fprintf(stderr, "%s to %i\n", __FUNCTION__, s);
 
   int r = CNTERR_NONE;
-  slen_t newpos;
+  uint64_t newpos;
 
   switch (EEG->mode) {
     case CNT_NS30:
@@ -2606,7 +2604,7 @@ void eep_get_recording_info(eeg_t *cnt, record_info_t* info)
 Decreases the size of the specified chunks parents with the specified amount. */
 int decrease_chunksize(FILE* f, chunk_t* chunk, long to_subtract)
 {
-  long filepos;
+  uint64_t filepos;
   chunk_t* x;
   if (0 == to_subtract)
     return CNTERR_NONE;
@@ -3551,7 +3549,7 @@ int cntopen_AVR(eeg_t *EEG)
 int cntopen_EEP20(eeg_t *EEG)
 {
   FILE *f = EEG->f;
-  long fsize;
+  uint64_t fsize;
 
   EEG->mode = CNT_EEP20;
 

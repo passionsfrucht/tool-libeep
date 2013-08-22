@@ -30,7 +30,7 @@
 #define RCS_TRG_H "$RCSfile: trg.h,v $ $Revision: 2415 $"
 
 #include <stdio.h>
-#include <stdint.h>
+#include <eep/stdint.h>
 
 #include <eep/eepmisc.h>
 #include <eep/winsafe.h>
@@ -68,10 +68,10 @@ typedef struct {
 } trgentry_t;
 
 typedef struct {
-  asciiline_t extra_header_text;
-  int         c;
-  trgentry_t *v;
-  int      cmax;
+  asciiline_t   extra_header_text;
+  uint64_t      c; // trg count
+  trgentry_t  * v;
+  uint64_t      cmax;
 } trg_t;
 
 trg_t *trg_init(void);
@@ -123,11 +123,11 @@ int trg_set_EEP20(trg_t *trg, slen_t sample, unsigned short flag);
   get the total count and go on step by step
 */
 int   trg_get_c(trg_t *trg);
-char *trg_get  (trg_t *trg, int i, slen_t *sample);
+char *trg_get  (trg_t *trg, int i, uint64_t *sample);
 /*
   trg_get as above, but also set cls char
 */
-char *trg_get_cls  (trg_t *trg, int i, slen_t *sample, char *cls);
+char *trg_get_cls  (trg_t *trg, int i, uint64_t *sample, char *cls);
 
 /*
   check whether one in a list of triggers matches a trigger

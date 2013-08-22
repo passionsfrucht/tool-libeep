@@ -389,7 +389,7 @@ int trg_set(trg_t *trg, slen_t sample, const char *code)
 {
   int r = 0;
   int i;
-  int        c    = trg->c;
+  uint64_t   c    = trg->c;
   trgentry_t *v   = trg->v;
   int        cmax = trg->cmax;
 
@@ -507,13 +507,13 @@ int trg_get_c (trg_t *trg)
   return trg->c;
 }
 
-char *trg_get  (trg_t *trg, int i, slen_t *sample)
+char *trg_get  (trg_t *trg, int i, uint64_t *sample)
 {
   *sample = trg->v[i].sample;
   return trg->v[i].code;
 }
 
-char *trg_get_cls  (trg_t *trg, int i, slen_t *sample, char *cls)
+char *trg_get_cls  (trg_t *trg, int i, uint64_t *sample, char *cls)
 {
   *sample = trg->v[i].sample;
   *cls = trg->v[i].cls_code;

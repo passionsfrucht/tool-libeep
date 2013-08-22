@@ -29,7 +29,7 @@
 #define EEPRAW_H
 #define RCS_EEPRAW_H "$RCSfile: eepraw.h,v $ $Revision: 2415 $"
 
-#include <stdint.h>
+#include <eep/stdint.h>
 #include <stdio.h>
 
 #include <eep/eepmisc.h>

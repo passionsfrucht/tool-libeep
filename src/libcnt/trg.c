@@ -25,6 +25,7 @@
  *                                                                              *
  *******************************************************************************/
 
+#include <eep/inttypes.h>
 #include <string.h>
 
 #include <cnt/cnt.h>
@@ -226,13 +227,13 @@ int trg_line_write(trgentry_t t, double period, short chanc, FILE *Trg)
   if (t.code[0] != '\0')
   {
     if(t.cls_code == '\0')
-      sprintf(line,"%12.6f %9d %3s\n",
+      sprintf(line,"%12.6f %9" PRIu64 " %3s\n",
         (double) t.sample * period,
         SAMPLESTART_EEP20(chanc) + t.sample * SAMPLESIZE_EEP20(chanc),
         t.code
       );
     else
-      sprintf(line,"%12.6f %9d %3s cls %c\n",
+      sprintf(line,"%12.6f %9" PRIu64 " %3s cls %c\n",
 	     (double) t.sample * period,
 		 SAMPLESTART_EEP20(chanc) + t.sample * SAMPLESIZE_EEP20(chanc),
 		 t.code, t.cls_code);

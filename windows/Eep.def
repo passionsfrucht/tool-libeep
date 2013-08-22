@@ -19,6 +19,7 @@ EXPORTS
   eep_chan_set_reflab
   eepcolortbl
   eep_create_file
+  eep_create_file64
   eepdebug
   eeperror
   eep_fclose
@@ -56,11 +57,11 @@ EXPORTS
   eep_init_from_copy
   eep_init_from_file
   eep_init_from_values
-  eepio_fopen
   eepio_fclose
+  eepio_fopen
+  eepio_fread
   eepio_fseek
   eepio_ftell
-  eepio_fread
   eepio_fwrite
   eepio_getbar
   eepio_getdebug

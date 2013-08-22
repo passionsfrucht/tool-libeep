@@ -29,7 +29,8 @@
 #include <stdarg.h>
 #include <math.h>
 
-#include <inttypes.h>
+#include <stdint.h>
+#include <eep/inttypes.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
@@ -122,8 +123,8 @@ int read_chanseq_chunk(eeg_t *cnt, storage_t *store, int expected_length);
 int read_epoch_chunk(eeg_t *cnt, storage_t *store);
 int read_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo);
 
-int getepoch_impl(eeg_t *cnt, eep_datatype_e type, slen_t epoch);
-int eep_seek_impl(eeg_t *cnt, eep_datatype_e type, slen_t s, int rel);
+int getepoch_impl(eeg_t *cnt, eep_datatype_e type, uint64_t epoch);
+int eep_seek_impl(eeg_t *cnt, eep_datatype_e type, uint64_t s, int rel);
 
 /* Helpers for writing cnt data */
 int write_eeph_chunk(eeg_t *cnt);
@@ -175,11 +176,11 @@ int match_config_str(FILE *f, const char *line, const char *key, char *res, int 
   return len;
 }
 
-int eep_seek_impl(eeg_t *cnt, eep_datatype_e type, slen_t s, int rel)
+int eep_seek_impl(eeg_t *cnt, eep_datatype_e type, uint64_t s, int rel)
 {
   // fprintf(stderr, "%s to %i\n", __FUNCTION__, s);
 
-  int newpos = s;
+  uint64_t newpos = s;
   storage_t *store = &cnt->store[type];
   if (!store->initialized)
     return CNTERR_DATA; /* No such data in this file */
@@ -423,13 +424,13 @@ int writehead_RAW3(eeg_t *EEG, var_string buf)
   return CNTERR_NONE;
 }
 
-int getepoch_impl(eeg_t *cnt, eep_datatype_e type, slen_t epoch)
+int getepoch_impl(eeg_t *cnt, eep_datatype_e type, uint64_t epoch)
 {
-  slen_t insize, insamples, got;
+  uint64_t insize, insamples, got;
   char *inbuf;
   storage_t *store = &cnt->store[type];
 
-  int totsamples = 0;
+  uint64_t totsamples = 0;
   switch (type)
   {
     case DATATYPE_EEG:
@@ -503,7 +504,7 @@ int getepoch_impl(eeg_t *cnt, eep_datatype_e type, slen_t epoch)
 int putepoch_impl(eeg_t *cnt)
 {
   // int smp = 0;
-  int to_write;
+  uint64_t to_write;
   storage_t *store;
 
   if ((DATATYPE_UNDEFINED == cnt->current_datachunk) ||
@@ -974,14 +975,19 @@ int read_trigger_chunk(eeg_t *EEG)
     if(EEG->mode==CNT_RIFF) {
       EEG->trg->c = riff_get_chunk_size(EEG->evt) / 12;
     } else {
-      EEG->trg->c = riff64_get_chunk_size(EEG->evt) / 12;
+      EEG->trg->c = riff64_get_chunk_size(EEG->evt) / 16;
     }
-    EEG->trg->v = (trgentry_t *)
-      v_malloc((size_t) EEG->trg->c * sizeof(trgentry_t), "trgv");
+    EEG->trg->v = (trgentry_t *) v_malloc((size_t) EEG->trg->c * sizeof(trgentry_t), "trgv");
     EEG->trg->cmax = EEG->trg->c;
 
     for (i = 0, j = 0; i < EEG->trg->c; i++) {
-      read_s32(EEG->f, &((EEG->trg->v)[j].sample));
+      if(EEG->mode==CNT_RIFF) {
+        int32_t itmp;
+        read_s32(EEG->f, &itmp);
+        (EEG->trg->v)[j].sample = itmp;
+      } else {
+        read_u64(EEG->f, &((EEG->trg->v)[j].sample));
+      }
       eepio_fread((EEG->trg->v)[j].code, TRG_CODE_LENGTH, 1, EEG->f);
       (EEG->trg->v)[j].code[TRG_CODE_LENGTH] = '\0';
 
@@ -1008,15 +1014,17 @@ int read_trigger_chunk(eeg_t *EEG)
 
 int read_epoch_chunk(eeg_t *EEG, storage_t *store)
 {
-  slen_t epoch;
+  uint64_t epoch;
 
   if(EEG->mode==CNT_RIFF) {
     RET_ON_RIFFERROR(riff_list_open(EEG->f, &store->ch_toplevel, store->fourcc, EEG->cnt), CNTERR_DATA);
     RET_ON_RIFFERROR(riff_open(EEG->f, &store->ch_ep, FOURCC_ep, store->ch_toplevel), CNTERR_DATA);
 
-    uint32_t itmp;
-    read_u32(EEG->f, &itmp);
-    store->epochs.epochl = itmp;
+    {
+      int32_t itmp;
+      read_s32(EEG->f, &itmp);
+      store->epochs.epochl = itmp;
+    }
 
     store->epochs.epochc = store->ch_ep.size / 4 - 1;
   } else {
@@ -1033,8 +1041,8 @@ int read_epoch_chunk(eeg_t *EEG, storage_t *store)
   store->epochs.epochv = (uint64_t *) v_malloc((size_t) store->epochs.epochc * sizeof(uint64_t), "epochv");
   for (epoch = 0; epoch < store->epochs.epochc; epoch++) {
     if(EEG->mode==CNT_RIFF) {
-      uint32_t itmp;
-      read_u32(EEG->f, &itmp);
+      int32_t itmp;
+      read_s32(EEG->f, &itmp);
       store->epochs.epochv[epoch] = itmp;
     } else {
       read_u64(EEG->f, &store->epochs.epochv[epoch]);
@@ -1471,21 +1479,22 @@ int write_trigger_chunk(eeg_t *cnt)
 {
   trg_t *trg = cnt->trg;
   long i;
-  char out[12]; /* 4 byte sample nr + 8 char trg code */
+  char out[16]; /* 4 byte sample nr + 8 char trg code */
 
   if(cnt->mode==CNT_RIFF) {
     RET_ON_RIFFERROR(riff_new(cnt->f, &cnt->evt, FOURCC_evt, &cnt->cnt), CNTERR_FILE);
   } else {
     RET_ON_RIFFERROR(riff64_new(cnt->f, &cnt->evt, FOURCC_evt, &cnt->cnt), CNTERR_FILE);
   }
-  for (i = 0; i < trg->c; i++)
-  {
-    swrite_s32(out, trg->v[i].sample);
-    strncpy(&out[4], trg->v[i].code, 8);
+  for (i = 0; i < trg->c; i++) {
     if(cnt->mode==CNT_RIFF) {
+      swrite_s32(out, trg->v[i].sample);
+      strncpy(&out[4], trg->v[i].code, 8);
       RET_ON_RIFFERROR(riff_write(out, 12, 1, cnt->f, &cnt->evt), CNTERR_FILE);
     } else {
-      RET_ON_RIFFERROR(riff64_write(out, 12, 1, cnt->f, &cnt->evt), CNTERR_FILE);
+      swrite_u64(out, trg->v[i].sample);
+      strncpy(&out[8], trg->v[i].code, 8);
+      RET_ON_RIFFERROR(riff64_write(out, 16, 1, cnt->f, &cnt->evt), CNTERR_FILE);
     }
   }
   if(cnt->mode==CNT_RIFF) {
@@ -2561,7 +2570,7 @@ int eep_has_recording_info(eeg_t *cnt)
 
 void eep_set_recording_info(eeg_t *cnt, record_info_t* info)
 {
-/* previous: 
+/* previous:
   if (NULL != cnt->recording_info)
   v_free(cnt->recording_info);
   cnt->recording_info = (record_info_t*) v_malloc(sizeof(record_info_t) , "recording_info");
@@ -2838,10 +2847,13 @@ void eep_get_dataformat(eeg_t *cnt, char *format)
     case CNT_EEP20:
       strcpy(format, "EEP 2.0 (16 bit channel multiplexed)"); break;
     case CNT_RIFF:
+    case CNTX_RIFF:
       if( eep_get_fileversion_major(cnt) )
-        sprintf(format, "EEP %d.%d", eep_get_fileversion_major(cnt), eep_get_fileversion_minor(cnt));  
+        sprintf(format, "EEP %d.%d", eep_get_fileversion_major(cnt), eep_get_fileversion_minor(cnt));
       else
         sprintf(format, "EEP 3.x");
+      if( mode == CNTX_RIFF )
+        strcat(format, " (64-bit RIFF variant)");
       if( eep_has_data_of_type(cnt, DATATYPE_EEG) )
         strcat(format, " (32 bit raw3 compressed)");
       if( eep_has_data_of_type(cnt, DATATYPE_TIMEFREQ) )
@@ -2850,8 +2862,8 @@ void eep_get_dataformat(eeg_t *cnt, char *format)
         strcat(format, " average");
       if( eep_has_data_of_type(cnt, DATATYPE_STDDEV) )
         strcat(format, " stddev");
-      if( eep_has_data_of_type(cnt, DATATYPE_TIMEFREQ) || 
-          eep_has_data_of_type(cnt, DATATYPE_AVERAGE)  || 
+      if( eep_has_data_of_type(cnt, DATATYPE_TIMEFREQ) ||
+          eep_has_data_of_type(cnt, DATATYPE_AVERAGE)  ||
           eep_has_data_of_type(cnt, DATATYPE_STDDEV) )
         strcat(format, " (float vectors)");
       break;
@@ -2898,14 +2910,14 @@ int eep_read_float(eeg_t *cnt, eep_datatype_e type, float *muxbuf, slen_t n)
 
   if (CNT_RIFF != cnt->mode && CNT_AVR != cnt->mode)
     return CNTERR_BADREQ;
-  
+
   if (!store->initialized)
     return CNTERR_DATA; /* No such data in this file */
- 
+
   if (store->data.readpos + store->data.bufepoch * store->epochs.epochl +
       n > (DATATYPE_TIMEFREQ == type ? eep_get_tf_samplec(cnt) : eep_get_samplec(cnt)))
     return CNTERR_RANGE;
-  
+
   switch (type)
   {
     case DATATYPE_TIMEFREQ:
@@ -3036,10 +3048,10 @@ void eep_set_pre_stimulus_interval(eeg_t *cnt, double pre_stimulus)
 
 /*****************************************************************************/
 /*********************** Recording time/date routines ************************/
-/* 
+/*
  some info:
  please visit http://www.minelinks.com/calendar_converter.html for more information
- the offset(diff between 1jan1970 and 30dec1899) is 2209161600( 70 years in seconds) 
+ the offset(diff between 1jan1970 and 30dec1899) is 2209161600( 70 years in seconds)
  *****************************************************************************/
 
 void
@@ -3060,7 +3072,7 @@ eep_unixdate_to_exceldate(time_t epoch, double *excel, double *fraction) {
   double return_value=0;
 
   return_value=(double)(epoch + 2209161600) / (3600.0*24.0);
-  
+
   (*excel) = return_value;
   (*fraction) = 0;
 }
@@ -3654,7 +3666,7 @@ int saveold_RAW3(eeg_t *dst, eeg_t *src, unsigned long delmask)
 
     /* raw3 src? - copy all (unknown) chunks which are not in delmask */
     case CNT_RIFF:
-      // TODO check for 64-bit riff version 
+      // TODO check for 64-bit riff version
       while (!(s = riff_fetch(src->f, &srcchunk, &listid, src->cnt, child))) {
 
         /* found a chunk, forget it ? */

@@ -28,7 +28,7 @@
  #ifndef CNT_VERSION_H
 
 #define CNTVERSION_MAJOR 4
-#define CNTVERSION_MINOR 0
+#define CNTVERSION_MINOR 1
 
 /* Versioning information:
    4.0 - introduction of file versioning. We start at 4.0 to avoid confusion

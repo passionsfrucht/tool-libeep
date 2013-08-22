@@ -30,6 +30,7 @@
 #define RCS_TRG_H "$RCSfile: trg.h,v $ $Revision: 2415 $"
 
 #include <stdio.h>
+#include <stdint.h>
 
 #include <eep/eepmisc.h>
 #include <eep/winsafe.h>
@@ -61,7 +62,7 @@
 typedef char trgcode_t [TRG_CODE_LENGTH + 2]; /* waste one byte to avoid odd length */
 
 typedef struct {
-  slen_t     sample;
+  uint64_t   sample;
   trgcode_t  code;
   char cls_code;
 } trgentry_t;

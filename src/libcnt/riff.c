@@ -77,9 +77,11 @@ int _riff_get_chunk(FILE *f, chunk_t *in)
   in->start = eepio_ftell(f);
   _riff_get_id(f, &(in->id));
 
-  unsigned int tmp;
-  read_u32(f, &tmp);
-  in->size = tmp;
+  {
+    uint32_t tmp;
+    read_u32(f, &tmp);
+    in->size = tmp;
+  }
 
   return ferror(f);
 }
@@ -88,8 +90,10 @@ int riff_put_chunk(FILE *f, chunk_t out)
 {
   _riff_put_id(f, out.id);
 
-  unsigned int tmp = out.size;
-  write_u32(f, tmp);
+  {
+    uint32_t tmp = out.size;
+    write_u32(f, tmp);
+  }
 
   return ferror(f);
 }

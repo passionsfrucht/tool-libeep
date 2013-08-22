@@ -29,7 +29,6 @@
 #define _LARGEFILE64_SOURCE
 
 #include <sys/types.h>
-#include <unistd.h>
 
 #include <string.h>
 #include <ctype.h>
@@ -394,7 +393,7 @@ int eepio_fseek(FILE *stream, uint64_t offset, int whence) {
 }
 uint64_t eepio_ftell(FILE *stream) {
 #if WIN32
-  uint64_t rv = _fseeki64(stream);
+  uint64_t rv = _ftelli64(stream);
 #else
   uint64_t rv = ftello(stream);
 #endif

@@ -25,7 +25,7 @@
  *                                                                              *
  *******************************************************************************/
 
-#include <inttypes.h>
+#include <eep/inttypes.h>
 
 #include <cnt/riff64.h>
 #include <eep/eepio.h>
@@ -43,6 +43,8 @@
 
 #define CHUNK64HEADER_SIZE 12
 #define PARENT64HEADER_SIZE 16
+
+// #define RIFF_DEBUG
 
 void
 _riff64_dump_chunk(const chunk64_t *c) {

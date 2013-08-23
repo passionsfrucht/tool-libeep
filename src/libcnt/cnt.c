@@ -1627,6 +1627,10 @@ int read_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo) {
     double dbl = -1.0;
 
     do {
+      if(line[0]==0) {
+        break;
+      }
+
       fgets(line, 256, f); nread += strlen(line);
 
       if (*line == '[') {
@@ -1710,7 +1714,7 @@ int eep_finish_file(eeg_t *EEG)
   long i;
   char *code;
   short val, chanc;
-  slen_t sample;
+  uint64_t sample;
   int flag, oldflag;
   unsigned long  pos;
 
@@ -2545,7 +2549,7 @@ short eep_get_tf_rate(eeg_t *cnt)
   return (short) (1.0 / cnt->tf_header.period);
 }
 
-slen_t  eep_get_tf_samplec(eeg_t *cnt)
+uint64_t eep_get_tf_samplec(eeg_t *cnt)
 {
   return cnt->tf_header.samplec;
 }
@@ -3639,7 +3643,8 @@ int saveold_RAW3(eeg_t *dst, eeg_t *src, unsigned long delmask)
 {
   char *buf;
   size_t n;
-  int blockc, block, size;
+  int blockc, block;
+  uint64_t size;
   chunk_t curchunk, srcchunk, dstchunk;
   fourcc_t id, listid;
   int s, forget, child = 0;

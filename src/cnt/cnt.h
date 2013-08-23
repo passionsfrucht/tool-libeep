@@ -334,7 +334,7 @@ void eep_set_tf_contenttype(eeg_t *cnt, tf_content_e tf_contenttype);
 double eep_get_tf_period(eeg_t *cnt);
 void eep_set_tf_period(eeg_t *cnt, double period);
 short eep_get_tf_rate(eeg_t *cnt);
-slen_t  eep_get_tf_samplec(eeg_t *cnt);
+uint64_t eep_get_tf_samplec(eeg_t *cnt);
 
 const char* eep_get_tf_chan_unit(eeg_t *cnt, int chan_index);
 

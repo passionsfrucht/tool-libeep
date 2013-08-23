@@ -1627,11 +1627,11 @@ int read_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo) {
     double dbl = -1.0;
 
     do {
+      fgets(line, 256, f); nread += strlen(line);
+
       if(line[0]==0) {
         break;
       }
-
-      fgets(line, 256, f); nread += strlen(line);
 
       if (*line == '[') {
         if (strstr(line, "[StartDate]")) {

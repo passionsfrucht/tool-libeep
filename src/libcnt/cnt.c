@@ -480,7 +480,7 @@ int getepoch_impl(eeg_t *cnt, eep_datatype_e type, uint64_t epoch)
       got = decompepoch_mux(cnt->r3, inbuf, insamples, store->data.buf_int);
       if (got != insize)
       {
-        NOT_IN_WINDOWS(fprintf(stderr, "cnt: checksum error: got %d expected %d filepos %" PRIu64 " epoch %i\n", got, insize, store->epochs.epochv[epoch], epoch));
+        NOT_IN_WINDOWS(fprintf(stderr, "cnt: checksum error: got %" PRIu64 " expected %" PRIu64 " filepos %" PRIu64 " epoch %" PRIu64 "\n", got, insize, store->epochs.epochv[epoch], epoch));
         return CNTERR_DATA;
       }
       break;
@@ -926,11 +926,6 @@ eeg_t *eep_init_from_file(const char *fname, FILE *f, int *status)
     *status = CNTERR_FILE;
   }
   else {
-/*
-    fprintf(stderr, "filetag 'CNT ': %i\n", strncmp("CNT ", &filetag[8], 4));
-    fprintf(stderr, "filetag 'CNTX': %i\n", strncmp("CNTX", &filetag[8], 4));
-    fprintf(stderr, "filetag 'CNTX': %i\n", strncmp("CNTX", &filetag[12], 4));
-*/
     if (!strncmp("RIFF", filetag, 4) && (!strncmp("CNT ", &filetag[8], 4) || !strncmp("CNTX", &filetag[12], 4)) )
       *status = cntopen_RAW3(cnt);
     else if (!strncmp(TAG_EEP20, filetag, strlen(TAG_EEP20)))
@@ -1041,7 +1036,7 @@ int read_epoch_chunk(eeg_t *EEG, storage_t *store)
     if(EEG->mode==CNT_RIFF) {
       int32_t itmp;
       read_s32(EEG->f, &itmp);
-      store->epochs.epochv[epoch] = itmp;
+      store->epochs.epochv[epoch] = (uint64_t)itmp;
     } else {
       read_u64(EEG->f, &store->epochs.epochv[epoch]);
     }
@@ -1157,7 +1152,10 @@ int _cntopen_raw3_64(eeg_t *EEG) {
   }
   // The file contains Time/Freq data, so there MUST be a Time Freq. Header */
   if (RIFFERR_NONE == riff64_list_open(f, &dummychunk, FOURCC_tfd, EEG->cnt)) {
-/* MARKER */ fprintf(stderr, "unsupported time-frequency data: %s(%i)\n", __FILE__, __LINE__);
+    // TODO, unsupported time freq data
+    RET_ON_RIFFERROR(riff64_open(f, &EEG->tfh, FOURCC_tfh, EEG->cnt), CNTERR_DATA);
+    if (gethead_TFH(EEG, &EEG->tfh, &EEG->tf_header))
+      return CNTERR_FILE;
   }
 
   /* Check major file version (if it is larger then the library version,
@@ -1520,7 +1518,9 @@ int write_tfh_chunk(eeg_t *cnt)
     writehead_TFH(&cnt->tf_header, textbuf); /* Fill header string */
     retcode = riff_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->tfh); /* Write header to chunk */
   } else {
-/* MARKER */ fprintf(stderr, "unsupported time-frequency data: %s(%i)\n", __FILE__, __LINE__);
+    // TODO, unsupported time freq data
+    writehead_TFH(&cnt->tf_header, textbuf); /* Fill header string */
+    retcode = riff64_write(varstr_cstr(textbuf), varstr_length(textbuf), 1, cnt->f, &cnt->tfh); /* Write header to chunk */
   }
   varstr_destruct(textbuf); /* Destroy header string */
   if (RIFFERR_NONE != retcode) /* Return on writing error */

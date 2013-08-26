@@ -102,13 +102,13 @@ trg_t *trg_file_read_unchecked(FILE *f, double *period, short *chanc);
   
   return: number of cleared/set triggers
 */
-int trg_set  (trg_t *trg, slen_t sample, const char *code);
-int trg_clear(trg_t *trg, slen_t sample, const char *code);
+int trg_set  (trg_t *trg, uint64_t sample, const char *code);
+int trg_clear(trg_t *trg, uint64_t sample, const char *code);
 
 /*
   trg_set as above, but also set cls char
 */
-int trg_set_cls(trg_t *trg, slen_t sample, const char *code, const char cls);
+int trg_set_cls(trg_t *trg, uint64_t sample, const char *code, const char cls);
 
 /*
   converts the EEP20 flag word (16 bit) to trigger table entrys
@@ -116,7 +116,7 @@ int trg_set_cls(trg_t *trg, slen_t sample, const char *code, const char cls);
   calls without effect
   return: number of added trigger entrys
 */
-int trg_set_EEP20(trg_t *trg, slen_t sample, unsigned short flag);
+int trg_set_EEP20(trg_t *trg, uint64_t sample, unsigned short flag);
 
 /*
   full trigger loops
@@ -134,15 +134,15 @@ char *trg_get_cls  (trg_t *trg, int i, uint64_t *sample, char *cls);
   return: 1 if found
 */
 int trg_group_match(char *code, trgcode_t *grpv, short grpc);
-int trg_discont_epoch(trg_t *trg, slen_t start, slen_t length);
+int trg_discont_epoch(trg_t *trg, uint64_t start, uint64_t length);
 
 /* 
   look for next(direction 1) or previous(direction 0) trigger <code> in table
   return: trigger index or -1 if not found 
 */
-int  trg_seek(trg_t *trg, slen_t sample, 
+int  trg_seek(trg_t *trg, uint64_t sample, 
                   const char *code, char direction);
-int  trg_group_seek(trg_t *trg, slen_t sample, 
+int  trg_group_seek(trg_t *trg, uint64_t sample, 
                        trgcode_t *grpv, int grpc, char direction);
 
 

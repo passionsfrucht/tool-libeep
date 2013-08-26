@@ -150,7 +150,7 @@ long tf_convert_for_write(eeg_t *cnt, float *in, char* out, int length);
 int rawf_convert_for_read(eeg_t *cnt, char *in, float* out, int length);
 long rawf_convert_for_write(eeg_t *cnt, float *in, char* out, int length);
 
-int decrease_chunksize(FILE* f, chunk_t* chunk, long to_subtract);
+int decrease_chunksize(FILE* f, chunk_t* chunk, long to_subtract, int is_cnt_riff);
 
 
 /* If 'key' matches 'line', read the next line from 'f' and parse it
@@ -2606,7 +2606,7 @@ void eep_get_recording_info(eeg_t *cnt, record_info_t* info)
 
 /* Private helpers for make_partial_output_consistent.
 Decreases the size of the specified chunks parents with the specified amount. */
-int decrease_chunksize(FILE* f, chunk_t* chunk, long to_subtract)
+int decrease_chunksize(FILE* f, chunk_t* chunk, long to_subtract, int is_cnt_riff)
 {
   uint64_t filepos;
   chunk_t* x;
@@ -2619,7 +2619,11 @@ int decrease_chunksize(FILE* f, chunk_t* chunk, long to_subtract)
   {
       x->size -= to_subtract;
       eepio_fseek(f, x->start, SEEK_SET);
-      RET_ON_RIFFERROR(riff_put_chunk(f, *x), CNTERR_FILE);
+      if(is_cnt_riff) {
+        RET_ON_RIFFERROR(riff_put_chunk(f, *x), CNTERR_FILE);
+      } else {
+        RET_ON_RIFFERROR(riff64_put_chunk(f, *x), CNTERR_FILE);
+      }
     x = x->parent;
   }
   eepio_fseek(f, filepos, SEEK_SET);
@@ -2642,14 +2646,18 @@ int close_data_chunk(eeg_t *cnt, int finalize, storage_t *store /*, chunk_mode_e
     /* RIFF tricks: because we might be closing the same chunks several times (and then
        overwriting them later), we have to subtract the 'previous' chunk sizes (e.g. as they
        where during the previous cal of make_partial_output_consistent() ). */
-    RET_ON_CNTERROR(decrease_chunksize(cnt->f, &store->ch_data, store->data_size));
+    RET_ON_CNTERROR(decrease_chunksize(cnt->f, &store->ch_data, store->data_size, cnt->mode==CNT_RIFF));
     /* Note that the '+8' is missing in the previous line because the 'data'
        chunk won't be reopened, just truncated */
 
     store->data_size = store->ch_data.size;
     store->data_size+= store->data_size & 1; /* Make sure it's even! */
     if (store->ep_size > 0) {
-      RET_ON_CNTERROR(decrease_chunksize(cnt->f, &store->ch_ep, store->ep_size + 8));
+      if(cnt->mode==CNT_RIFF) {
+        RET_ON_CNTERROR(decrease_chunksize(cnt->f, &store->ch_ep, store->ep_size + 8, 1));
+      } else {
+        RET_ON_CNTERROR(decrease_chunksize(cnt->f, &store->ch_ep, store->ep_size + 12, 0));
+      }
     }
     store->ep_size = store->ch_ep.size;
     store->ep_size+= store->ep_size & 1; /* Make sure it's even! */
@@ -2699,8 +2707,13 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
 
   /* create and write the ascii header */
   RET_ON_CNTERROR(write_eeph_chunk(cnt));
-  if (cnt->eep_header.chunk_size> 0)
-    RET_ON_CNTERROR(decrease_chunksize(f, &cnt->eeph, cnt->eep_header.chunk_size + 8));
+  if (cnt->eep_header.chunk_size> 0) {
+    if(cnt->mode==CNT_RIFF) {
+      RET_ON_CNTERROR(decrease_chunksize(f, &cnt->eeph, cnt->eep_header.chunk_size + 8, 1));
+    } else {
+      RET_ON_CNTERROR(decrease_chunksize(f, &cnt->eeph, cnt->eep_header.chunk_size + 12, 0));
+    }
+  }
   cnt->eep_header.chunk_size = cnt->eeph.size;
   cnt->eep_header.chunk_size += cnt->eep_header.chunk_size & 1; /* Make sure it's even! */
 
@@ -2708,8 +2721,13 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
   if (cnt->store[DATATYPE_TIMEFREQ].initialized)
   {
     RET_ON_CNTERROR(write_tfh_chunk(cnt));
-    if (cnt->tf_header.chunk_size > 0)
-      RET_ON_CNTERROR(decrease_chunksize(f, &cnt->tfh, cnt->tf_header.chunk_size + 8));
+    if (cnt->tf_header.chunk_size > 0) {
+      if(cnt->mode==CNT_RIFF) {
+        RET_ON_CNTERROR(decrease_chunksize(f, &cnt->tfh, cnt->tf_header.chunk_size + 8, 1));
+      } else {
+        RET_ON_CNTERROR(decrease_chunksize(f, &cnt->tfh, cnt->tf_header.chunk_size + 12, 0));
+      }
+    }
     cnt->tf_header.chunk_size = cnt->tfh.size;
     cnt->tf_header.chunk_size += cnt->tf_header.chunk_size & 1; /* Make sure it's even! */
   }
@@ -3669,6 +3687,7 @@ int saveold_RAW3(eeg_t *dst, eeg_t *src, unsigned long delmask)
 
     /* raw3 src? - copy all (unknown) chunks which are not in delmask */
     case CNT_RIFF:
+    case CNTX_RIFF:
       // TODO check for 64-bit riff version
       while (!(s = riff_fetch(src->f, &srcchunk, &listid, src->cnt, child))) {
 

@@ -63,7 +63,7 @@ void  raw3_set_ERR_FLAG_EPOCH(short);
   (the chanv vector is copied)
 */
 
-raw3_t *raw3_init(int chanc, short *chanv, int length);
+raw3_t *raw3_init(int chanc, short *chanv, uint64_t length);
 void    raw3_free(raw3_t *raw3);
 
 /*

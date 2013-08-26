@@ -971,7 +971,7 @@ void compchanv_mux(sraw_t *buf, int length,
   free((char *) rvv);
 }
 
-raw3_t *raw3_init(int chanc, short *chanv, int length)
+raw3_t *raw3_init(int chanc, short *chanv, uint64_t length)
 {
   int i;
   raw3_t *raw3 = (raw3_t *) malloc(sizeof(raw3_t));

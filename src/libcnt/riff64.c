@@ -93,7 +93,7 @@ int _riff64_get_chunk(FILE *f, chunk64_t *in) {
   return ferror(f);
 }
 
-int _riff64_put_chunk(FILE *f, chunk64_t out) {
+int riff64_put_chunk(FILE *f, chunk64_t out) {
   _riff64_put_id(f, out.id);
   write_u64(f, out.size);
 #ifdef RIFF_DEBUG
@@ -215,7 +215,7 @@ int riff64_form_new(FILE *f, chunk64_t *chunk, fourcc_t formtype) {
   chunk->start = 0;
   chunk->size = 4;
 
-  if (_riff64_put_chunk(f, *chunk)) return RIFFERR_FILE;
+  if (riff64_put_chunk(f, *chunk)) return RIFFERR_FILE;
   if (_riff64_put_id(f, formtype)) return RIFFERR_FILE;
 
   return RIFFERR_NONE;
@@ -231,7 +231,7 @@ int riff64_list_new(FILE *f, chunk64_t *chunk, fourcc_t listtype, chunk64_t *par
   chunk->parent = parent;
 
 
-  if (_riff64_put_chunk(f, *chunk)) return RIFFERR_FILE;
+  if (riff64_put_chunk(f, *chunk)) return RIFFERR_FILE;
   if (_riff64_put_id(f, listtype)) return RIFFERR_FILE;
 
   x = chunk;
@@ -257,7 +257,7 @@ int riff64_new(FILE *f, chunk64_t *chunk, fourcc_t chunktype, chunk64_t *parent)
 /*
   eepio_fseek(f, ft_save, SEEK_SET);
 */
-  if (_riff64_put_chunk(f, *chunk)) return RIFFERR_FILE;
+  if (riff64_put_chunk(f, *chunk)) return RIFFERR_FILE;
   x = chunk;
   while (x->parent != NULL) {
     x = x->parent;
@@ -285,7 +285,7 @@ int riff64_close(FILE *f, chunk64_t chunk) {
 #endif
   /* write the chunk header */
   eepio_fseek(f, chunk.start, SEEK_SET);
-  if (_riff64_put_chunk(f, chunk)) return RIFFERR_FILE;
+  if (riff64_put_chunk(f, chunk)) return RIFFERR_FILE;
 
   /* tell the parents about their new size */
   x = &chunk;
@@ -293,7 +293,7 @@ int riff64_close(FILE *f, chunk64_t chunk) {
     x = x->parent;
     x->size += fillbytes + chunk.size;
     eepio_fseek(f, x->start, SEEK_SET);
-    if (_riff64_put_chunk(f, *x)) return RIFFERR_FILE;
+    if (riff64_put_chunk(f, *x)) return RIFFERR_FILE;
   }
 
   /* force next start at even filepos */

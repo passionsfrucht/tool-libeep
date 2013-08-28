@@ -89,7 +89,7 @@ typedef struct {
 typedef struct {
   char            tf_type[40];    /* Time/frequency type identifier */
   tf_content_e    content_datatype;/* TF content type spec.         */
-  slen_t          componentc;     /* Number of components           */
+  uint64_t        componentc;     /* Number of components           */
   tf_component_t  *componentv;    /* component info table           */
   char            tf_unit[16];    /* Unit of measurement on time/freq axis */
   uint64_t        samplec;        /* Number of TF samples           */

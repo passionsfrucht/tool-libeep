@@ -30,6 +30,7 @@
 #define RCS_AVR_H "$RCSfile: avr.h,v $ $Revision: 2415 $"
 
 #include <stdio.h>
+#include <eep/stdint.h>
 #include <eep/eepmisc.h>
 
 #define AVR_HEADER_SIZE         38
@@ -49,8 +50,8 @@ typedef struct {
 
   unsigned short trialc;                 /* total number of trials */
   unsigned short rejtrialc;              /* number of rejected trials */
-  slen_t         sample0;                /* index (with respect to trigger) of first sample */  
-  slen_t         samplec;                /* number of samples */
+  uint64_t       sample0;                /* index (with respect to trigger) of first sample */  
+  uint64_t       samplec;                /* number of samples */
   float          period;                 /* sampling intervall in seconds */
 
   float          mtrialc;                /* mean of trial numbers for grand_av */
@@ -63,8 +64,8 @@ typedef struct {
   char          **histv;                 /* history table */
   size_t         hist_size;              /* history length in bytes */
   
-  short            header_size;
-  short            channel_header_size;
+  short          header_size;
+  short          channel_header_size;
 } avr_t;
 
 #define AVRERR_NONE 0
@@ -107,8 +108,8 @@ void avrcopy (avr_t *src, avr_t *dst, short retain_history);
 #define AVRBAND_VAR  1
 
 int avrseek (avr_t *avr, FILE *f, short chan, short band);
-int avrread (FILE *f, float *v, slen_t c);
-int avrwrite(FILE *f, float *v, slen_t c);
+int avrread (FILE *f, float *v, uint64_t c);
+int avrwrite(FILE *f, float *v, uint64_t c);
 
 short get_avr_headerSize(avr_t *avr);
 short get_avr_channelHeaderSize(avr_t *avr);
@@ -119,7 +120,7 @@ char *get_avr_chan_lab(avr_t *avr, short indx);
 unsigned short get_avr_chanc(avr_t *avr);
 unsigned short get_avr_trialc(avr_t *avr);
 unsigned short get_avr_rejectc(avr_t *avr);
-slen_t get_avr_samplec(avr_t *avr);
+uint64_t get_avr_samplec(avr_t *avr);
 float get_avr_period(avr_t *avr);
 
 
@@ -137,7 +138,7 @@ short avr_eep_get_chan_index(avr_t *avr, char *lab, short try_first);
   return: v (if v is NULL on entry, it points to the newly allocated space)
 */
 float **avr_load(avr_t *avr, FILE *f, float **v,
-                 chanlab_t *chanv, short chanc, slen_t sample0, slen_t samplec,
+                 chanlab_t *chanv, short chanc, uint64_t sample0, uint64_t samplec,
                  int band);
 /*
   save average data matrix
@@ -152,7 +153,7 @@ void avr_save(avr_t *avr, FILE *f, float **v, int band);
   return: 0 on success, 1 on read error
 */
 
-int avr_read_slice(avr_t *avr, FILE *Avr, slen_t start, slen_t length, 
+int avr_read_slice(avr_t *avr, FILE *Avr, uint64_t start, uint64_t length, 
                     chanlab_t *chanv, short chanc, float *slice);
 
 /*

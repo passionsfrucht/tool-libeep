@@ -30,13 +30,14 @@
 #define RCS_EEPMISC_H "$RCSfile: eepmisc.h,v $ $Revision: 2415 $"
 
 #include <stdio.h>
+#include <eep/stdint.h>
 
-typedef int sraw_t;   /* "sample raw" - a type which can contain 32 bit signeds */
-typedef int slen_t;   /* "sample length" - signed, must count sample numbers (up to 1e7) */
+typedef int  sraw_t;   /* "sample raw" - a type which can contain 32 bit signeds */
+typedef int  slen_t;   /* "sample length" - signed, must count sample numbers (up to 1e7) */
 
 typedef struct {      /* "sample window" */
-  slen_t start;
-  slen_t length;
+  uint64_t start;
+  uint64_t length;
 } swin_t;
 
 

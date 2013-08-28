@@ -30,11 +30,12 @@
 #define RCS_REJ_H "$RCSfile: rej.h,v $ $Revision: 2415 $"
 
 #include <stdio.h>
+#include <eep/stdint.h>
 #include <eep/eepmisc.h>
 
 typedef struct {
-  slen_t start;           /* in samples */
-  slen_t length;
+  uint64_t start;           /* in samples */
+  uint64_t length;
 } rejentry_t;
 
 typedef struct {
@@ -60,21 +61,21 @@ int   rej_file_write(rej_t *rej, FILE *f, double period);
 /*
   OR rejection epoch into table
 */
-void  rej_set(rej_t *rej, slen_t start, slen_t length);
-void  rej_clear(rej_t *rej, slen_t start, slen_t length);
+void  rej_set(rej_t *rej, uint64_t start, uint64_t length);
+void  rej_clear(rej_t *rej, uint64_t start, uint64_t length);
 
 /*
   retrieve rejections
 */
 int   rej_get_c(rej_t *rej);
-void  rej_get(rej_t *rej, int i, slen_t *start, slen_t *length);
+void  rej_get(rej_t *rej, int i, uint64_t *start, uint64_t *length);
 
-int   rej_seek(rej_t *rej, slen_t start, char direction);
+int   rej_seek(rej_t *rej, uint64_t start, char direction);
 
 /*
   ask for present rejections
 */
-int is_rejected(rej_t *rej, slen_t sample);
-int is_rejected_epoch(rej_t *rej, slen_t sample, slen_t length);
+int is_rejected(rej_t *rej, uint64_t sample);
+int is_rejected_epoch(rej_t *rej, uint64_t sample, uint64_t length);
 
 #endif

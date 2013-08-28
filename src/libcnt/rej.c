@@ -41,7 +41,7 @@ char RCS_rej_c[] = "$RCSfile: rej.c,v $ $Revision: 2415 $";
 #define REJ_EOF 1
 #define REJ_ERR 2
 
-int rej_line_write(FILE *Rej, double period, slen_t first, slen_t last)
+int rej_line_write(FILE *Rej, double period, uint64_t first, uint64_t last)
 {
    asciiline_t line;
    asciiline_t col2;
@@ -54,7 +54,7 @@ int rej_line_write(FILE *Rej, double period, slen_t first, slen_t last)
    return 0;
 }
 
-int rej_line_parse(char *rejline, double period, slen_t *first, slen_t *last)
+int rej_line_parse(char *rejline, double period, uint64_t *first, uint64_t *last)
 {
   double t1, t2;
   int i;
@@ -71,8 +71,8 @@ int rej_line_parse(char *rejline, double period, slen_t *first, slen_t *last)
   if (!i)
     return 3;
   
-  *first = (slen_t) (t1 / period + 0.5);
-  *last = (slen_t) (t2 / period + 0.5);
+  *first = (uint64_t) (t1 / period + 0.5);
+  *last = (uint64_t) (t2 / period + 0.5);
   if (*first > *last || *last < 0)
     return 4;
     
@@ -100,7 +100,7 @@ char *rej_line_norm(char *line)
   return line;
 }
 
-int rej_line_read(FILE *Rej, double period, slen_t *first, slen_t *last)
+int rej_line_read(FILE *Rej, double period, uint64_t *first, uint64_t *last)
 {
   char *c;
   asciiline_t rejline;
@@ -146,7 +146,7 @@ void rej_free(rej_t *rej)
 rej_t *rej_file_read(FILE *f, double period)
 {
   rej_t  *rej = rej_init();
-  slen_t first, last;
+  uint64_t first, last;
   int    status;
   
   rewind(f);
@@ -185,7 +185,7 @@ int rej_file_write(rej_t *rej, FILE *f, double period)
   return 0;
 }
 
-void rej_set(rej_t *rej, slen_t start, slen_t length)
+void rej_set(rej_t *rej, uint64_t start, uint64_t length)
 {
   int *rejc =   &(rej->c);
   rejentry_t **rejv = &(rej->v);
@@ -193,7 +193,7 @@ void rej_set(rej_t *rej, slen_t start, slen_t length)
   int i = 0;
   int overlaps = 0;
 
-  slen_t effstart, efflength;
+  uint64_t effstart, efflength;
 
   /* ignore all rejections completely before new start */
   while (i < *rejc && (*rejv)[i].start + (*rejv)[i].length < start) i++;
@@ -253,13 +253,13 @@ int rej_get_c(rej_t *rej)
   return rej->c;
 }
 
-void rej_get(rej_t *rej, int i, slen_t *start, slen_t *length)
+void rej_get(rej_t *rej, int i, uint64_t *start, uint64_t *length)
 {
   *start = rej->v[i].start;
   *length = rej->v[i].length;
 }
 
-int is_rejected(rej_t *rej, slen_t sample)
+int is_rejected(rej_t *rej, uint64_t sample)
 {
   int r = 0;
   static int i = 0;
@@ -284,7 +284,7 @@ int is_rejected(rej_t *rej, slen_t sample)
   return r;
 }
 
-int is_rejected_epoch(rej_t *rej, slen_t sample, slen_t length)
+int is_rejected_epoch(rej_t *rej, uint64_t sample, uint64_t length)
 {
   int r = 0;
   int i = 0;
@@ -303,7 +303,7 @@ int is_rejected_epoch(rej_t *rej, slen_t sample, slen_t length)
 }
 
 
-int rej_seek(rej_t *rej, slen_t start, char direction)
+int rej_seek(rej_t *rej, uint64_t start, char direction)
 {
   int rejc = rej->c;
   rejentry_t *rejv = rej->v;
@@ -323,14 +323,14 @@ int rej_seek(rej_t *rej, slen_t start, char direction)
 }
 
 
-void rej_clear(rej_t *rej, slen_t start, slen_t length)
+void rej_clear(rej_t *rej, uint64_t start, uint64_t length)
 {
   int *rejc =   &(rej->c);
   rejentry_t **rejv = &(rej->v);
 
   int i = 0;
   int del = 0;
-  slen_t tmp;
+  uint64_t tmp;
   
   /* ignore until deletion starts */
   while (i < *rejc && (*rejv)[i].start + (*rejv)[i].length < start) i++;

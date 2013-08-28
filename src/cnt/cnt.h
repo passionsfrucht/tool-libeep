@@ -243,11 +243,11 @@ int eep_fclose(eeg_t *cnt);
 #define FLOAT_CNTBUF_ARRAYSIZE(cnt, n) (eep_get_chanc(cnt) * (n))
 
 int eep_seek   (eeg_t *cnt, eep_datatype_e type, uint64_t sample, int relative);
-int eep_read_sraw   (eeg_t *cnt, eep_datatype_e type, sraw_t *muxbuf, slen_t n);
-int eep_read_float  (eeg_t *cnt, eep_datatype_e type, float  *muxbuf, slen_t n);
+int eep_read_sraw   (eeg_t *cnt, eep_datatype_e type, sraw_t *muxbuf, uint64_t n);
+int eep_read_float  (eeg_t *cnt, eep_datatype_e type, float  *muxbuf, uint64_t n);
 /* For writing, the datatype depends on what has been set by eep_prepare_to_write(some_datatype) */
-int eep_write_sraw  (eeg_t *cnt, sraw_t *muxbuf, slen_t n);
-int eep_write_float (eeg_t *cnt, float  *muxbuf, slen_t n);
+int eep_write_sraw  (eeg_t *cnt, sraw_t *muxbuf, uint64_t n);
+int eep_write_float (eeg_t *cnt, float  *muxbuf, uint64_t n);
 
 /*
   return or set the cnt trigger archive handle
@@ -309,7 +309,7 @@ char*          eep_get_chan_type(eeg_t *cnt, short chan);
 int            eep_get_mode(eeg_t *cnt);
 void           eep_set_mode_EEP20(eeg_t *cnt);
 
-int            eep_prepare_to_write(eeg_t *cnt, eep_datatype_e type, slen_t epochl, short *chanv);
+int            eep_prepare_to_write(eeg_t *cnt, eep_datatype_e type, uint64_t epochl, short *chanv);
 /*int            eep_switch_to_write(eeg_t *cnt, eep_datatype_e type);*/
 
 /********************* Added functions for handling Time/Frequency data **********/

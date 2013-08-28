@@ -435,7 +435,7 @@ unsigned short get_avt_rejectc(avr_t *avr)
   return avr->rejtrialc;
 }  			
 
-slen_t get_avr_samplec(avr_t *avr)
+uint64_t get_avr_samplec(avr_t *avr)
 {
    return avr->samplec;
 }   
@@ -576,18 +576,18 @@ int avrseek (avr_t *avr, FILE *f, short chan, short band)
   return (r ? AVRERR_FILE : AVRERR_NONE);
 }
 
-int avrread (FILE *f, float *v, slen_t c)
+int avrread (FILE *f, float *v, uint64_t c)
 {
-  slen_t r;
+  uint64_t r;
   
   r = vread_f32(f, v, c);  
   
   return (r != c ? AVRERR_FILE : AVRERR_NONE);
 }
 
-int avrwrite(FILE *f, float *v, slen_t c)
+int avrwrite(FILE *f, float *v, uint64_t c)
 {
-  slen_t r;
+  uint64_t r;
   
   r = vwrite_f32(f, v, c);
    
@@ -629,7 +629,7 @@ short avr_eep_get_chan_index(avr_t *avr, char *lab, short try_first)
 }
 
 float **avr_load(avr_t *avr, FILE *f, float **v, 
-              chanlab_t *chanv, short chanc, slen_t sample0, slen_t samplec,
+              chanlab_t *chanv, short chanc, uint64_t sample0, uint64_t samplec,
               int band)
 {
   float *in = (float *) v_malloc(avr->samplec * sizeof(float), "in");
@@ -674,11 +674,11 @@ void avr_save(avr_t *avr, FILE *f, float **v, int band)
   }
 }
 
-int avr_read_slice(avr_t *avr, FILE *Avr, slen_t start, slen_t length, 
+int avr_read_slice(avr_t *avr, FILE *Avr, uint64_t start, uint64_t length, 
                     chanlab_t *chanv, short chanc, float *slice)
 {
   short chan, i;
-  slen_t sample;
+  uint64_t sample;
   float *in;
   
   if (length == 0) length = 1;

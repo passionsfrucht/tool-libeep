@@ -85,6 +85,7 @@ EXPORTS
   eep_set_chan_rscale
   eep_set_conditioncolor
   eep_set_conditionlabel
+  eep_set_keep_file_consistent
   eep_set_period
   eep_set_pre_stimulus_interval
   eep_set_recording_info

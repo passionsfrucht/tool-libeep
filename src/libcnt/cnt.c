@@ -134,7 +134,7 @@ int close_data_chunk(eeg_t *cnt, int finalize, storage_t *store /*, chunk_mode_e
 
 int saveold_RAW3(eeg_t *dst, eeg_t *src, unsigned long delmask);
 int puthead_EEP20(eeg_t *EEG);
-int getepoch_NS30(eeg_t *EEG, slen_t epoch);
+int getepoch_NS30(eeg_t *EEG, uint64_t epoch);
 
 int write_trigger_chunk(eeg_t *cnt);
 int write_chanseq_chunk(eeg_t *cnt, storage_t *store, int num_chans);
@@ -150,7 +150,7 @@ long tf_convert_for_write(eeg_t *cnt, float *in, char* out, int length);
 int rawf_convert_for_read(eeg_t *cnt, char *in, float* out, int length);
 long rawf_convert_for_write(eeg_t *cnt, float *in, char* out, int length);
 
-int decrease_chunksize(FILE* f, chunk_t* chunk, long to_subtract, int is_cnt_riff);
+int decrease_chunksize(FILE* f, chunk_t* chunk, uint64_t to_subtract, int is_cnt_riff);
 
 
 /* If 'key' matches 'line', read the next line from 'f' and parse it
@@ -964,7 +964,7 @@ int read_trigger_chunk(eeg_t *EEG)
     NOT_IN_WINDOWS(eepdebug("cnt: warning - no <evt > chunk found in %s!\n", EEG->fname));
     EEG->trg = trg_init();
   } else {
-    long i, j;
+    uint64_t i, j;
 
     EEG->trg = trg_init();
     if(EEG->mode==CNT_RIFF) {
@@ -1320,7 +1320,6 @@ int eep_create_file(eeg_t *dst, const char *fname, FILE *f, eeg_t *src, unsigned
   if (NULL != dst->recording_info)
     RET_ON_CNTERROR(write_recinfo_chunk(dst, dst->recording_info));
 
-
   if (CNT_RIFF != dst->mode)
     return eep_create_file_EEP20(dst, src, delmask);
 
@@ -1409,7 +1408,7 @@ int write_chanseq_chunk(eeg_t *cnt, storage_t* store, int num_chans)
 int write_epoch_chunk(eeg_t *cnt, storage_t *store)
 {
   char outepoch[8];
-  long epoch;
+  uint64_t epoch;
 
   if(cnt->mode==CNT_RIFF) {
     RET_ON_RIFFERROR(riff_new(cnt->f, &store->ch_ep, FOURCC_ep, &store->ch_toplevel), CNTERR_FILE);
@@ -1474,7 +1473,7 @@ int write_eeph_chunk(eeg_t *cnt)
 int write_trigger_chunk(eeg_t *cnt)
 {
   trg_t *trg = cnt->trg;
-  long i;
+  uint64_t i;
   char out[16]; /* 4 byte sample nr + 8 char trg code */
 
   if(cnt->mode==CNT_RIFF) {
@@ -1912,9 +1911,9 @@ int init_data_store(eeg_t *cnt, eep_datatype_e type)
   return getepoch_impl(cnt, type, 0);
 }
 
-int eep_read_sraw (eeg_t *cnt, eep_datatype_e type, sraw_t *muxbuf, slen_t n)
+int eep_read_sraw (eeg_t *cnt, eep_datatype_e type, sraw_t *muxbuf, uint64_t n)
 {
-  slen_t i;
+  uint64_t i;
   FILE *f     = cnt->f;
   storage_t *store = &cnt->store[DATATYPE_EEG];
   short chanc = cnt->eep_header.chanc;
@@ -2023,13 +2022,13 @@ int eep_read_sraw (eeg_t *cnt, eep_datatype_e type, sraw_t *muxbuf, slen_t n)
   }
 }
 
-int eep_write_sraw (eeg_t *cnt, sraw_t *muxbuf, slen_t n)
+int eep_write_sraw (eeg_t *cnt, sraw_t *muxbuf, uint64_t n)
 {
   long step = cnt->eep_header.chanc;
   size_t outbytes = (size_t) step * sizeof(sraw_t);
   storage_t *store;
 
-  slen_t i;
+  uint64_t i;
 
   switch (cnt->mode) {
     case CNT_EEP20:
@@ -2319,7 +2318,7 @@ int eep_switch_to_write(eeg_t *cnt, eep_datatype_e type)
   return CNTERR_NONE;
 }
 
-int eep_prepare_to_write(eeg_t *cnt, eep_datatype_e type, slen_t epochl, short *chanv)
+int eep_prepare_to_write(eeg_t *cnt, eep_datatype_e type, uint64_t epochl, short *chanv)
 {
   storage_t *store = &cnt->store[type];
   short seq_len = cnt->eep_header.chanc;
@@ -2606,7 +2605,7 @@ void eep_get_recording_info(eeg_t *cnt, record_info_t* info)
 
 /* Private helpers for make_partial_output_consistent.
 Decreases the size of the specified chunks parents with the specified amount. */
-int decrease_chunksize(FILE* f, chunk_t* chunk, long to_subtract, int is_cnt_riff)
+int decrease_chunksize(FILE* f, chunk_t* chunk, uint64_t to_subtract, int is_cnt_riff)
 {
   uint64_t filepos;
   chunk_t* x;
@@ -2697,7 +2696,7 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
   FILE* f = cnt->f;
 
   /* Remember the current file position */
-  long filepos = eepio_ftell(f);
+  uint64_t filepos = eepio_ftell(f);
 
   /* Do everything that eep_finish_file() normally takes care of, such as closing the
     active data chunk, writing the corresponding EPochs chunk, the header, etc.
@@ -2921,9 +2920,9 @@ const char* eep_get_history(eeg_t *cnt)
   return varstr_cstr(cnt->history);
 }
 
-int eep_read_float(eeg_t *cnt, eep_datatype_e type, float *muxbuf, slen_t n)
+int eep_read_float(eeg_t *cnt, eep_datatype_e type, float *muxbuf, uint64_t n)
 {
-  slen_t i;
+  uint64_t i;
   short chanc = cnt->eep_header.chanc;
   long step = chanc;
   storage_t *store = &cnt->store[type];
@@ -2974,9 +2973,9 @@ int eep_read_float(eeg_t *cnt, eep_datatype_e type, float *muxbuf, slen_t n)
   return CNTERR_NONE;
 }
 
-int eep_write_float(eeg_t *cnt, float *muxbuf, slen_t n)
+int eep_write_float(eeg_t *cnt, float *muxbuf, uint64_t n)
 {
-  slen_t i;
+  uint64_t i;
   short chanc = cnt->eep_header.chanc;
   long step = chanc;
   storage_t *store;
@@ -3375,7 +3374,7 @@ int gethead_AVR(eeg_t *EEG)
 
 /* data read funcs ---------------------------------------------- */
 
-int getepoch_NS30(eeg_t *EEG, slen_t epoch)
+int getepoch_NS30(eeg_t *EEG, uint64_t epoch)
 {
   /* need to seek source file position ? */
   if (EEG->store[DATATYPE_EEG].data.bufepoch != epoch - 1) {

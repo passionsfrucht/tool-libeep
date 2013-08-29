@@ -926,7 +926,8 @@ eeg_t *eep_init_from_file(const char *fname, FILE *f, int *status)
     *status = CNTERR_FILE;
   }
   else {
-    if (!strncmp("RIFF", filetag, 4) && (!strncmp("CNT ", &filetag[8], 4) || !strncmp("CNTX", &filetag[12], 4)) )
+    if ( (!strncmp("RIFF", filetag, 4) && !strncmp("CNT ", &filetag[8], 4)) ||
+         (!strncmp("RF64", filetag, 4) && !strncmp("CNT ", &filetag[12], 4)) )
       *status = cntopen_RAW3(cnt);
     else if (!strncmp(TAG_EEP20, filetag, strlen(TAG_EEP20)))
       *status = cntopen_EEP20(cnt);
@@ -1181,18 +1182,19 @@ int _cntopen_raw3_64(eeg_t *EEG) {
 int cntopen_RAW3(eeg_t *EEG) {
   fourcc_t formtype;
 
-  eepio_fseek(EEG->f, 8, SEEK_SET);
+  eepio_fseek(EEG->f, 0, SEEK_SET);
   eepio_fread(&formtype, 4, 1, EEG->f);
-  if(formtype==FOURCC_CNT) {
+  if(formtype==FOURCC_RIFF) {
+    fprintf(stderr, "cnt is 32-bit\n");
     return _cntopen_raw3(EEG);
   }
 
-  eepio_fseek(EEG->f, 12, SEEK_SET);
-  eepio_fread(&formtype, 4, 1, EEG->f);
-  if(formtype==FOURCC_CNTX) {
+  if(formtype==FOURCC_RF64) {
+    fprintf(stderr, "cnt is 64-bit\n");
     return _cntopen_raw3_64(EEG);
   }
 
+  fprintf(stderr, "data is unknown\n");
   return CNTERR_DATA;
 }
 
@@ -1343,7 +1345,7 @@ int eep_create_file64(eeg_t *dst, const char *fname, FILE *f, const char *regist
   eep_append_history(dst, registry);
 
   /* initiate the dest file riff tree */
-  RET_ON_RIFFERROR(riff64_form_new(f, &dst->cnt, FOURCC_CNTX), CNTERR_FILE);
+  RET_ON_RIFFERROR(riff64_form_new(f, &dst->cnt, FOURCC_CNT), CNTERR_FILE);
 
   /* Write the Recording info chunk, if one is specified */
   if (NULL != dst->recording_info)

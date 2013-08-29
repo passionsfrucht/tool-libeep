@@ -108,7 +108,7 @@ int riff64_form_open(FILE *f, chunk64_t *chunk, fourcc_t *formtype) {
 
   chunk->parent = NULL;
   _riff64_get_chunk(f, chunk);
-  if (chunk->id == FOURCC_RIFF) {
+  if (chunk->id == FOURCC_RF64) {
     _riff64_get_id(f, formtype);
     return RIFFERR_NONE;
   }
@@ -210,7 +210,7 @@ int riff64_fetch(FILE *f, chunk64_t *chunk, fourcc_t *listid, chunk64_t parent, 
 int riff64_form_new(FILE *f, chunk64_t *chunk, fourcc_t formtype) {
   rewind(f);
 
-  chunk->id = FOURCC_RIFF;
+  chunk->id = FOURCC_RF64;
   chunk->parent = NULL;
   chunk->start = 0;
   chunk->size = 4;

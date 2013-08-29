@@ -61,6 +61,7 @@ typedef struct chunk chunk_t;
 
 /* the standard FOURCC tags and formats known by the library*/
 #define FOURCC_RIFF FOURCC('R', 'I', 'F', 'F')
+#define FOURCC_RF64 FOURCC('R', 'F', '6', '4')
 #define FOURCC_LIST FOURCC('L', 'I', 'S', 'T')
 
 /*

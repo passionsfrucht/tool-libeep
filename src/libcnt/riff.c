@@ -47,7 +47,6 @@ char RCS_riff_c[] = "$RCSfile: riff.c,v $ $Revision: 2415 $";
 #define CHUNKHEADER_SIZE 8
 #define PARENTHEADER_SIZE 12
 
-
 int _riff_get_id(FILE *f, fourcc_t *in)
 {
   char id[4];

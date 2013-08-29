@@ -81,7 +81,6 @@
                                    such as reading data from an integer chunk using a float function */
 
 #define FOURCC_CNT  FOURCC('C', 'N', 'T', ' ')
-#define FOURCC_CNTX FOURCC('C', 'N', 'T', 'X')
 #define FOURCC_nsh  FOURCC('n', 's', 'h', ' ')
 
 typedef enum

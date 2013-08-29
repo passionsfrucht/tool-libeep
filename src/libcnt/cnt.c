@@ -178,8 +178,6 @@ int match_config_str(FILE *f, const char *line, const char *key, char *res, int 
 
 int eep_seek_impl(eeg_t *cnt, eep_datatype_e type, uint64_t s, int rel)
 {
-  // fprintf(stderr, "%s to %i\n", __FUNCTION__, s);
-
   uint64_t newpos = s;
   storage_t *store = &cnt->store[type];
   if (!store->initialized)
@@ -228,7 +226,6 @@ int gethead_RAW3(eeg_t *EEG)
     fgets(line, 128, f); nread += strlen(line);
 
     if (*line == '[') {
-      // fprintf(stderr, "header line: %s\n", line);
       if (strstr(line, "[File Version]")) {
         fgets(line, 128, f); nread += strlen(line);
         sscanf(line, "%d.%d", &EEG->eep_header.fileversion_major, &EEG->eep_header.fileversion_minor);
@@ -242,12 +239,10 @@ int gethead_RAW3(eeg_t *EEG)
       else if (strstr(line, "[Samples]")) {
         fgets(line, 128, f); nread += strlen(line);
         sscanf(line, "%" SCNd64, &EEG->eep_header.samplec);
-        // fprintf(stderr, "EEG->eep_header.samplec: %i\n", EEG->eep_header.samplec);
       }
       else if (strstr(line, "[Channels]")) {
         fgets(line, 128, f); nread += strlen(line);
         sscanf(line, "%hd", &EEG->eep_header.chanc);
-        // fprintf(stderr, "EEG->eep_header.chanc: %i\n", EEG->eep_header.chanc);
       }
       else if (strstr(line, "[Basic Channel Data]")) {
         if (EEG->eep_header.chanc < 1)
@@ -937,8 +932,6 @@ eeg_t *eep_init_from_file(const char *fname, FILE *f, int *status)
       *status = cntopen_AVR(cnt);
     else
       *status = CNTERR_DATA;
-
-    // fprintf(stderr, "status: %i\n", *status);
   }
 
   if (*status != CNTERR_NONE) {
@@ -1185,16 +1178,13 @@ int cntopen_RAW3(eeg_t *EEG) {
   eepio_fseek(EEG->f, 0, SEEK_SET);
   eepio_fread(&formtype, 4, 1, EEG->f);
   if(formtype==FOURCC_RIFF) {
-    fprintf(stderr, "cnt is 32-bit\n");
     return _cntopen_raw3(EEG);
   }
 
   if(formtype==FOURCC_RF64) {
-    fprintf(stderr, "cnt is 64-bit\n");
     return _cntopen_raw3_64(EEG);
   }
 
-  fprintf(stderr, "data is unknown\n");
   return CNTERR_DATA;
 }
 
@@ -1801,8 +1791,6 @@ int eep_fclose(eeg_t* cnt)
 
 int eep_seek(eeg_t *EEG, eep_datatype_e type, uint64_t s, int relative)
 {
-  // fprintf(stderr, "%s to %i\n", __FUNCTION__, s);
-
   int r = CNTERR_NONE;
   uint64_t newpos;
 
@@ -2327,11 +2315,6 @@ int eep_prepare_to_write(eeg_t *cnt, eep_datatype_e type, uint64_t epochl, short
   int comp, chan, seq = 0;
   if (type == DATATYPE_TIMEFREQ)
     seq_len *= cnt->tf_header.componentc;
-
-/*
-  fprintf(stderr, "preparing to write with mode == %i\n", cnt->mode);
-  cnt->mode = CNT_RIFF; // why is this needed?
-*/
 
   eep_clear_epochs(cnt, store);
   store->epochs.epochl = epochl;

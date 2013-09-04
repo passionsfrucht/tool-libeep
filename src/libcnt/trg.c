@@ -286,7 +286,7 @@ void trg_sort(trg_t *trg)
   trgentry_t tmp;
 
   if(trg->c==0) {
-    return 0;
+    return;
   }
 
   do {

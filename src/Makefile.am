@@ -42,6 +42,6 @@ noinst_HEADERS = ${libeep_private_headers}
 lib_LTLIBRARIES = libeep.la
 
 # libeep_private_headers =
-libeep_la_LIBADD =
+libeep_la_LIBADD = -lm
 libeep_la_LDFLAGS = -version-info $(PACKAGE_LIBRARY_VERSION)
 libeep_la_SOURCES = ${libeep_sources} ${libavr_sources} ${libcnt_sources}

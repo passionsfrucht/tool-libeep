@@ -32,6 +32,7 @@ handle_file(const char *filename) {
    * print some info *
    *******************/
   printf("sampling rate........ %f\n", 1.0 / eep_get_period(_libeep_cnt));
+  printf("number of samples.... %i\n", eep_get_samplec(_libeep_cnt));
   printf("number of channels... %i\n", eep_get_chanc(_libeep_cnt));
   printf("history.............. %s\n", eep_get_history(_libeep_cnt));
   /******************

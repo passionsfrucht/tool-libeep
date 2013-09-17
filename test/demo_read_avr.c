@@ -5,7 +5,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 void
 handle_file(const char *filename) {
-  fprintf(stderr, "handling %s...\n", filename);
   /*********************************
    * variables we need for reading *
    *********************************/
@@ -13,6 +12,7 @@ handle_file(const char *filename) {
   FILE  * _libeep_file;            // file access.
   eeg_t * _libeep_avr;
   float * _libeep_muxbuf;          // buffer for sample data
+  fprintf(stderr, "handling %s...\n", filename);
   /**************
    * initialize *
    **************/

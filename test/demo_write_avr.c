@@ -6,15 +6,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 void
 handle_file(const char *filename) {
-  fprintf(stderr, "handling %s...\n", filename);
   /*********************************
    * variables we need for reading *
    *********************************/
   int i,n;
-  FILE      * _libeep_file;         // file pointer
+  FILE      * _libeep_file;        // file pointer
   eeg_t     * _libeep_avr;         // avr structure
   float     * _libeep_muxbuf;      // used for samples
   eegchan_t * channel_structure;
+  fprintf(stderr, "handling %s...\n", filename);
   /******************************************************
    * we need a channel structure before we can continue *
    ******************************************************/

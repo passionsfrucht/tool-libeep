@@ -6,7 +6,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 void
 handle_file(const char *filename) {
-  fprintf(stderr, "handling %s...\n", filename);
   /*********************************
    * variables we need for reading *
    *********************************/
@@ -16,6 +15,7 @@ handle_file(const char *filename) {
   sraw_t * _libeep_muxbuf;          // buffer for sample data
   slen_t   trg_offset;
   char   * trg_code;
+  fprintf(stderr, "handling %s...\n", filename);
   /**************
    * initialize *
    **************/

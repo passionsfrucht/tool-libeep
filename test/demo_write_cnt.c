@@ -6,7 +6,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 void
 handle_file(const char *filename) {
-  fprintf(stderr, "handling %s...\n", filename);
   /*********************************
    * variables we need for reading *
    *********************************/
@@ -15,6 +14,7 @@ handle_file(const char *filename) {
   eeg_t     * _libeep_cnt;             // pointer to eeprobe data structure
   sraw_t    * _libeep_muxbuf;          // buffer for sample data
   eegchan_t * channel_structure;
+  fprintf(stderr, "handling %s...\n", filename);
   /******************************************************
    * we need a channel structure before we can continue *
    ******************************************************/

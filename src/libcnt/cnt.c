@@ -2912,8 +2912,10 @@ int eep_read_float(eeg_t *cnt, eep_datatype_e type, float *muxbuf, uint64_t n)
   long step = chanc;
   storage_t *store = &cnt->store[type];
 
-  if (CNT_RIFF != cnt->mode && CNT_AVR != cnt->mode)
+  // todo
+  if (CNT_RIFF != cnt->mode && CNTX_RIFF != cnt->mode && CNT_AVR != cnt->mode) {
     return CNTERR_BADREQ;
+  }
 
   if (!store->initialized)
     return CNTERR_DATA; /* No such data in this file */
@@ -2965,13 +2967,15 @@ int eep_write_float(eeg_t *cnt, float *muxbuf, uint64_t n)
   long step = chanc;
   storage_t *store;
 
-  if (CNT_RIFF != cnt->mode)
+  if (cnt->mode != CNT_RIFF && cnt->mode != CNTX_RIFF) {
     return CNTERR_BADREQ;
+  }
 
   if ((DATATYPE_UNDEFINED == cnt->current_datachunk) ||
       (DATATYPE_EEG == cnt->current_datachunk) || /* can't write RAW3 data */
-      (!cnt->store[cnt->current_datachunk].initialized))
+      (!cnt->store[cnt->current_datachunk].initialized)) {
       return CNTERR_BADREQ;
+  }
 
   store = &cnt->store[cnt->current_datachunk];
 
@@ -2987,8 +2991,9 @@ int eep_write_float(eeg_t *cnt, float *muxbuf, uint64_t n)
       {
         memcpy(&store->data.buf_float[store->data.writepos * step], &muxbuf[i * step], step * sizeof(float));
         store->data.writepos++;
-        if (store->data.writepos == store->epochs.epochl)
+        if (store->data.writepos == store->epochs.epochl) {
           RET_ON_CNTERROR(putepoch_impl(cnt));
+        }
       }
       break;
 

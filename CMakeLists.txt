@@ -49,8 +49,10 @@ else()
   add_subdirectory(java)
 endif()
 
-find_library(Math m)
-target_link_libraries(Eep ${Math})
+if(UNIX)
+  find_library(Math m)
+  target_link_libraries(Eep ${Math})
+endif(UNIX)
 
 add_executable(demo_read_avr test/demo_read_avr.c)
 add_executable(demo_read_cnt test/demo_read_cnt.c)

@@ -398,6 +398,7 @@ int            eep_get_fileversion_minor(eeg_t *cnt);
     "unknown" */
 void           eep_get_dataformat(eeg_t *cnt, char *format);
 
+int            eep_has_history(eeg_t *);
 void           eep_set_history(eeg_t *cnt, const char *hist);
 void           eep_append_history(eeg_t *cnt, const char *histline);
 const char*    eep_get_history(eeg_t *cnt);

@@ -2878,6 +2878,10 @@ void eep_get_dataformat(eeg_t *cnt, char *format)
   }
 }
 
+int eep_has_history(eeg_t *cnt) {
+  return (cnt->history != NULL);
+}
+
 void eep_set_history(eeg_t *cnt, const char *hist)
 {
   if (NULL == cnt->history) {

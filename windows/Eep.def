@@ -53,6 +53,7 @@ EXPORTS
   eep_get_total_trials
   eep_get_trg
   eep_has_data_of_type
+  eep_has_history
   eep_has_recording_info
   eep_init_from_copy
   eep_init_from_file

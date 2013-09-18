@@ -40,7 +40,7 @@ typedef char chanlab_t[11];
 
 typedef struct {
   char          lab[11];                 /* channel label */
-  unsigned int           filepos;        /* offset of data in file */
+  uint64_t      filepos;                 /* offset of data in file */
 } avrchan_t;
 
 typedef struct {

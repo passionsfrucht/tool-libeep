@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(LIBEEP_VERSION "3.3.170")
+set(LIBEEP_VERSION "3.3.171")
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(PACKAGE libeep)
 

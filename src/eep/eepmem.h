@@ -37,7 +37,7 @@ void *v_realloc(void *ptr, size_t size, const char *mtypefrag);
 
 #define v_new(type) (type *) v_malloc(sizeof(type), "v_new")
 
-#define v_free(ptr)   if((ptr) != NULL) { free(ptr),  (ptr) = NULL; } 
+#define v_free(ptr)   if((ptr) != NULL) { free(ptr); (ptr) = NULL; } 
 
 
 #define v_extend(ptr, num, type, extnum) \

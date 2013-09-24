@@ -1166,8 +1166,9 @@ int _cntopen_raw3_64(eeg_t *EEG) {
       if (CNTERR_NONE != read_recinfo_chunk(EEG, EEG->recording_info))
         v_free(EEG->recording_info);
 
-  for (i = 0; i < NUM_DATATYPES; i++)
+  for (i = 0; i < NUM_DATATYPES; i++) {
     init_data_store(EEG, (eep_datatype_e) i);
+  }
 
   return CNTERR_NONE;
 }
@@ -2140,6 +2141,20 @@ eegchan_t get_chan(eeg_t *cnt, short chan)
 uint64_t eep_get_samplec(eeg_t *cnt)
 {
   return cnt->eep_header.samplec;
+}
+
+int eep_get_samplec_full(const eeg_t *cnt, uint64_t *samplec)
+{
+	storage_t *store = NULL;
+
+	if ((DATATYPE_UNDEFINED == cnt->current_datachunk) ||
+		(!cnt->store[cnt->current_datachunk].initialized))
+		return CNTERR_BADREQ;
+
+	store = &cnt->store[cnt->current_datachunk];
+
+	(*samplec) = store->data.writepos + cnt->eep_header.samplec;
+	return CNTERR_NONE;
 }
 
 /* manipulation of cnt structure internals */

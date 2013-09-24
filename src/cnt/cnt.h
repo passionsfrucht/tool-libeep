@@ -271,6 +271,7 @@ short          eep_get_chanc(eeg_t *cnt);
 /* void           set_cnt_chanc(eeg_t *cnt, short chanc, eegchan_t *chanv); */
 void           eep_dup_chan(eeg_t *cnt, short chan, char *newlab);
 uint64_t       eep_get_samplec(eeg_t *cnt);
+int            eep_get_samplec_full(const eeg_t *cnt, uint64_t *samplec);
 
 int            eep_get_chan_index(eeg_t *cnt, const char *lab);  /* case insens., -1 if not found */
 

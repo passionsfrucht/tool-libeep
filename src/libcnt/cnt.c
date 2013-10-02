@@ -119,7 +119,7 @@ char RCS_cnt_c[] = "$RCSfile: cnt.c,v $ $Revision: 2415 $";
 /* Helpers for reading cnt data */
 int init_data_store(eeg_t *cnt, eep_datatype_e type);
 int read_trigger_chunk(eeg_t *cnt);
-int read_chanseq_chunk(eeg_t *cnt, storage_t *store, int expected_length);
+int read_chanseq_chunk(eeg_t *cnt, storage_t *store, uint64_t expected_length);
 int read_epoch_chunk(eeg_t *cnt, storage_t *store);
 int read_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo);
 
@@ -137,7 +137,7 @@ int puthead_EEP20(eeg_t *EEG);
 int getepoch_NS30(eeg_t *EEG, uint64_t epoch);
 
 int write_trigger_chunk(eeg_t *cnt);
-int write_chanseq_chunk(eeg_t *cnt, storage_t *store, int num_chans);
+int write_chanseq_chunk(eeg_t *cnt, storage_t *store, uint64_t num_chans);
 int write_epoch_chunk(eeg_t *cnt, storage_t *store);
 int write_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo);
 
@@ -730,7 +730,7 @@ int tf_convert_for_read(eeg_t *cnt, char *in, float* out, int length)
 {
   char *inbase;
   float *outbase;
-  int comp, chan, smpstep, smp, seq_id;
+  uint64_t comp, chan, smpstep, smp, seq_id;
 
   smpstep = cnt->tf_header.componentc * cnt->eep_header.chanc;
   for (seq_id = 0; seq_id < cnt->tf_header.componentc * cnt->eep_header.chanc; seq_id++)
@@ -754,7 +754,7 @@ long tf_convert_for_write(eeg_t *cnt, float *in, char* out, int length)
 {
   float *inbase;
   char *outbase;
-  int comp, chan, smpstep, smp, seq_id;
+  uint64_t comp, chan, smpstep, smp, seq_id;
 
   smpstep = cnt->tf_header.componentc * cnt->eep_header.chanc;
   for (seq_id = 0; seq_id < cnt->tf_header.componentc * cnt->eep_header.chanc; seq_id++)
@@ -774,7 +774,7 @@ int rawf_convert_for_read(eeg_t *cnt, char *in, float* out, int length)
 {
   char *inbase;
   float *outbase;
-  int smpstep, smp, seq_id;
+  uint64_t smpstep, smp, seq_id;
 
   smpstep = cnt->eep_header.chanc;
   for (seq_id = 0; seq_id < cnt->eep_header.chanc; seq_id++)
@@ -796,7 +796,7 @@ long rawf_convert_for_write(eeg_t *cnt, float *in, char* out, int length)
 {
   float *inbase;
   char *outbase;
-  int smpstep, smp, seq_id;
+  uint64_t smpstep, smp, seq_id;
 
   smpstep = cnt->eep_header.chanc;
   for (seq_id = 0; seq_id < cnt->eep_header.chanc; seq_id++)
@@ -881,6 +881,9 @@ void eep_free(eeg_t *cnt)
 
 eeg_t *eep_init_from_values(float period, short chanc, eegchan_t *chanv)
 {
+  if(chanc < 1 || chanc > CNT_MAX_CHANC)
+    return NULL;
+
   eeg_t *cnt = cnt_init();
   cnt->eep_header.period = period;
   cnt->eep_header.chanc = chanc;
@@ -891,6 +894,9 @@ eeg_t *eep_init_from_values(float period, short chanc, eegchan_t *chanv)
 
 eeg_t* eep_init_from_tf_values(float period, short chanc, eegchan_t *chanv, short compc, tf_component_t *compv)
 {
+  if(chanc < 1 || chanc > CNT_MAX_CHANC)
+    return NULL;
+
   eeg_t *cnt;
 
   cnt = eep_init_from_values(period, chanc, chanv);
@@ -1059,9 +1065,9 @@ int mmap_data_chunk(FILE *f, storage_t *store)
 }
 #endif
 
-int read_chanseq_chunk(eeg_t *EEG, storage_t *store, int expected_length)
+int read_chanseq_chunk(eeg_t *EEG, storage_t *store, uint64_t expected_length)
 {
-  int chanin, compchan;
+  uint64_t chanin, compchan;
 
   if(EEG->mode==CNT_RIFF) {
     RET_ON_RIFFERROR(riff_list_open(EEG->f, &store->ch_toplevel, store->fourcc, EEG->cnt), CNTERR_DATA);
@@ -1166,9 +1172,8 @@ int _cntopen_raw3_64(eeg_t *EEG) {
       if (CNTERR_NONE != read_recinfo_chunk(EEG, EEG->recording_info))
         v_free(EEG->recording_info);
 
-  for (i = 0; i < NUM_DATATYPES; i++) {
+  for (i = 0; i < NUM_DATATYPES; i++)
     init_data_store(EEG, (eep_datatype_e) i);
-  }
 
   return CNTERR_NONE;
 }
@@ -1373,9 +1378,9 @@ int cnt_create_raw3_compr_buffer(eeg_t *EEG)
   return CNTERR_NONE;
 }
 
-int write_chanseq_chunk(eeg_t *cnt, storage_t* store, int num_chans)
+int write_chanseq_chunk(eeg_t *cnt, storage_t* store, uint64_t num_chans)
 {
-  int chan;
+  uint64_t chan;
   char outchan[2];
   if(cnt->mode==CNT_RIFF) {
     RET_ON_RIFFERROR(riff_new(cnt->f, &store->ch_chan, FOURCC_chan, &store->ch_toplevel), CNTERR_FILE);
@@ -1839,7 +1844,7 @@ int init_data_store(eeg_t *cnt, eep_datatype_e type)
 {
   chunk_t   dummychunk;
   chunk64_t dummychunk64;
-  int chanseq_len = 0;
+  uint64_t chanseq_len = 0;
   storage_t *store = &cnt->store[type];
 
   chanseq_len = cnt->eep_header.chanc;
@@ -2198,6 +2203,8 @@ void set_cnt_chanc(eeg_t *cnt, short chanc, eegchan_t *chanv)
 
 eegchan_t *eep_chan_init(short chanc)
 {
+  if(chanc < 1 || chanc > CNT_MAX_CHANC)
+    return NULL;
   eegchan_t *chanv = (eegchan_t *) v_malloc(chanc * sizeof(eegchan_t), "chanv");
   if (NULL != chanv)
     memset((void*)chanv, 0, sizeof(eegchan_t));
@@ -2247,6 +2254,13 @@ void eep_dup_chan(eeg_t *cnt, short chan, char *newlab)
   short* new_seq;
   int comp;
   int type;
+
+  /* in this case we cannot increment further the counter which holds the number of channels */
+  if(cnt->eep_header.chanc == CNT_MAX_CHANC)
+  {
+    /* TODO: indicate error? */
+    return;
+  }
 
   cnt->eep_header.chanv = (eegchan_t *)
     v_realloc(cnt->eep_header.chanv, (cnt->eep_header.chanc + 1) * sizeof(eegchan_t), "chanv");
@@ -2301,7 +2315,7 @@ void eep_dup_chan(eeg_t *cnt, short chan, char *newlab)
 int eep_switch_to_write(eeg_t *cnt, eep_datatype_e type)
 {
   storage_t *store = &cnt->store[type];
-  int chanseq_len = cnt->eep_header.chanc;
+  uint64_t chanseq_len = cnt->eep_header.chanc;
   if (DATATYPE_TIMEFREQ == type)
     chanseq_len *= 2 * cnt->tf_header.componentc;
   if (DATATYPE_UNDEFINED != cnt->current_datachunk)
@@ -2326,8 +2340,8 @@ int eep_switch_to_write(eeg_t *cnt, eep_datatype_e type)
 int eep_prepare_to_write(eeg_t *cnt, eep_datatype_e type, uint64_t epochl, short *chanv)
 {
   storage_t *store = &cnt->store[type];
-  short seq_len = cnt->eep_header.chanc;
-  int comp, chan, seq = 0;
+  uint64_t seq_len = cnt->eep_header.chanc;
+  uint64_t chan, comp, seq = 0;
   if (type == DATATYPE_TIMEFREQ)
     seq_len *= cnt->tf_header.componentc;
 
@@ -2820,7 +2834,7 @@ short* eep_get_chanseq(eeg_t *cnt, eep_datatype_e type)
 {
   storage_t* store = &cnt->store[type];
   short* result = NULL;
-  int size = cnt->eep_header.chanc * sizeof(short);
+  uint64_t size = cnt->eep_header.chanc * sizeof(short);
   if (type == DATATYPE_TIMEFREQ)
     size *= 2 * cnt->tf_header.componentc;
 
@@ -3433,7 +3447,7 @@ int gethead_EEP20(eeg_t *EEG)
   eepio_fseek(EEG->f, OFS_NCHAN, SEEK_SET);
   read_s16(EEG->f, &in);
   EEG->eep_header.chanc = in;
-  if (EEG->eep_header.chanc < 0 || EEG->eep_header.chanc > 1024) return 1;
+  if (EEG->eep_header.chanc < 0 || EEG->eep_header.chanc > 1024) return 1; /* EEG->eep_header.chanc shall be less than 1024? and not less then CNT_MAX_CHANC? */
 
   EEG->eep_header.chanv = (eegchan_t *) v_malloc(EEG->eep_header.chanc * sizeof(eegchan_t), "chanv");
   for(chan = 0; chan < EEG->eep_header.chanc; chan++)

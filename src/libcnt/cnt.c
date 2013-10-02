@@ -881,10 +881,13 @@ void eep_free(eeg_t *cnt)
 
 eeg_t *eep_init_from_values(float period, short chanc, eegchan_t *chanv)
 {
+  eeg_t *cnt;
+
   if(chanc < 1 || chanc > CNT_MAX_CHANC)
     return NULL;
 
-  eeg_t *cnt = cnt_init();
+  cnt = cnt_init();
+
   cnt->eep_header.period = period;
   cnt->eep_header.chanc = chanc;
   cnt->eep_header.chanv = chanv;
@@ -894,10 +897,10 @@ eeg_t *eep_init_from_values(float period, short chanc, eegchan_t *chanv)
 
 eeg_t* eep_init_from_tf_values(float period, short chanc, eegchan_t *chanv, short compc, tf_component_t *compv)
 {
+  eeg_t *cnt;
+
   if(chanc < 1 || chanc > CNT_MAX_CHANC)
     return NULL;
-
-  eeg_t *cnt;
 
   cnt = eep_init_from_values(period, chanc, chanv);
   cnt->tf_header.componentc = compc;
@@ -2203,9 +2206,12 @@ void set_cnt_chanc(eeg_t *cnt, short chanc, eegchan_t *chanv)
 
 eegchan_t *eep_chan_init(short chanc)
 {
+  eegchan_t *chanv;
+
   if(chanc < 1 || chanc > CNT_MAX_CHANC)
     return NULL;
-  eegchan_t *chanv = (eegchan_t *) v_malloc(chanc * sizeof(eegchan_t), "chanv");
+
+  chanv = (eegchan_t *) v_malloc(chanc * sizeof(eegchan_t), "chanv");
   if (NULL != chanv)
     memset((void*)chanv, 0, sizeof(eegchan_t));
   return chanv;

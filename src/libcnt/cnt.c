@@ -421,7 +421,7 @@ int writehead_RAW3(eeg_t *EEG, var_string buf)
 
 int getepoch_impl(eeg_t *cnt, eep_datatype_e type, uint64_t epoch)
 {
-  uint64_t insize, insamples, got;
+  uint64_t insize, insamples, got, samples_to_read;
   char *inbuf;
   storage_t *store = &cnt->store[type];
 
@@ -444,8 +444,13 @@ int getepoch_impl(eeg_t *cnt, eep_datatype_e type, uint64_t epoch)
 
   /* how many bytes to read ? */
   if (epoch == store->epochs.epochc - 1) {
+    /* guard for the (unsigned) subtraction below */
+	if(totsamples < epoch * store->epochs.epochl)
+		return CNTERR_BADREQ;
+
     insize = store->ch_data.size - store->epochs.epochv[epoch];
-    insamples = totsamples - epoch * store->epochs.epochl;
+    samples_to_read = totsamples - epoch * store->epochs.epochl;
+	insamples = (samples_to_read < store->epochs.epochl) ? samples_to_read : store->epochs.epochl;
   }
   else {
     insize = store->epochs.epochv[epoch + 1] - store->epochs.epochv[epoch];

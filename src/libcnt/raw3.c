@@ -754,7 +754,7 @@ int compchan(raw3_t *raw3, sraw_t *last, sraw_t *cur, int n, char *out)
     rc = &raw3->rc[imin];
 
     /* need 32 bit storage ? */
-    if (rc->nexcbits > 16 || rc->res[0] < -32768 || rc->res[0] >= 32768 )
+    if (rc->nexcbits >= 16 || rc->res[0] < -32768 || rc->res[0] >= 32768 )
     {
       rc->method |= 0x08;
       short_method = RAW3_COPY_32;

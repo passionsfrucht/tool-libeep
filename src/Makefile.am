@@ -2,6 +2,7 @@ libeep_headers = eep/eepmisc.h \
                  eep/eepio.h \
                  eep/eepmem.h \
                  eep/eepraw.h \
+                 eep/inttypes.h \
                  eep/stdint.h \
                  eep/val.h \
                  eep/var_string.h \

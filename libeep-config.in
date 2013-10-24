@@ -12,6 +12,8 @@ Options:
 	[--prefix[=DIR]]
 	[--exec-prefix[=DIR]]
 	[--version]
+	[--include-dir]
+	[--library-dir]
 Libraries:
 	libeep
 EOF
@@ -53,6 +55,12 @@ while test $# -gt 0; do
       ;;
     --libs)
       echo -L$prefix/lib -leep -lm
+      ;;
+    --include-dir)
+      echo $prefix/include/@PACKAGE@-@LIBEEP_VERSION@
+      ;;
+    --library-dir)
+      echo $prefix/lib
       ;;
     *)
       usage 1 1>&2

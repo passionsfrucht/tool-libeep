@@ -36,8 +36,8 @@ typedef int  sraw_t;   /* "sample raw" - a type which can contain 32 bit signeds
 typedef int  slen_t;   /* "sample length" - signed, must count sample numbers (up to 1e7) */
 
 typedef struct {      /* "sample window" */
-  uint64_t start;
-  uint64_t length;
+  int64_t start;
+  int64_t length;
 } swin_t;
 
 

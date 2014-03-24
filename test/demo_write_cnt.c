@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 // libeep
+#include <eep/eepio.h>
 #include <cnt/cnt.h>
 ///////////////////////////////////////////////////////////////////////////////
 void
@@ -37,7 +38,7 @@ handle_file(const char *filename) {
     fprintf(stderr, "could not initialize %s\n", filename);
     return;
   }
-  _libeep_file=eepio_fopen(filename, "w");
+  _libeep_file=eepio_fopen(filename, "wb");
   if(_libeep_cnt==NULL) {
     fprintf(stderr, "could not open %s\n", filename);
     return;

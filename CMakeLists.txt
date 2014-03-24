@@ -14,6 +14,7 @@ if(UNIX)
   install(FILES ${CMAKE_BINARY_DIR}/libeep.pc DESTINATION lib/pkgconfig)
 endif()
 if(WIN32)
+  add_definitions(-D_USE_MATH_DEFINES)
   set(Eep_def windows/Eep.def)
 endif(WIN32)
 

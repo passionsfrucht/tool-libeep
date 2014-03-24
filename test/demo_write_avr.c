@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 // libeep
+#include <eep/eepio.h>
 #include <cnt/cnt.h>
 ///////////////////////////////////////////////////////////////////////////////
 void

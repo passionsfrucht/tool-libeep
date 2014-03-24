@@ -69,7 +69,7 @@ typedef struct {
 
 typedef struct {
   asciiline_t   extra_header_text;
-  uint64_t      c; // trg count
+  uint64_t      c;
   trgentry_t  * v;
   uint64_t      cmax;
 } trg_t;

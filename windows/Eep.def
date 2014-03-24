@@ -98,6 +98,7 @@ EXPORTS
   eep_set_trg
   eepstatus
   eepstdout
+  eep_unixdate_to_exceldate
   eep_write_float
   eep_write_sraw
   free_eep_bar

@@ -747,8 +747,8 @@ int compchan(raw3_t *raw3, sraw_t *last, sraw_t *cur, int n, char *out)
         raw3->rc[mi].length);
     */
       if (raw3->rc[mi].length < lmin) {
-	imin = mi;
-	lmin = raw3->rc[mi].length;
+        imin = mi;
+        lmin = raw3->rc[mi].length;
       }
     }
     rc = &raw3->rc[imin];

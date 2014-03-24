@@ -1,6 +1,7 @@
 // system
 #include <stdlib.h>
 // libeep
+#include <eep/eepio.h>
 #include <cnt/cnt.h>
 #include <cnt/trg.h>
 ///////////////////////////////////////////////////////////////////////////////
@@ -10,16 +11,16 @@ handle_file(const char *filename) {
    * variables we need for reading *
    *********************************/
   int i,status;
-  FILE   * _libeep_file;            // file access.
-  eeg_t  * _libeep_cnt;             // pointer to eeprobe data structure
-  sraw_t * _libeep_muxbuf;          // buffer for sample data
-  slen_t   trg_offset;
-  char   * trg_code;
+  FILE     * _libeep_file;            // file access.
+  eeg_t    * _libeep_cnt;             // pointer to eeprobe data structure
+  sraw_t   * _libeep_muxbuf;          // buffer for sample data
+  uint64_t   trg_offset;
+  char     * trg_code;
   fprintf(stderr, "handling %s...\n", filename);
   /**************
    * initialize *
    **************/
-  _libeep_file=eepio_fopen(filename, "r");
+  _libeep_file=eepio_fopen(filename, "rb");
   if(_libeep_file == NULL) {
     fprintf(stderr, "could not open %s\n", filename);
     return;
@@ -50,7 +51,7 @@ handle_file(const char *filename) {
    ****************/
   for(i=0;i<trg_get_c(eep_get_trg(_libeep_cnt));i++) {
     trg_code=trg_get(eep_get_trg(_libeep_cnt), i, &trg_offset);
-    printf("  trg(%i): %li %s\n", i, trg_offset, trg_code);
+    printf("  trg(%i): %li %s\n", i, (slen_t)trg_offset, trg_code);
   }
   /****************
    * print sample *

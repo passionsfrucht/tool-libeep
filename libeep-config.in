@@ -51,7 +51,7 @@ while test $# -gt 0; do
       echo @LIBEEP_VERSION@
       ;;
     --cflags)
-      echo -I$prefix/include/@PACKAGE@-@LIBEEP_VERSION@
+      echo -isystem$prefix/include/@PACKAGE@-@LIBEEP_VERSION@
       ;;
     --libs)
       echo -L$prefix/lib -leep -lm

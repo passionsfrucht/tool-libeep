@@ -3,4 +3,4 @@ Description: A.N.T. erp package
 Requires:
 Version: @LIBEEP_VERSION@
 Libs: -L@prefix@/lib -leep -lm
-Cflags: -I@prefix@/include/@PACKAGE@-@LIBEEP_VERSION@
+Cflags: -isystem@prefix@/include/@PACKAGE@-@LIBEEP_VERSION@

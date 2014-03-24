@@ -1,6 +1,7 @@
 // system
 #include <stdlib.h>
 // libeep
+#include <eep/eepio.h>
 #include <cnt/cnt.h>
 ///////////////////////////////////////////////////////////////////////////////
 void
@@ -16,7 +17,7 @@ handle_file(const char *filename) {
   /**************
    * initialize *
    **************/
-  _libeep_file=eepio_fopen(filename, "r");
+  _libeep_file=eepio_fopen(filename, "rb");
   if(_libeep_file == NULL) {
     fprintf(stderr, "could not open %s\n", filename);
     return;

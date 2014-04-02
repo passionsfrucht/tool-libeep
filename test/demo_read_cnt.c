@@ -16,6 +16,7 @@ handle_file(const char *filename) {
   sraw_t   * _libeep_muxbuf;          // buffer for sample data
   uint64_t   trg_offset;
   char     * trg_code;
+  trg_t    * trigger_table;
   fprintf(stderr, "handling %s...\n", filename);
   /**************
    * initialize *
@@ -49,8 +50,9 @@ handle_file(const char *filename) {
   /****************
    * print events *
    ****************/
-  for(i=0;i<trg_get_c(eep_get_trg(_libeep_cnt));i++) {
-    trg_code=trg_get(eep_get_trg(_libeep_cnt), i, &trg_offset);
+  trigger_table = eep_get_trg(_libeep_cnt);
+  for(i=0;i<trg_get_c(trigger_table);i++) {
+    trg_code=trg_get(trigger_table, i, &trg_offset);
     printf("  trg(%i): %li %s\n", i, (slen_t)trg_offset, trg_code);
   }
   /****************
@@ -60,12 +62,18 @@ handle_file(const char *filename) {
   // first, allocate memory(to hold 1 sample)
   _libeep_muxbuf = (sraw_t*)(malloc(CNTBUF_SIZE(_libeep_cnt, 1)));
   // seek to offset
-  eep_seek(_libeep_cnt, DATATYPE_EEG, 13, 0);
+  status = eep_seek(_libeep_cnt, DATATYPE_EEG, 13, 0);
+  if(status) {
+    fprintf(stderr, "could not seek: %i\n", status);
+  }
   // read sample
-  eep_read_sraw(_libeep_cnt, DATATYPE_EEG, _libeep_muxbuf, 1);
+  status = eep_read_sraw(_libeep_cnt, DATATYPE_EEG, _libeep_muxbuf, 1);
+  if(status) {
+    fprintf(stderr, "could not read samples: %i\n", status);
+  }
   printf("sample 13: ");
   for(i=0;i<eep_get_chanc(_libeep_cnt);i++) {
-    printf("%f ", _libeep_muxbuf[i] * eep_get_chan_scale(_libeep_cnt, i));
+    printf("%f ", (float)_libeep_muxbuf[i] * eep_get_chan_scale(_libeep_cnt, i));
   }
   printf("\n");
   /***********

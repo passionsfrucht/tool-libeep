@@ -43,7 +43,7 @@ handle_file(const char *filename) {
   eep_set_conditioncolor(_libeep_avr, "color:8");     // TODO, list color table
   eep_set_pre_stimulus_interval(_libeep_avr, 0.1);    // 0.1 seconds
 
-  _libeep_file=eepio_fopen(filename, "w");
+  _libeep_file=eepio_fopen(filename, "wb");
   if(_libeep_avr==NULL) {
     fprintf(stderr, "could not open %s\n", filename);
     return;

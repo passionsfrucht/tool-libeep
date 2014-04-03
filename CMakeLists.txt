@@ -84,7 +84,6 @@ if(IS_DIRECTORY $ENV{MATLAB})
     # linux 64
     set(MATLAB_BIN $ENV{MATLAB}/bin/glnxa64)
     set(MATLAB_EXT mexa64)
-    # set(MATLAB_MEX_CFLAGS "CFLAGS=-std=c99 -fPIC -DLIBEEP_VERSION=\"${LIBEEP_VERSION}-MATLAB\"")
     set(MATLAB_MEX_CFLAGS "CFLAGS=-std=c99 -fPIC")
   else()
     # fallback, mac 64
@@ -92,22 +91,10 @@ if(IS_DIRECTORY $ENV{MATLAB})
     set(MATLAB_EXT mexmaci64)
   endif()
 
-  # if(WIN32)
-  #   SET(CMAKE_FIND_LIBRARY_PREFIXES "")
-  #   SET(CMAKE_FIND_LIBRARY_SUFFIXES ".dll" ".lib")
-  # endif()
-
-# find_library(MATLAB_MEX_LIBRARY mex ${MATLAB_BIN} NO_DEFAULT_PATH)
-# find_library(MATLAB_MX_LIBRARY  mx  ${MATLAB_BIN} NO_DEFAULT_PATH)
-# find_library(MATLAB_ENG_LIBRARY eng ${MATLAB_BIN} NO_DEFAULT_PATH)
-
   message("Eep................. ${Eep}")
   message("MATLAB_BIN.......... ${MATLAB_BIN}")
   message("MATLAB_EXT.......... ${MATLAB_EXT}")
   message("CMAKE_BINARY_DIR.... ${CMAKE_BINARY_DIR}")
-# message("MATLAB_MEX_LIBRARY.. ${MATLAB_MEX_LIBRARY}")
-# message("MATLAB_ENG_LIBRARY.. ${MATLAB_ENG_LIBRARY}")
-# message("MATLAB_MX_LIBRARY... ${MATLAB_MX_LIBRARY}")
 
   foreach(matlab_target read_eep_avr read_eep_cnt read_eep_trg write_eep_avr write_eep_cnt)
     add_custom_command(OUTPUT ${matlab_target}.${MATLAB_EXT}
@@ -121,10 +108,9 @@ if(IS_DIRECTORY $ENV{MATLAB})
     add_custom_target(${matlab_target} ALL DEPENDS ${matlab_target}.${MATLAB_EXT})
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${matlab_target}.${MATLAB_EXT} DESTINATION share/libeep/matlab)
+    install(FILES ${CMAKE_SOURCE_DIR}/mex/matlab/${matlab_target}.m DESTINATION share/libeep/matlab)
   endforeach()
-  # add_library(read_eep_cnt MODULE ${CMAKE_SOURCE_DIR}/mex/matlab/read_eep_cnt.c)
-  # target_link_libraries(read_eep_cnt Eep)
-  # set_target_properties(read_eep_cnt PROPERTIES PREFIX "" SUFFIX  ".${MATLAB_EXT}" CMAKE_C_COMPILER "${MATLAB_BIN}/mex")
+elseif()
   message("please set the environment variable MATLAB to a matlab directry to build the MATLAB plugin")
 endif()
 

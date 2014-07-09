@@ -1554,9 +1554,9 @@ int write_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo)
   if (NULL == textbuf)
     return CNTERR_MEM;
 
-  sprintf(line, "[StartDate]\n%.12le\n", recinfo->m_startDate);
+  sprintf(line, "[StartDate]\n%.20le\n", recinfo->m_startDate);
   varstr_append(textbuf, line);
-  sprintf(line, "[StartFraction]\n%.12le\n", recinfo->m_startFraction);
+  sprintf(line, "[StartFraction]\n%.20le\n", recinfo->m_startFraction);
   varstr_append(textbuf, line);
   snprintf(line, 512, "[Hospital]\n%s\n", recinfo->m_szHospital);
   varstr_append(textbuf, line);
@@ -1645,7 +1645,7 @@ int read_recinfo_chunk(eeg_t *cnt, record_info_t* recinfo) {
             return 1;
           }
           recinfo->m_startDate = dbl;
-          // hack around eemagine's mistake for not writing version-info in files.
+          // hack around a mistake for not writing version-info in files.
           // if we read ascii and successfully find a StartDate in ascii, then surely
           // this file does not a contain binary chunk.
           this_chunk_contains_binary_data=0;

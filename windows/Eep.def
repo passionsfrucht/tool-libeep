@@ -117,12 +117,53 @@ EXPORTS
   libeep_get_sample_count
   libeep_get_sample_frequency
   libeep_get_samples
+  libeep_free_samples
   libeep_get_trials_averaged
   libeep_get_trials_total
   libeep_get_version
   libeep_get_zero_offset
+  libeep_write_cnt
+  libeep_add_samples
   libeep_init
   libeep_read
+  libeep_add_raw_samples
+  libeep_get_raw_samples
+  libeep_free_raw_samples
+  libeep_get_start_time
+  libeep_set_start_time
+  libeep_get_hospital
+  libeep_set_hospital
+  libeep_get_test_name
+  libeep_set_test_name
+  libeep_get_test_serial
+  libeep_set_test_serial
+  libeep_get_physician
+  libeep_set_physician
+  libeep_get_technician
+  libeep_set_technician
+  libeep_get_machine_make
+  libeep_set_machine_make
+  libeep_get_machine_model
+  libeep_set_machine_model
+  libeep_get_machine_serial_number
+  libeep_set_machine_serial_number
+  libeep_get_patient_name
+  libeep_set_patient_name
+  libeep_get_patient_id
+  libeep_set_patient_id
+  libeep_get_patient_address
+  libeep_set_patient_address
+  libeep_get_patient_phone
+  libeep_set_patient_phone
+  libeep_get_patient_sex
+  libeep_set_patient_sex
+  libeep_get_patient_handedness
+  libeep_set_patient_handedness
+  libeep_get_comment
+  libeep_set_comment
+  libeep_add_trigger
+  libeep_get_trigger_count
+  libeep_get_trigger
   raw3_get_ERR_FLAG_0
   raw3_get_ERR_FLAG_16
   raw3_get_ERR_FLAG_EPOCH

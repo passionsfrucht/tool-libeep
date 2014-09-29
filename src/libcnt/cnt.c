@@ -3207,6 +3207,227 @@ void eep_set_recording_startdate_struct(eeg_t *cnt, struct tm *tm) {
   }
 }
 
+const char *eep_get_hospital(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szHospital;
+	}
+	return NULL;
+}
+
+const char *eep_get_test_name(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szTestName;
+	}
+	return NULL;
+}
+
+const char *eep_get_test_serial(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szTestSerial;
+	}
+	return NULL;
+}
+
+const char *eep_get_physician(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szPhysician;
+	}
+	return NULL;
+}
+
+const char *eep_get_technician(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szTechnician;
+	}
+	return NULL;
+}
+
+const char *eep_get_machine_make(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szMachineMake;
+	}
+	return NULL;
+}
+
+const char *eep_get_machine_model(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szMachineModel;
+	}
+	return NULL;
+}
+
+const char *eep_get_machine_serial_number(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szMachineSN;
+	}
+	return NULL;
+}
+
+const char *eep_get_patient_name(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szName;
+	}
+	return NULL;
+}
+
+const char *eep_get_patient_id(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szID;
+	}
+	return NULL;
+}
+
+const char *eep_get_patient_address(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szAddress;
+	}
+	return NULL;
+}
+
+const char *eep_get_patient_phone(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szPhone;
+	}
+	return NULL;
+}
+
+char eep_get_patient_sex(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_chSex;
+	}
+	return NULL;
+}
+
+char eep_get_patient_handedness(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_chHandedness;
+	}
+	return NULL;
+}
+
+struct tm *eep_get_patient_day_of_birth(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return &(cnt->recording_info->m_DOB);
+	}
+	return NULL;
+}
+
+const char *eep_get_comment(eeg_t *cnt) {
+	if (eep_has_recording_info(cnt)) {
+		return cnt->recording_info->m_szComment;
+	}
+	return NULL;
+}
+
+void eep_set_hospital(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szHospital) / sizeof(cnt->recording_info->m_szHospital[0]) - 1;
+		strncpy(cnt->recording_info->m_szHospital, value, len);
+	}
+}
+
+void eep_set_test_name(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szTestName) / sizeof(cnt->recording_info->m_szTestName[0]) - 1;
+		strncpy(cnt->recording_info->m_szTestName, value, len);
+	}
+}
+
+void eep_set_test_serial(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szTestSerial) / sizeof(cnt->recording_info->m_szTestSerial[0]) - 1;
+		strncpy(cnt->recording_info->m_szTestSerial, value, len);
+	}
+}
+
+void eep_set_physician(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szPhysician) / sizeof(cnt->recording_info->m_szPhysician[0]) - 1;
+		strncpy(cnt->recording_info->m_szPhysician, value, len);
+	}
+}
+
+void eep_set_technician(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szTechnician) / sizeof(cnt->recording_info->m_szTechnician[0]) - 1;
+		strncpy(cnt->recording_info->m_szTechnician, value, len);
+	}
+}
+
+void eep_set_machine_make(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szMachineMake) / sizeof(cnt->recording_info->m_szMachineMake[0]) - 1;
+		strncpy(cnt->recording_info->m_szMachineMake, value, len);
+	}
+}
+
+void eep_set_machine_model(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szMachineModel) / sizeof(cnt->recording_info->m_szMachineModel[0]) - 1;
+		strncpy(cnt->recording_info->m_szMachineModel, value, len);
+	}
+}
+
+void eep_set_machine_serial_number(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szMachineSN) / sizeof(cnt->recording_info->m_szMachineSN[0]) - 1;
+		strncpy(cnt->recording_info->m_szMachineSN, value, len);
+	}
+}
+
+void eep_set_patient_name(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szName) / sizeof(cnt->recording_info->m_szName[0]) - 1;
+		strncpy(cnt->recording_info->m_szName, value, len);
+	}
+}
+
+void eep_set_patient_id(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szID) / sizeof(cnt->recording_info->m_szID[0]) - 1;
+		strncpy(cnt->recording_info->m_szID, value, len);
+	}
+}
+
+void eep_set_patient_address(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szAddress) / sizeof(cnt->recording_info->m_szAddress[0]) - 1;
+		strncpy(cnt->recording_info->m_szAddress, value, len);
+	}
+}
+
+void eep_set_patient_phone(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szPhone) / sizeof(cnt->recording_info->m_szPhone[0]) - 1;
+		strncpy(cnt->recording_info->m_szPhone, value, len);
+	}
+}
+
+void eep_set_patient_sex(eeg_t *cnt, char value) {
+	if (eep_has_recording_info(cnt)) {
+		cnt->recording_info->m_chSex = value;
+	}
+}
+
+void eep_set_patient_handedness(eeg_t *cnt, char value) {
+	if (eep_has_recording_info(cnt)) {
+		cnt->recording_info->m_chHandedness = value;
+	}
+}
+
+void eep_set_patient_day_of_birth(eeg_t *cnt, struct tm *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		cnt->recording_info->m_DOB = *value;
+	}
+}
+
+void eep_set_comment(eeg_t *cnt, const char *value) {
+	if (eep_has_recording_info(cnt) && value) {
+		const size_t len = sizeof(cnt->recording_info->m_szComment) / sizeof(cnt->recording_info->m_szComment[0]) - 1;
+		strncpy(cnt->recording_info->m_szComment, value, len);
+	}
+}
+
 /*****************************************************************************/
 /*********************** Backwards compatibility stuff ***********************/
 /*****************************************************************************/

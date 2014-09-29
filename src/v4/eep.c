@@ -1,6 +1,7 @@
 // system
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 // libeep
 #include <v4/eep.h>
 #include <cnt/cnt.h>
@@ -65,7 +66,7 @@ _libeep_get_object(int handle, open_mode om) {
     fprintf(stderr, "libeep: invalid handle %i\n", handle);
     exit(-1);
   }
-  // check valid open mode 
+  // check valid open mode
   if(om != om_none && rv->open_mode != om) {
     fprintf(stderr, "libeep: invalid mode on handle %i\n", handle);
     exit(-1);
@@ -107,8 +108,40 @@ libeep_read(const char *filename) {
   return handle;
 }
 ///////////////////////////////////////////////////////////////////////////////
+/* local helper functions */
+static void
+channel_label(int channel, const char **channel_labels, char *result) {
+    if (!channel_labels) {
+        sprintf(result, "chan%04i", channel);
+    }
+    else {
+        strncpy(result, channel_labels[channel], 10);
+        result[9] = '\0';
+    }
+}
+///////////////////////////////////////////////////////////////////////////////
+static void
+channel_unit(int channel, const char **channel_units, char *result) {
+    if (!channel_units) {
+        sprintf(result, "uV");
+    }
+    else {
+        strncpy(result, channel_units[channel], 10);
+        result[9] = '\0';
+    }
+}
+///////////////////////////////////////////////////////////////////////////////
+static void
+libeep_create_recording_info(eeg_t *cnt) {
+    record_info_t *info = (record_info_t *)malloc(sizeof(record_info_t));
+    if (info) {
+        memset(info, 0, sizeof(record_info_t));
+        eep_set_recording_info(cnt, info);
+    }
+}
+///////////////////////////////////////////////////////////////////////////////
 int
-libeep_write_cnt(const char *filename, int rate, int nchan) {
+libeep_write_cnt(const char *filename, int rate, int nchan, const char **channel_labels, const char **channel_units) {
   eegchan_t *channel_structure;
   int handle=_libeep_allocate();
   int channel_id;
@@ -126,9 +159,11 @@ libeep_write_cnt(const char *filename, int rate, int nchan) {
     return -1;
   }
   for(channel_id=0;channel_id<nchan;channel_id++) {
-    char s[8];
-    sprintf(s, "chan%04i", channel_id);
-    eep_chan_set(channel_structure, channel_id, s, 1, 1.0/SCALING_FACTOR, "uV");
+    char label[10];
+    char unit[10];
+    channel_label(channel_id, channel_labels, label);
+    channel_unit(channel_id, channel_units, unit);
+    eep_chan_set(channel_structure, channel_id, label, 1, 1.0 / SCALING_FACTOR, unit);
   }
   // file init
   obj->eep=eep_init_from_values(1/(float)rate, nchan, channel_structure);
@@ -137,7 +172,7 @@ libeep_write_cnt(const char *filename, int rate, int nchan) {
     return -1;
   }
   // eep struct
-  if(eep_create_file(obj->eep, filename, obj->file, NULL, 0, filename) != CNTERR_NONE) {
+  if(eep_create_file64(obj->eep, filename, obj->file, filename) != CNTERR_NONE) {
     fprintf(stderr, "could not create file!\n");
     return -1;
   }
@@ -208,10 +243,10 @@ libeep_get_channel_index(int handle, const char *chan) {
   return eep_get_chan_index(obj->eep, chan);
 }
 ///////////////////////////////////////////////////////////////////////////////
-float
+int
 libeep_get_sample_frequency(int handle) {
   struct _libeep_entry * obj=_libeep_get_object(handle, om_read);
-  return (float)(1.0 / eep_get_period(obj->eep));
+  return (int)(/* TODO: round before truncating */(1.0 / eep_get_period(obj->eep)));
 }
 ///////////////////////////////////////////////////////////////////////////////
 long
@@ -305,7 +340,15 @@ libeep_get_samples(int handle, long from, long to) {
   return NULL;
 }
 ///////////////////////////////////////////////////////////////////////////////
-void libeep_add_samples(int handle, const float *data, int n) {
+void
+libeep_free_samples(float *buffer) {
+  if(buffer) {
+    free(buffer);
+  }
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_add_samples(int handle, const float *data, int n) {
   struct _libeep_entry * obj=_libeep_get_object(handle, om_write);
   sraw_t *buffer;
   const float  * ptr_src;
@@ -325,6 +368,297 @@ void libeep_add_samples(int handle, const float *data, int n) {
   eep_write_sraw(obj->eep, buffer, n);
 
   free(buffer);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_add_raw_samples(int handle, const int32_t *data, int n) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    eep_write_sraw(obj->eep, data, n);
+}
+///////////////////////////////////////////////////////////////////////////////
+int32_t *
+libeep_get_raw_samples(int handle, long from, long to) {
+    sraw_t *buffer_unscaled;
+    const sraw_t * ptr_src;
+    struct _libeep_entry * obj;
+
+    obj = _libeep_get_object(handle, om_read);
+    // seek
+    if (eep_seek(obj->eep, DATATYPE_EEG, from, 0)) {
+        return NULL;
+    }
+    // get unscaled data
+    buffer_unscaled = (sraw_t *)malloc(CNTBUF_SIZE(obj->eep, to - from));
+    if (eep_read_sraw(obj->eep, DATATYPE_EEG, buffer_unscaled, to - from)) {
+        free(buffer_unscaled);
+        return NULL;
+    }
+    return buffer_unscaled;
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_free_raw_samples(int32_t *buffer) {
+  if(buffer) {
+    free(buffer);
+  }
+}
+///////////////////////////////////////////////////////////////////////////////
+time_t
+libeep_get_start_time(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_recording_startdate_epoch(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_start_time(int handle, time_t start_time) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_recording_startdate_epoch(obj->eep, start_time);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_hospital(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_hospital(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_hospital(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_hospital(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_test_name(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_test_name(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_test_name(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_test_name(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_test_serial(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_test_serial(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_test_serial(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_test_serial(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_physician(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_physician(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_physician(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_physician(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_technician(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_technician(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_technician(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_technician(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_machine_make(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_machine_make(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_machine_make(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_machine_make(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_machine_model(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_machine_model(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_machine_model(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_machine_model(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_machine_serial_number(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_machine_serial_number(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_machine_serial_number(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_machine_serial_number(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_patient_name(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_patient_name(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_patient_name(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_patient_name(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_patient_id(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_patient_id(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_patient_id(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_patient_id(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_patient_address(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_patient_address(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_patient_address(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_patient_address(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_patient_phone(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_patient_phone(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_patient_phone(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_patient_phone(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_comment(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_comment(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_comment(int handle, const char *value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_comment(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+char
+libeep_get_patient_sex(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_patient_sex(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_patient_sex(int handle, char value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_patient_sex(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+char
+libeep_get_patient_handedness(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return eep_get_patient_handedness(obj->eep);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_patient_handedness(int handle, char value) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    if (!eep_has_recording_info(obj->eep)) {
+        libeep_create_recording_info(obj->eep);
+    }
+    eep_set_patient_handedness(obj->eep, value);
+}
+///////////////////////////////////////////////////////////////////////////////
+int
+libeep_add_trigger(int handle, uint64_t sample, const char *code) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+    return trg_set(eep_get_trg(obj->eep), sample, code);
+}
+///////////////////////////////////////////////////////////////////////////////
+int
+libeep_get_trigger_count(int handle) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return trg_get_c(eep_get_trg(obj->eep));
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_trigger(int handle, int idx, uint64_t *sample) {
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+    return trg_get(eep_get_trg(obj->eep), idx, sample);
 }
 ///////////////////////////////////////////////////////////////////////////////
 long

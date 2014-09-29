@@ -374,6 +374,40 @@ void eep_get_recording_startdate_struct(eeg_t *, struct tm *);
 void eep_set_recording_startdate_epoch(eeg_t *, time_t);
 void eep_set_recording_startdate_struct(eeg_t *, struct tm *);
 
+const char *eep_get_hospital(eeg_t *cnt);
+const char *eep_get_test_name(eeg_t *cnt);
+const char *eep_get_test_serial(eeg_t *cnt);
+const char *eep_get_physician(eeg_t *cnt);
+const char *eep_get_technician(eeg_t *cnt);
+const char *eep_get_machine_make(eeg_t *cnt);
+const char *eep_get_machine_model(eeg_t *cnt);
+const char *eep_get_machine_serial_number(eeg_t *cnt);
+const char *eep_get_patient_name(eeg_t *cnt);
+const char *eep_get_patient_id(eeg_t *cnt);
+const char *eep_get_patient_address(eeg_t *cnt);
+const char *eep_get_patient_phone(eeg_t *cnt);
+char eep_get_patient_sex(eeg_t *cnt);
+char eep_get_patient_handedness(eeg_t *cnt);
+struct tm *eep_get_patient_day_of_birth(eeg_t *cnt);
+const char *eep_get_comment(eeg_t *cnt);
+
+void eep_set_hospital(eeg_t *cnt, const char *value);
+void eep_set_test_name(eeg_t *cnt, const char *value);
+void eep_set_test_serial(eeg_t *cnt, const char *value);
+void eep_set_physician(eeg_t *cnt, const char *value);
+void eep_set_technician(eeg_t *cnt, const char *value);
+void eep_set_machine_make(eeg_t *cnt, const char *value);
+void eep_set_machine_model(eeg_t *cnt, const char *value);
+void eep_set_machine_serial_number(eeg_t *cnt, const char *value);
+void eep_set_patient_name(eeg_t *cnt, const char *value);
+void eep_set_patient_id(eeg_t *cnt, const char *value);
+void eep_set_patient_address(eeg_t *cnt, const char *value);
+void eep_set_patient_phone(eeg_t *cnt, const char *value);
+void eep_set_patient_sex(eeg_t *cnt, char value);
+void eep_set_patient_handedness(eeg_t *cnt, char value);
+void eep_set_patient_day_of_birth(eeg_t *cnt, struct tm *value);
+void eep_set_comment(eeg_t *cnt, const char *value);
+
 
 /* Enable this if you want to have a valid output file at all times
    during write. Enable this when recording EEG's over very long intervals

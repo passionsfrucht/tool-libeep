@@ -164,6 +164,9 @@ EXPORTS
   libeep_add_trigger
   libeep_get_trigger_count
   libeep_get_trigger
+  libeep_create_recinfo
+  libeep_create_channel_info
+  libeep_add_channel
   raw3_get_ERR_FLAG_0
   raw3_get_ERR_FLAG_16
   raw3_get_ERR_FLAG_EPOCH

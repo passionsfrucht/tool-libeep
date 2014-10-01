@@ -1,6 +1,7 @@
 // system
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 // libeep
 #include <v4/eep.h>
 ///////////////////////////////////////////////////////////////////////////////
@@ -11,8 +12,22 @@ const char * channel_units[CHANNEL_COUNT] = { "uV", "uV", "uV", "uV", "uV", "uV"
 void
 handle_file(const char *filename) {
   int handle, i, c;
+  chaninfo_t channel_info_handle;
+  recinfo_t  recording_info_handle;
 
-  handle = libeep_write_cnt(filename, 512, CHANNEL_COUNT, channel_names, channel_units);
+  // setup channel information
+  channel_info_handle = libeep_create_channel_info();
+  for (i = 0; i < CHANNEL_COUNT; ++i) {
+	  libeep_add_channel(channel_info_handle, channel_names[i], channel_units[i]);
+  }
+
+  // setup recording info
+  recording_info_handle = libeep_create_recinfo();
+  libeep_set_start_time(recording_info_handle, time(NULL));
+  libeep_set_patient_name(recording_info_handle, "John Doe");
+  libeep_set_hospital(recording_info_handle, "Hospital");
+
+  handle = libeep_write_cnt(filename, 512, channel_info_handle, recording_info_handle);
   if(handle == -1) {
     fprintf(stderr, "error opening %s", filename);
   }

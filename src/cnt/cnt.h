@@ -105,7 +105,7 @@ typedef enum
 
 #define NUM_DATATYPES 4
 
-typedef struct {
+struct record_info_s {
   double        m_startDate;      /* Segment Start Time, m_Date */
   double        m_startFraction;  /* Segment Start Time, m_Fraction */
   asciiline_t   m_szHospital;     /* Hospital ID or desciption */
@@ -125,11 +125,12 @@ typedef struct {
   TCHAR         m_chSex;          /* Capital letters M and F for male and female respectively */
   TCHAR         m_chHandedness;   /* Capital letters M, L or R for mixed, left or right */
   struct tm     m_DOB;            /* Date of birth */
-} record_info_t;
+};
 
 typedef struct eegchan_s eegchan_t;
 typedef struct tf_component_s tf_component_t;
 typedef struct eeg_dummy_t eeg_t;
+typedef struct record_info_s record_info_t;
 
 /*
   converters need to create and fill a channel table
@@ -245,7 +246,7 @@ int eep_seek   (eeg_t *cnt, eep_datatype_e type, uint64_t sample, int relative);
 int eep_read_sraw   (eeg_t *cnt, eep_datatype_e type, sraw_t *muxbuf, uint64_t n);
 int eep_read_float  (eeg_t *cnt, eep_datatype_e type, float  *muxbuf, uint64_t n);
 /* For writing, the datatype depends on what has been set by eep_prepare_to_write(some_datatype) */
-int eep_write_sraw  (eeg_t *cnt, sraw_t *muxbuf, uint64_t n);
+int eep_write_sraw  (eeg_t *cnt, const sraw_t *muxbuf, uint64_t n);
 int eep_write_float (eeg_t *cnt, float  *muxbuf, uint64_t n);
 
 /*

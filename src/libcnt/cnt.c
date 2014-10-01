@@ -2026,7 +2026,7 @@ int eep_read_sraw (eeg_t *cnt, eep_datatype_e type, sraw_t *muxbuf, uint64_t n)
   }
 }
 
-int eep_write_sraw (eeg_t *cnt, sraw_t *muxbuf, uint64_t n)
+int eep_write_sraw (eeg_t *cnt, const sraw_t *muxbuf, uint64_t n)
 {
   long step = cnt->eep_header.chanc;
   size_t outbytes = (size_t) step * sizeof(sraw_t);

@@ -442,7 +442,7 @@ _libeep_get_samples_avr(struct _libeep_entry * obj, long from, long to) {
     return NULL;
   }
   // get unscaled data
-  buffer_unscaled = (float *)malloc(CNTBUF_SIZE(obj->eep, to-from));
+  buffer_unscaled = (float *)malloc(FLOAT_CNTBUF_SIZE(obj->eep, to-from));
   if(eep_read_float(obj->eep, DATATYPE_AVERAGE, buffer_unscaled, to-from)) {
     free(buffer_unscaled);
     return NULL;
@@ -812,6 +812,21 @@ libeep_set_patient_handedness(recinfo_t handle, char value) {
 	obj->m_chHandedness = value;
 }
 ///////////////////////////////////////////////////////////////////////////////
+time_t
+libeep_get_date_of_birth(cntfile_t handle) {
+	struct tm *dob = NULL;
+	struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+	dob = eep_get_patient_day_of_birth(obj->eep);
+	return mktime(dob); // performs the reverse translation that localtime does so libeep_set_date_of_birth have to use localtime to get the correct date back
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_date_of_birth(recinfo_t handle, time_t value) {
+	struct record_info_s * obj = _libeep_get_recinfo(handle);
+	struct tm *temp = localtime(&value);
+	memmove(&obj->m_DOB, temp, sizeof(struct tm));
+}
+///////////////////////////////////////////////////////////////////////////////
 int
 libeep_add_trigger(cntfile_t handle, uint64_t sample, const char *code) {
     struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
@@ -879,16 +894,28 @@ chaninfo_t libeep_create_channel_info() {
 	return _libeep_channels_allocate();
 }
 ///////////////////////////////////////////////////////////////////////////////
-int libeep_add_channel(chaninfo_t handle, const char *label, const char *unit) {
+int libeep_add_channel(chaninfo_t handle, const char *label, const char *ref_label, const char *unit) {
 	eegchan_t *channels = NULL;
+	const char *default_ref_label = "ref";
+	const char *default_unit = "uV";
 	struct _libeep_channels * obj = _libeep_get_channels(handle);
+	// the channel label shall have a value; ref_label and unit might be NULL
+	if (label == NULL) {
+		return obj->count;
+	}
+	if (ref_label == NULL) {
+		ref_label = default_ref_label;
+	}
+	if (unit == NULL) {
+		unit = default_unit;
+	}
 	channels = (eegchan_t *)realloc(obj->channels, sizeof(eegchan_t) * (obj->count + 1));
 	if (channels == NULL) {
 		return obj->count;
 	}
 	obj->channels = channels;
 	eep_chan_set(obj->channels, obj->count, label, 1, 1.0 / SCALING_FACTOR, unit);
-	eep_chan_set_reflab(obj->channels, obj->count, "ref");
+	eep_chan_set_reflab(obj->channels, obj->count, ref_label);
 	obj->count += 1;
 	return obj->count;
 }

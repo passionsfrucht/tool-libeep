@@ -18,7 +18,7 @@ handle_file(const char *filename) {
   // setup channel information
   channel_info_handle = libeep_create_channel_info();
   for (i = 0; i < CHANNEL_COUNT; ++i) {
-	  libeep_add_channel(channel_info_handle, channel_names[i], channel_units[i]);
+	  libeep_add_channel(channel_info_handle, channel_names[i], "ref", channel_units[i]);
   }
 
   // setup recording info

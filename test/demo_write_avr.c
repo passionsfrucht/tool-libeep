@@ -57,7 +57,7 @@ handle_file(const char *filename) {
     return;
   }
   // allocate memory
-  _libeep_muxbuf=(float*)(malloc(CNTBUF_SIZE(_libeep_avr, 1)));
+  _libeep_muxbuf=(float*)(malloc(FLOAT_CNTBUF_SIZE(_libeep_avr, 1)));
   if(_libeep_muxbuf==NULL) {
     fprintf(stderr, "allocation error");
     return;

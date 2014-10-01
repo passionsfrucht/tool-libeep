@@ -54,7 +54,7 @@ handle_file(const char *filename) {
    ****************/
   // as a demo, read one sample at our favourite position in the file: offset 13
   // first, allocate memory(to hold 1 sample)
-  _libeep_muxbuf = (float*)(malloc(CNTBUF_SIZE(_libeep_avr, 1)));
+  _libeep_muxbuf = (float*)(malloc(FLOAT_CNTBUF_SIZE(_libeep_avr, 1)));
   // seek to offset
   eep_seek(_libeep_avr, DATATYPE_AVERAGE, 13, 0);
   // read sample

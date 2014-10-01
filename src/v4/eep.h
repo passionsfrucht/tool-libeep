@@ -78,6 +78,7 @@ void libeep_close(cntfile_t handle);
 /**
  * @brief get the number of channels
  * @param handle handle obtained by a call to libeep_read()
+ * @return the channel count in the specified CNT file
  */
 int libeep_get_channel_count(cntfile_t handle);
 /**
@@ -102,13 +103,13 @@ const char * libeep_get_channel_reference(cntfile_t handle, int index);
 /**
  * @brief get the channel scaling
  * @param handle handle obtained by a call to libeep_read()
- * @return scaling of the channel name
+ * @return scaling of the channel
  */
 float libeep_get_channel_scale(cntfile_t handle, int index);
 /**
  * @brief get the channel index
  * @param handle handle obtained by a call to libeep_read()
- * @return an index to the channel name
+ * @return an index to the channel identified by this name
  */
 int libeep_get_channel_index(cntfile_t handle, const char *label);
 /**
@@ -120,12 +121,14 @@ int libeep_get_sample_frequency(cntfile_t handle);
 /**
  * @brief get the number of samples
  * @param handle handle obtained by a call to libeep_read()
- * @return number of samples
+ * @return the number of samples belonging to this recording
  */
 long libeep_get_sample_count(cntfile_t handle);
 /**
  * @brief get data samples
  * @param handle handle obtained by a call to libeep_read()
+ * @param from the first sample to be returned
+ * @param to the end sample to be returned
  * @return dynamically allocated array of samples or NULL on failure(Result should be freed with a call to libeep_free_samples)
  */
 float * libeep_get_samples(cntfile_t handle, long from, long to);
@@ -151,6 +154,8 @@ void libeep_add_raw_samples(cntfile_t handle, const int32_t *data, int n);
 /**
 * @brief get data samples
 * @param handle handle obtained by a call to libeep_read()
+* @param from the first sample to be returned
+* @param to the end sample to be returned
 * @return dynamically allocated array of samples or NULL on failure(Result should be freed with a call to libeep_free_raw_samples)
 */
 int32_t * libeep_get_raw_samples(cntfile_t handle, long from, long to);
@@ -340,9 +345,17 @@ char libeep_get_patient_handedness(cntfile_t handle);
 * @param handle handle obtained by a call to libeep_create_recinfo()
 */
 void libeep_set_patient_handedness(recinfo_t handle, char value);
-
-// TODO: day of birth
-
+/**
+* @brief retrieves information about the patients date of birth
+* @param handle handle obtained by a call to libeep_read()
+* @returns the date of birth of the patient
+*/
+time_t libeep_get_date_of_birth(cntfile_t handle);
+/**
+* @brief sets information about the patients date of birth
+* @param handle handle obtained by a call to libeep_create_recinfo()
+*/
+void libeep_set_date_of_birth(recinfo_t handle, time_t value);
 /**
 * @brief inserts a trigger into the file
 * @param handle handle obtained by a call to libeep_write_cnt()
@@ -352,7 +365,7 @@ void libeep_set_patient_handedness(recinfo_t handle, char value);
 int libeep_add_trigger(cntfile_t handle, uint64_t sample, const char *code);
 /**
 * @brief returns the count of all triggers
-* @param handle handle
+* @param handle handle obtained by a call to libeep_read()
 */
 int libeep_get_trigger_count(cntfile_t handle);
 /**
@@ -399,8 +412,11 @@ chaninfo_t libeep_create_channel_info();
 /**
 * @brief adds information about a channel
 * @param handle handle obtained by a call to libeep_create_channel_info()
+* @param label the label for this channel. cannot be NULL
+* @param ref_label the reference label for this channel. can be NULL. the label "ref" is used if no value is provided
+* @param unit the data unit for this channel. can be NULL. the unit "uV" is used if no value is provided
 * @return the number of channels if succesfull; -1 on error
 */
-int libeep_add_channel(chaninfo_t handle, const char *label, const char *unit);
+int libeep_add_channel(chaninfo_t handle, const char *label, const char *ref_label, const char *unit);
 
 #endif

@@ -159,6 +159,8 @@ EXPORTS
   libeep_set_patient_sex
   libeep_get_patient_handedness
   libeep_set_patient_handedness
+  libeep_get_date_of_birth
+  libeep_set_date_of_birth
   libeep_get_comment
   libeep_set_comment
   libeep_add_trigger

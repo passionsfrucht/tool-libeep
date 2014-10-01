@@ -12,7 +12,7 @@ if (JNI_FOUND)
   add_custom_command(OUTPUT libeep-jni.h COMMAND javah ARGS -classpath ${CMAKE_BINARY_DIR}/java -o libeep-jni.h com.antneuro.libeep DEPENDS libeep.java com/antneuro/libeep.class WORKING_DIRECTORY)
 
   add_library(EepJNI SHARED libeep-jni.h libeep-jni.cc)
-  target_link_libraries(EepJNI Eep ${JNI_LIBRARIES})
+  target_link_libraries(EepJNI EepStatic ${JNI_LIBRARIES})
   install(TARGETS EepJNI DESTINATION lib)
 
   add_jar(libeep SHARED libeep.java)

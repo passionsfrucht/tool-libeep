@@ -22,6 +22,36 @@ Java_com_antneuro_libeep_get_1version(JNIEnv *env, jclass) {
   return env->NewStringUTF(libeep_get_version());
 }
 ///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jint JNICALL Java_com_antneuro_libeep_create_1channel_1info(JNIEnv *env, jclass) {
+  return libeep_create_channel_info();
+}
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jint JNICALL Java_com_antneuro_libeep_add_1channel(JNIEnv *env, jclass, jint handle, jstring label, jstring ref, jstring unit) {
+  const char *native_label = env->GetStringUTFChars(label, 0);
+  const char *native_ref = env->GetStringUTFChars(ref, 0);
+  const char *native_unit = env->GetStringUTFChars(unit, 0);
+  int rv = libeep_add_channel(handle, native_label, native_ref, native_unit);
+  env->ReleaseStringUTFChars(label, native_label);
+  env->ReleaseStringUTFChars(ref, native_ref);
+  env->ReleaseStringUTFChars(unit, native_unit);
+  return rv;
+}
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jint JNICALL Java_com_antneuro_libeep_create_1recording_1info(JNIEnv *env, jclass) {
+  return libeep_create_recinfo();
+}
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT void JNICALL Java_com_antneuro_libeep_set_1start_1time(JNIEnv *env, jclass, jint handle, jlong epoch) {
+  libeep_set_start_time(handle, epoch);
+}
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jint JNICALL Java_com_antneuro_libeep_writeCnt(JNIEnv *env, jclass, jstring filename, jint rate, jint channel_info_handle, jint recinfo_handle) {
+  const char *native_filename = env->GetStringUTFChars(filename, 0);
+  jint rv=libeep_write_cnt(native_filename, rate, channel_info_handle, recinfo_handle);
+  env->ReleaseStringUTFChars(filename, native_filename);
+  return rv;
+}
+///////////////////////////////////////////////////////////////////////////////
 JNIEXPORT jint JNICALL
 Java_com_antneuro_libeep_read(JNIEnv *env, jclass, jstring filename) {
   const char *native_filename = env->GetStringUTFChars(filename, 0);
@@ -84,6 +114,14 @@ Java_com_antneuro_libeep_get_1samples(JNIEnv *env, jclass, jint handle, jlong fr
   // move from the temp structure to the java structure
   env->SetFloatArrayRegion(result, 0, n*(to-from), fill);
   return result;
+}
+///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT void JNICALL Java_com_antneuro_libeep_add_1samples(JNIEnv *env, jclass, jint handle, jfloatArray data, jint n) {
+  jfloat* native_data = env->GetFloatArrayElements(data, 0);
+
+  libeep_add_samples(handle, native_data, n);
+
+  env->ReleaseFloatArrayElements(data, native_data, 0);
 }
 ///////////////////////////////////////////////////////////////////////////////
 JNIEXPORT jlong JNICALL

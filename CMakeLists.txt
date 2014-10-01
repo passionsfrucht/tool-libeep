@@ -32,7 +32,7 @@ if(WIN32)
   )
 endif(WIN32)
 
-set(Eep_sources
+add_library(EepObjects OBJECT
   src/libavr/avr.c
   src/libavr/avrcfg.c
   src/libcnt/cnt.c
@@ -48,10 +48,13 @@ set(Eep_sources
   src/libeep/eepraw.c
   src/libeep/val.c
   src/libeep/var_string.c
+  src/v4/eep.c
+)
+add_library(EepStatic STATIC
+  $<TARGET_OBJECTS:EepObjects>
 )
 add_library(Eep SHARED
-  src/v4/eep.c
-  ${Eep_sources}
+  $<TARGET_OBJECTS:EepObjects>
   ${Eep_def}
 )
 include_directories(src)

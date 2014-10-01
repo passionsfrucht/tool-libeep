@@ -1,6 +1,6 @@
 import com.antneuro.libeep;
 
-public class demo_read {
+public class ReadCNT {
   public static void main(String[] args) {
     System.out.printf("libeep version: %s\n", com.antneuro.libeep.get_version());
     for(String filename : args) {

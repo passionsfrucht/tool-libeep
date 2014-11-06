@@ -136,6 +136,8 @@ int saveold_RAW3(eeg_t *dst, eeg_t *src, unsigned long delmask);
 int puthead_EEP20(eeg_t *EEG);
 int getepoch_NS30(eeg_t *EEG, uint64_t epoch);
 
+int eep_create_file_EEP20(eeg_t *dst, eeg_t *src, unsigned long delmask);
+
 int write_trigger_chunk(eeg_t *cnt);
 int write_chanseq_chunk(eeg_t *cnt, storage_t *store, uint64_t num_chans);
 int write_epoch_chunk(eeg_t *cnt, storage_t *store);

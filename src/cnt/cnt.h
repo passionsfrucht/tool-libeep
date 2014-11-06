@@ -148,7 +148,7 @@ void eep_free(eeg_t *cnt);
   creating data files "from scratch"
   the chanv space is not copied; you must NOT free it
 */
-eeg_t *eep_init_from_values(float period, short chanc, eegchan_t *chanv);
+eeg_t *eep_init_from_values(double period, short chanc, eegchan_t *chanv);
 
 /*
   register a opened readable stream (source .cnt file) to the EEG access
@@ -317,7 +317,7 @@ int            eep_prepare_to_write(eeg_t *cnt, eep_datatype_e type, uint64_t ep
 
 void eep_comp_set(tf_component_t *compv, short comp, float value, const char *descr);
 tf_component_t* eep_comp_init(short compc);
-eeg_t* eep_init_from_tf_values(float period, short chanc, eegchan_t *chanv, short compc, tf_component_t *compv);
+eeg_t* eep_init_from_tf_values(double period, short chanc, eegchan_t *chanv, short compc, tf_component_t *compv);
 int eep_get_compc(eeg_t* cnt);
 int eep_dup_comp(eeg_t *cnt, short comp, float newvalue);
 int eep_get_comp_index(eeg_t *cnt, float value);

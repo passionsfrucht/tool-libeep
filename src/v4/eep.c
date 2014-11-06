@@ -334,7 +334,7 @@ libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle,
   }
   memmove(channel_structure, channels_obj->channels, sizeof(eegchan_t)* channels_obj->count);
   // file init
-  obj->eep = eep_init_from_values(1 / (float)rate, channels_obj->count, channel_structure);
+  obj->eep = eep_init_from_values(1.0 / (double)rate, channels_obj->count, channel_structure);
   if(obj->eep==NULL) {
     fprintf(stderr, "error in eep_init_from_values!\n");
     return -1;
@@ -587,10 +587,31 @@ libeep_get_start_time(cntfile_t handle) {
     return eep_get_recording_startdate_epoch(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
+void 
+libeep_get_start_date_and_fraction(recinfo_t handle, double* start_date, double* start_fraction) {
+	if (start_date) *start_date = 0.0;
+	if (start_fraction) *start_fraction = 0.0;
+    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+	record_info_t rec_inf;
+	if (eep_has_recording_info(obj->eep)) {
+		eep_get_recording_info(obj->eep, &rec_inf);
+		if (start_date) *start_date = rec_inf.m_startDate;
+		if (start_fraction) *start_fraction = rec_inf.m_startFraction;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_start_time(recinfo_t handle, time_t start_time) {
 	struct record_info_s * obj = _libeep_get_recinfo(handle);
 	eep_unixdate_to_exceldate(start_time, &obj->m_startDate, &obj->m_startFraction);
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_set_start_date_and_fraction(recinfo_t handle, double start_date, double start_fraction) {
+	struct record_info_s * obj = _libeep_get_recinfo(handle);
+	obj->m_startDate = start_date;
+	obj->m_startFraction = start_fraction;
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *

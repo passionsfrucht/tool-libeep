@@ -155,6 +155,7 @@ EXPORTS
   libeep_get_sample_count
   libeep_get_sample_frequency
   libeep_get_samples
+  libeep_get_start_date_and_fraction
   libeep_get_start_time
   libeep_get_technician
   libeep_get_test_name
@@ -179,6 +180,7 @@ EXPORTS
   libeep_set_patient_name
   libeep_set_patient_phone
   libeep_set_patient_sex
+  libeep_set_start_date_and_fraction
   libeep_set_start_time
   libeep_write_cnt
   raw3_free

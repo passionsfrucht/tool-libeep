@@ -177,9 +177,23 @@ time_t libeep_get_start_time(cntfile_t handle);
 /**
 * @brief sets the start time of the recording
 * @param handle handle obtained by a call to libeep_create_recinfo()
+* @param start_date receives [StartDate]-part of start time stamp
+* @param start_fraction receives [StartFraction]-part of start time stamp
+*/
+void libeep_get_start_date_and_fraction(recinfo_t handle, double* start_date, double* start_fraction);
+/**
+* @brief sets the start time of the recording
+* @param handle handle obtained by a call to libeep_create_recinfo()
 * @param start_time the desired start time stamp
 */
 void libeep_set_start_time(recinfo_t handle, time_t start_time);
+/**
+* @brief sets the start time of the recording
+* @param handle handle obtained by a call to libeep_create_recinfo()
+* @param start_date [StartDate]-part of the desired start time stamp
+* @param start_fraction [StartFraction]-part of the desired start time stamp
+*/
+void libeep_set_start_date_and_fraction(recinfo_t handle, double start_date, double start_fraction);
 /**
 * @brief retrieves information about the hospital the recording was made
 * @param handle handle obtained by a call to libeep_read()

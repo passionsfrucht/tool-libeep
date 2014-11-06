@@ -886,7 +886,7 @@ void eep_free(eeg_t *cnt)
   v_free(cnt);
 }
 
-eeg_t *eep_init_from_values(float period, short chanc, eegchan_t *chanv)
+eeg_t *eep_init_from_values(double period, short chanc, eegchan_t *chanv)
 {
   eeg_t *cnt;
 
@@ -902,7 +902,7 @@ eeg_t *eep_init_from_values(float period, short chanc, eegchan_t *chanv)
   return cnt;
 }
 
-eeg_t* eep_init_from_tf_values(float period, short chanc, eegchan_t *chanv, short compc, tf_component_t *compv)
+eeg_t* eep_init_from_tf_values(double period, short chanc, eegchan_t *chanv, short compc, tf_component_t *compv)
 {
   eeg_t *cnt;
 

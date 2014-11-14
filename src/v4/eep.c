@@ -126,6 +126,9 @@ _libeep_recinfo_allocate() {
 		return -1;
 	}
 	memset(_libeep_recinfo_map[_libeep_recinfo_size], 0, sizeof(struct record_info_s));
+    // set default values to prevent recording info line corruption
+	_libeep_recinfo_map[_libeep_recinfo_size]->m_chSex = ' ';
+	_libeep_recinfo_map[_libeep_recinfo_size]->m_chHandedness = ' ';
 	_libeep_recinfo_size += 1;
 	return _libeep_recinfo_size - 1;
 }
@@ -833,19 +836,29 @@ libeep_set_patient_handedness(recinfo_t handle, char value) {
 	obj->m_chHandedness = value;
 }
 ///////////////////////////////////////////////////////////////////////////////
-time_t
-libeep_get_date_of_birth(cntfile_t handle) {
+void
+libeep_get_date_of_birth(cntfile_t handle, int * year, int * month, int  * day) {
 	struct tm *dob = NULL;
 	struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
 	dob = eep_get_patient_day_of_birth(obj->eep);
-	return mktime(dob); // performs the reverse translation that localtime does so libeep_set_date_of_birth have to use localtime to get the correct date back
+    *year = dob->tm_year + 1900;
+    *month = dob->tm_mon + 1;
+    *day = dob->tm_mday;
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
-libeep_set_date_of_birth(recinfo_t handle, time_t value) {
+libeep_set_date_of_birth(recinfo_t handle, int year, int month, int day) {
 	struct record_info_s * obj = _libeep_get_recinfo(handle);
-	struct tm *temp = localtime(&value);
-	memmove(&obj->m_DOB, temp, sizeof(struct tm));
+    struct tm temp;
+    memset(&temp, 0, sizeof(temp));
+    temp.tm_year = year - 1900;
+    temp.tm_mon = month - 1;
+    temp.tm_mday = day;
+
+    // fill in blanks(tm_wday and tm_yday);
+    mktime(&temp);
+
+	memmove(&obj->m_DOB, &temp, sizeof(struct tm));
 }
 ///////////////////////////////////////////////////////////////////////////////
 int

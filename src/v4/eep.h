@@ -361,15 +361,18 @@ char libeep_get_patient_handedness(cntfile_t handle);
 void libeep_set_patient_handedness(recinfo_t handle, char value);
 /**
 * @brief retrieves information about the patients date of birth
-* @param handle handle obtained by a call to libeep_read()
-* @returns the date of birth of the patient
+* @param year gregorian year
+* @param month 1-12
+* @param day 1-31
 */
-time_t libeep_get_date_of_birth(cntfile_t handle);
+void libeep_get_date_of_birth(cntfile_t handle, int * year, int * month, int *day);
 /**
 * @brief sets information about the patients date of birth
-* @param handle handle obtained by a call to libeep_create_recinfo()
+* @param year gregorian year
+* @param month 1-12
+* @param day 1-31
 */
-void libeep_set_date_of_birth(recinfo_t handle, time_t value);
+void libeep_set_date_of_birth(recinfo_t handle, int year, int month, int day);
 /**
 * @brief inserts a trigger into the file
 * @param handle handle obtained by a call to libeep_write_cnt()

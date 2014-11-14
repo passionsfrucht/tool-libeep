@@ -24,8 +24,11 @@ handle_file(const char *filename) {
   // setup recording info
   recording_info_handle = libeep_create_recinfo();
   libeep_set_start_time(recording_info_handle, time(NULL));
+  libeep_set_patient_handedness(recording_info_handle, 'R');
+  libeep_set_patient_sex(recording_info_handle, 'M');
   libeep_set_patient_name(recording_info_handle, "John Doe");
   libeep_set_hospital(recording_info_handle, "Hospital");
+  libeep_set_date_of_birth(recording_info_handle, 1950, 6, 28);
 
   handle = libeep_write_cnt(filename, 512, channel_info_handle, recording_info_handle);
   if(handle == -1) {

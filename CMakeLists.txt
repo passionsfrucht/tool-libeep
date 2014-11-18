@@ -32,7 +32,7 @@ if(WIN32)
   )
 endif(WIN32)
 
-add_library(EepObjects OBJECT
+set(Eep_sources
   src/libavr/avr.c
   src/libavr/avrcfg.c
   src/libcnt/cnt.c
@@ -48,6 +48,9 @@ add_library(EepObjects OBJECT
   src/libeep/eepraw.c
   src/libeep/val.c
   src/libeep/var_string.c
+)
+add_library(EepObjects OBJECT
+  ${Eep_sources}
   src/v4/eep.c
 )
 add_library(EepStatic STATIC

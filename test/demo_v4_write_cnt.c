@@ -30,7 +30,7 @@ handle_file(const char *filename) {
   libeep_set_hospital(recording_info_handle, "Hospital");
   libeep_set_date_of_birth(recording_info_handle, 1950, 6, 28);
 
-  handle = libeep_write_cnt(filename, 512, channel_info_handle, recording_info_handle);
+  handle = libeep_write_cnt(filename, 512, channel_info_handle, recording_info_handle, 1);
   if(handle == -1) {
     fprintf(stderr, "error opening %s", filename);
   }

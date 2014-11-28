@@ -318,7 +318,7 @@ libeep_read(const char *filename) {
 }
 ///////////////////////////////////////////////////////////////////////////////
 cntfile_t
-libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle, recinfo_t recinfo_handle) {
+libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle, recinfo_t recinfo_handle, int rf64) {
   eegchan_t *channel_structure;
   int handle=_libeep_allocate();
   struct _libeep_entry * obj=_libeep_get_object(handle, om_none);
@@ -343,11 +343,17 @@ libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle,
     return -1;
   }
   if (recinfo_handle > -1) {
-	  struct record_info_s * info = _libeep_get_recinfo(recinfo_handle);
-	  eep_set_recording_info(obj->eep, info);
+    struct record_info_s * info = _libeep_get_recinfo(recinfo_handle);
+    eep_set_recording_info(obj->eep, info);
   }
   // eep struct
-  if(eep_create_file64(obj->eep, filename, obj->file, filename) != CNTERR_NONE) {
+  int cf;
+  if(rf64) {
+    cf=eep_create_file64(obj->eep, filename, obj->file, filename);
+  } else {
+    cf=eep_create_file(obj->eep, filename, obj->file, NULL, 0, filename);
+  }
+  if(cf != CNTERR_NONE) {
     fprintf(stderr, "could not create file!\n");
     return -1;
   }

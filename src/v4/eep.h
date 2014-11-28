@@ -67,9 +67,10 @@ cntfile_t libeep_read(const char *filename);
  * @param channel_info_handle handle obtained by a call to libeep_create_channel_info (and eventually populated by calls to libeep_add_channel). Can not be invalid
  * @param recinfo_handle handle obtained by a call to libeep_create_recinfo (and eventually populated by calls to the functions accepting this handle as argument);
  *                       if no recording info has to be stored in the file, recinfo_handle can be -1
+ * @param rf64 if not zero, create 64-bit riff variant
  * @return -1 on error, handle otherwise
  */
-cntfile_t libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle, recinfo_t recinfo_handle);
+cntfile_t libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle, recinfo_t recinfo_handle, int rf64);
 /**
  * @brief close data file
  * @param handle handle obtained by a call to either libeep_read() or libeep_write_cnt()

@@ -41,13 +41,13 @@ JNIEXPORT jint JNICALL Java_com_antneuro_libeep_create_1recording_1info(JNIEnv *
   return libeep_create_recinfo();
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT void JNICALL Java_com_antneuro_libeep_set_1start_1time(JNIEnv *env, jclass, jint handle, jlong epoch) {
-  libeep_set_start_time(handle, epoch);
+JNIEXPORT void JNICALL Java_com_antneuro_libeep_set_1start_1time(JNIEnv *env, jclass, jint handle, jdouble epoch, jdouble fraction) {
+  libeep_set_start_date_and_fraction(handle, epoch, fraction);
 }
 ///////////////////////////////////////////////////////////////////////////////
 JNIEXPORT jint JNICALL Java_com_antneuro_libeep_writeCnt(JNIEnv *env, jclass, jstring filename, jint rate, jint channel_info_handle, jint recinfo_handle) {
   const char *native_filename = env->GetStringUTFChars(filename, 0);
-  jint rv=libeep_write_cnt(native_filename, rate, channel_info_handle, recinfo_handle);
+  jint rv=libeep_write_cnt(native_filename, rate, channel_info_handle, recinfo_handle, 1);
   env->ReleaseStringUTFChars(filename, native_filename);
   return rv;
 }

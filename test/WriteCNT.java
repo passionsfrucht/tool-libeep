@@ -12,7 +12,7 @@ public class WriteCNT {
       }
       // recording info
       int recording_info_handle = com.antneuro.libeep.create_recording_info();
-      com.antneuro.libeep.set_start_time(recording_info_handle, System.currentTimeMillis()/1000);
+      com.antneuro.libeep.set_start_time(recording_info_handle, System.currentTimeMillis()/1000, 0);
       // create file
       int cnt_handle            = com.antneuro.libeep.writeCnt(filename, 512, channel_info_handle, recording_info_handle);
       for(int sample = 0;sample<512;++sample) {

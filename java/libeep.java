@@ -16,7 +16,7 @@ public class libeep {
 
   // recording info related
   public static native int  create_recording_info();
-  public static native void set_start_time(int handle, long epoch);
+  public static native void set_start_time(int handle, double epoch, double fraction);
 
   public static native int  writeCnt(String filename, int rate, int channel_info_handle, int recording_info_handle);
   public static native int  read(String filename);

@@ -121,7 +121,6 @@ struct record_info_s {
   asciiline_t   m_szAddress;      /* Patient home address */
   asciiline_t   m_szPhone;        /* Patient phone number */
   asciiline_t   m_szComment;      /* Comment */
-  /*asciiline_t   m_szFileVersion;*/  /* '.cnt' file version -> moved to EEPH */
   TCHAR         m_chSex;          /* Capital letters M and F for male and female respectively */
   TCHAR         m_chHandedness;   /* Capital letters M, L or R for mixed, left or right */
   struct tm     m_DOB;            /* Date of birth */
@@ -262,14 +261,12 @@ void  eep_set_trg(eeg_t *cnt, trg_t *trg);
   it's fatal to apply it to input!!!
 */
 char *         eep_get_name(eeg_t *cnt);
-/* long           get_cnt_size(eeg_t *cnt); */
 
 short          eep_get_rate(eeg_t *cnt);
 double         eep_get_period(eeg_t *cnt);
 void           eep_set_period(eeg_t *cnt, double period);
 
 short          eep_get_chanc(eeg_t *cnt);
-/* void           set_cnt_chanc(eeg_t *cnt, short chanc, eegchan_t *chanv); */
 void           eep_dup_chan(eeg_t *cnt, short chan, char *newlab);
 uint64_t       eep_get_samplec(eeg_t *cnt);
 int            eep_get_samplec_full(const eeg_t *cnt, uint64_t *samplec);
@@ -311,7 +308,6 @@ int            eep_get_mode(eeg_t *cnt);
 void           eep_set_mode_EEP20(eeg_t *cnt);
 
 int            eep_prepare_to_write(eeg_t *cnt, eep_datatype_e type, uint64_t epochl, short *chanv);
-/*int            eep_switch_to_write(eeg_t *cnt, eep_datatype_e type);*/
 
 /********************* Added functions for handling Time/Frequency data **********/
 

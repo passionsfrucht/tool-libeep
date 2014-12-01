@@ -158,12 +158,6 @@ struct eeg_dummy_t {
   var_string history;            /* File history (EEPH chunk)              */
   tf_header_t tf_header;         /* Time/freq. header contents (TFH chunk) */
   storage_t store[NUM_DATATYPES];/* Data storage                           */
-#if 0
-  storage_t rawdata;             /* Raw EEG data (RAW3 chunk)              */
-  storage_t tfdata;              /* Time/freq. data (TFD chunk)            */
-  storage_t rawfdata;            /* Float data (RAWF chunk)                */
-  storage_t stddata;             /* Standard deviation data (STDD chunk)   */
-#endif
   trg_t *trg;                    /* Trigger library (TRG chunk)            */
   record_info_t *recording_info; /* recording information (INFO chunk)     */
 

@@ -899,6 +899,7 @@ eeg_t *eep_init_from_values(double period, short chanc, eegchan_t *chanv)
   cnt->eep_header.chanc = chanc;
   cnt->eep_header.chanv = chanv;
   cnt->trg = trg_init();   /* empty trigger table */
+
   return cnt;
 }
 
@@ -1324,10 +1325,6 @@ int eep_create_file(eeg_t *dst, const char *fname, FILE *f, eeg_t *src, unsigned
   if (src != NULL)
     RET_ON_CNTERROR(saveold_RAW3(dst, src, delmask));
 
-  /* Write the Recording info chunk, if one is specified */
-  if (NULL != dst->recording_info)
-    RET_ON_CNTERROR(write_recinfo_chunk(dst, dst->recording_info));
-
   if (CNT_RIFF != dst->mode)
     return eep_create_file_EEP20(dst, src, delmask);
 
@@ -1352,10 +1349,6 @@ int eep_create_file64(eeg_t *dst, const char *fname, FILE *f, const char *regist
 
   /* initiate the dest file riff tree */
   RET_ON_RIFFERROR(riff64_form_new(f, &dst->cnt, FOURCC_CNT), CNTERR_FILE);
-
-  /* Write the Recording info chunk, if one is specified */
-  if (NULL != dst->recording_info)
-    RET_ON_CNTERROR(write_recinfo_chunk(dst, dst->recording_info));
 
   return CNTERR_NONE;
 }
@@ -2188,29 +2181,6 @@ void eep_set_mode_EEP20(eeg_t *cnt)
   cnt->eep_header.period = (double) 1.0 / rate;
 }
 
-/*
-Removed from interface long ago - doesnt work right now, either.
-
-void set_cnt_chanc(eeg_t *cnt, short chanc, eegchan_t *chanv)
-{
-  int i;
-  cnt->eep_header.chanc = chanc;
-
-   new chanc requires new buffer layouts
-  if (cnt->eep_header.chanv) free((char *) cnt->eep_header.chanv);
-  cnt->eep_header.chanv = (eegchan_t *) v_malloc(chanc * sizeof(eegchan_t),"chanv");
-  for (i = 0; i < chanc; i++)
-    cnt->eep_header.chanv[i] = chanv[i];
-
-   compression channel sequence is initialized to native
-  if (cnt->mode == CNT_RAW3) {
-    if (cnt->store[DATATYPE_EEG].chanseq) free((char *) cnt->store[DATATYPE_EEG].chanseq);
-    cnt->store[DATATYPE_EEG].chanseq = (short *) v_malloc(chanc * sizeof(short),"chanseq");
-    for (i = 0; i < chanc; i++)
-      cnt->store[DATATYPE_EEG].chanseq[i] = i;
-  }
-} */
-
 eegchan_t *eep_chan_init(short chanc)
 {
   eegchan_t *chanv;
@@ -2275,8 +2245,7 @@ void eep_dup_chan(eeg_t *cnt, short chan, char *newlab)
     return;
   }
 
-  cnt->eep_header.chanv = (eegchan_t *)
-    v_realloc(cnt->eep_header.chanv, (cnt->eep_header.chanc + 1) * sizeof(eegchan_t), "chanv");
+  cnt->eep_header.chanv = (eegchan_t *) v_realloc(cnt->eep_header.chanv, (cnt->eep_header.chanc + 1) * sizeof(eegchan_t), "chanv");
   s = &cnt->eep_header.chanv[chan];
   d = &cnt->eep_header.chanv[cnt->eep_header.chanc];
   strcpy(d->runit, s->runit);
@@ -2316,8 +2285,7 @@ void eep_dup_chan(eeg_t *cnt, short chan, char *newlab)
      case DATATYPE_STDDEV:
        if (store->initialized)
        {
-         store->chanseq = (short *)
-          v_realloc(store->chanseq, (cnt->eep_header.chanc + 1) * sizeof(short), "chanseq");
+         store->chanseq = (short *) v_realloc(store->chanseq, (cnt->eep_header.chanc + 1) * sizeof(short), "chanseq");
          store->chanseq[cnt->eep_header.chanc] = cnt->eep_header.chanc;
        }
      }
@@ -2469,8 +2437,7 @@ int eep_dup_comp(eeg_t *cnt, short comp, float newvalue)
   strncpy(d->description, s->description, 40);
   d->axis_value = newvalue;
 
-  store->chanseq = (short *)
-   v_realloc(store->chanseq, 2 * cnt->eep_header.chanc * (tfhead->componentc+1) * sizeof(short), "tf_chanseq");
+  store->chanseq = (short *) v_realloc(store->chanseq, 2 * cnt->eep_header.chanc * (tfhead->componentc+1) * sizeof(short), "tf_chanseq");
   for (chan = 0; chan < cnt->eep_header.chanc; chan++)
   {
     store->chanseq[2 * tfhead->componentc + chan] = comp;
@@ -2596,39 +2563,27 @@ int eep_has_recording_info(eeg_t *cnt)
   return (NULL != cnt->recording_info);
 }
 
-void eep_set_recording_info(eeg_t *cnt, record_info_t* info)
-{
-/* previous:
-  if (NULL != cnt->recording_info)
-  v_free(cnt->recording_info);
-  cnt->recording_info = (record_info_t*) v_malloc(sizeof(record_info_t) , "recording_info");
-  memcpy(cnt->recording_info, info, sizeof(record_info_t));
- */
-
-  if(info)
-  {
-    if(!cnt->recording_info)
+void eep_set_recording_info(eeg_t *cnt, record_info_t* info) {
+  if(info) {
+    if(!cnt->recording_info) {
       cnt->recording_info = (record_info_t*) v_malloc(sizeof(record_info_t) , "recording_info");
+    }
     memcpy(cnt->recording_info, info, sizeof(record_info_t));
-  }
-  else
-  {
-    if(cnt->recording_info)
-    {
+  } else {
+    if(cnt->recording_info) {
       v_free(cnt->recording_info);
       cnt->recording_info = NULL;
     }
   }
 }
 
-void eep_get_recording_info(eeg_t *cnt, record_info_t* info)
-{
-  if (NULL != cnt->recording_info)
+void eep_get_recording_info(eeg_t *cnt, record_info_t* info) {
+  if (NULL != cnt->recording_info) {
     memcpy(info, cnt->recording_info, sizeof(record_info_t));
-  else
+  } else {
     memset(info, 0, sizeof(record_info_t));
+  }
 }
-
 
 /* Private helpers for make_partial_output_consistent.
 Decreases the size of the specified chunks parents with the specified amount. */
@@ -2730,6 +2685,20 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
   */
   if (DATATYPE_UNDEFINED != cnt->current_datachunk)
     close_data_chunk(cnt, finalize, &cnt->store[cnt->current_datachunk]);
+
+  /* Write the Recording info chunk, if one is specified */
+  if (NULL != cnt->recording_info) {
+    uint64_t fp_pre_recinfo = eepio_ftell(f);
+    write_recinfo_chunk(cnt, cnt->recording_info);
+    int recinfo_chunk_size = (int)(eepio_ftell(f) - fp_pre_recinfo);
+    if(!finalize && recinfo_chunk_size) {
+      if(cnt->mode==CNT_RIFF) {
+        RET_ON_CNTERROR(decrease_chunksize(f, &cnt->info, recinfo_chunk_size, 1));
+      } else {
+        RET_ON_CNTERROR(decrease_chunksize(f, &cnt->info, recinfo_chunk_size, 0));
+      }
+    }
+  }
 
   /* create and write the ascii header */
   RET_ON_CNTERROR(write_eeph_chunk(cnt));

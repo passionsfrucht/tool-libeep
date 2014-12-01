@@ -65,12 +65,10 @@ cntfile_t libeep_read(const char *filename);
  * @param filename the filename to the CNT or AVR to open
  * @param rate the sampling rate(in Hz)
  * @param channel_info_handle handle obtained by a call to libeep_create_channel_info (and eventually populated by calls to libeep_add_channel). Can not be invalid
- * @param recinfo_handle handle obtained by a call to libeep_create_recinfo (and eventually populated by calls to the functions accepting this handle as argument);
- *                       if no recording info has to be stored in the file, recinfo_handle can be -1
  * @param rf64 if not zero, create 64-bit riff variant
  * @return -1 on error, handle otherwise
  */
-cntfile_t libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle, recinfo_t recinfo_handle, int rf64);
+cntfile_t libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle, int rf64);
 /**
  * @brief close data file
  * @param handle handle obtained by a call to either libeep_read() or libeep_write_cnt()
@@ -169,6 +167,11 @@ void libeep_free_raw_samples(int32_t *data);
 * @brief returns a handle to a new recording info object which can be passed to libeep_write_cnt()
 */
 recinfo_t libeep_create_recinfo();
+/**
+* @brief add recording info to file
+* @param recinfo the handle to a recording info structure
+*/
+void libeep_add_recording_info(cntfile_t cnt_handle, recinfo_t recinfo_handle);
 /**
 * @brief retrieves the start time of the recording
 * @param handle handle obtained by a call to libeep_read()

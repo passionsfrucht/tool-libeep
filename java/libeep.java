@@ -12,13 +12,9 @@ public class libeep {
 
   // channel related
   public static native int create_channel_info();
-  public static native int add_channel(int handle, String label, String ref, String unit);
+  public static native int add_channel(int channel_info_handle, String label, String ref, String unit);
 
-  // recording info related
-  public static native int  create_recording_info();
-  public static native void set_start_time(int handle, double epoch, double fraction);
-
-  public static native int  writeCnt(String filename, int rate, int channel_info_handle, int recording_info_handle);
+  public static native int  writeCnt(String filename, int rate, int channel_info_handle, int rf64);
   public static native int  read(String filename);
   public static native void close(int handle);
 
@@ -32,6 +28,13 @@ public class libeep {
 
   public static native void    add_samples(int handle, float[] data, int n);
   public static native float[] get_samples(int handle, long from, long to);
+
+  // recording info related
+  public static native int  create_recording_info();
+  public static native void set_start_time(int recording_info_handle, long epoch);
+  public static native void set_date_of_birth(int recording_info_handle, int year, int month, int day);
+  public static native void set_patient_name(int recording_info_handle, String name);
+  public static native void add_recording_info(int handle, int recording_info_handle);
 
   // for averages only
   public static native long   get_zero_offset(int handle);

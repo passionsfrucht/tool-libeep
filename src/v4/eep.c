@@ -22,8 +22,8 @@ struct _libeep_entry {
 };
 
 struct _libeep_channels {
-	eegchan_t *channels;
-	short count;
+  eegchan_t *channels;
+  short count;
 };
 
 static struct _libeep_entry ** _libeep_entry_map;
@@ -37,15 +37,15 @@ static int _libeep_channel_size;
 /* local helper for manipulating _libeep_entry_map and _libeep_entry_size */
 static cntfile_t
 _libeep_allocate() {
-	struct _libeep_entry **new_entry_map = NULL;
+  struct _libeep_entry **new_entry_map = NULL;
   new_entry_map = realloc(_libeep_entry_map, sizeof(struct _libeep_entry *) * (_libeep_entry_size + 1));
   if (new_entry_map == NULL) {
-	  return -1;
+    return -1;
   }
   _libeep_entry_map = new_entry_map;
   _libeep_entry_map[_libeep_entry_size]=(struct _libeep_entry *)malloc(sizeof(struct _libeep_entry));
   if (_libeep_entry_map[_libeep_entry_size] == NULL) {
-	  return -1;
+    return -1;
   }
   _libeep_entry_map[_libeep_entry_size]->open_mode=om_none;
   _libeep_entry_map[_libeep_entry_size]->data_type=dt_none;
@@ -69,36 +69,36 @@ _libeep_free(cntfile_t handle) {
 /* local helper for manipulating _libeep_entry_map and _libeep_entry_size */
 static void
 _libeep_free_map() {
-    int i;
-	for (i = 0; i < _libeep_entry_size; ++i) {
-		if (_libeep_entry_map[i] != NULL) {
-			_libeep_free(i); // TODO: or use libeep_close?
-		}
-	}
-	if (_libeep_entry_map != NULL) {
-		free(_libeep_entry_map);
-	}
-	_libeep_entry_map = NULL;
-	_libeep_entry_size = 0;
+  int i;
+  for (i = 0; i < _libeep_entry_size; ++i) {
+    if (_libeep_entry_map[i] != NULL) {
+      _libeep_free(i); // TODO: or use libeep_close?
+    }
+  }
+  if (_libeep_entry_map != NULL) {
+    free(_libeep_entry_map);
+  }
+  _libeep_entry_map = NULL;
+  _libeep_entry_size = 0;
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* local helper for manipulating _libeep_entry_map and _libeep_entry_size */
 static struct _libeep_entry *
 _libeep_get_object(cntfile_t handle, open_mode om) {
-	struct _libeep_entry *rv = NULL;
-	if (handle < 0) {
-		fprintf(stderr, "libeep: invalid cnt handle %i\n", handle);
-		exit(-1);
-	}
-	if (_libeep_entry_map==NULL) {
-		fprintf(stderr, "libeep: cnt entry map not initialized\n");
-		exit(-1);
-	}
-	if (handle >= _libeep_entry_size) {
-		fprintf(stderr, "libeep: invalid cnt handle %i\n", handle);
-		exit(-1);
-	}
-	rv = _libeep_entry_map[handle];
+  struct _libeep_entry *rv = NULL;
+  if (handle < 0) {
+    fprintf(stderr, "libeep: invalid cnt handle %i\n", handle);
+    exit(-1);
+  }
+  if (_libeep_entry_map==NULL) {
+    fprintf(stderr, "libeep: cnt entry map not initialized\n");
+    exit(-1);
+  }
+  if (handle >= _libeep_entry_size) {
+    fprintf(stderr, "libeep: invalid cnt handle %i\n", handle);
+    exit(-1);
+  }
+  rv = _libeep_entry_map[handle];
   // check valid handle
   if(rv==NULL) {
     fprintf(stderr, "libeep: invalid cnt handle %i\n", handle);
@@ -109,178 +109,179 @@ _libeep_get_object(cntfile_t handle, open_mode om) {
     fprintf(stderr, "libeep: invalid mode on cnt handle %i\n", handle);
     exit(-1);
   }
+
   return rv;
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* local helper for manipulating _libeep_recinfo_map and _libeep_recinfo_size */
 static recinfo_t
 _libeep_recinfo_allocate() {
-	struct record_info_s ** new_recinfo_map = NULL;
-	new_recinfo_map = realloc(_libeep_recinfo_map, sizeof(struct record_info_s *) * (_libeep_recinfo_size + 1));
-	if (new_recinfo_map == NULL) {
-		return -1;
-	}
-	_libeep_recinfo_map = new_recinfo_map;
-	_libeep_recinfo_map[_libeep_recinfo_size] = (struct record_info_s *)malloc(sizeof(struct record_info_s));
-	if (_libeep_recinfo_map[_libeep_recinfo_size] == NULL) {
-		return -1;
-	}
-	memset(_libeep_recinfo_map[_libeep_recinfo_size], 0, sizeof(struct record_info_s));
-    // set default values to prevent recording info line corruption
-	_libeep_recinfo_map[_libeep_recinfo_size]->m_chSex = ' ';
-	_libeep_recinfo_map[_libeep_recinfo_size]->m_chHandedness = ' ';
-	_libeep_recinfo_size += 1;
-	return _libeep_recinfo_size - 1;
+  struct record_info_s ** new_recinfo_map = NULL;
+  new_recinfo_map = realloc(_libeep_recinfo_map, sizeof(struct record_info_s *) * (_libeep_recinfo_size + 1));
+  if (new_recinfo_map == NULL) {
+    return -1;
+  }
+  _libeep_recinfo_map = new_recinfo_map;
+  _libeep_recinfo_map[_libeep_recinfo_size] = (struct record_info_s *)malloc(sizeof(struct record_info_s));
+  if (_libeep_recinfo_map[_libeep_recinfo_size] == NULL) {
+    return -1;
+  }
+  memset(_libeep_recinfo_map[_libeep_recinfo_size], 0, sizeof(struct record_info_s));
+  // set default values to prevent recording info line corruption
+  _libeep_recinfo_map[_libeep_recinfo_size]->m_chSex = ' ';
+  _libeep_recinfo_map[_libeep_recinfo_size]->m_chHandedness = ' ';
+  _libeep_recinfo_size += 1;
+  return _libeep_recinfo_size - 1;
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* local helper for manipulating _libeep_recinfo_map and _libeep_recinfo_size */
 static void
 _libeep_recinfo_free(recinfo_t handle) {
-	if (_libeep_recinfo_map[handle] == NULL) {
-		fprintf(stderr, "libeep: cannot free recording info handle %i\n", handle);
-		return;
-	}
-	// close handle
-	free(_libeep_recinfo_map[handle]);
-	// set null
-	_libeep_recinfo_map[handle] = NULL;
+  if (_libeep_recinfo_map[handle] == NULL) {
+    fprintf(stderr, "libeep: cannot free recording info handle %i\n", handle);
+    return;
+  }
+  // close handle
+  free(_libeep_recinfo_map[handle]);
+  // set null
+  _libeep_recinfo_map[handle] = NULL;
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* local helper for manipulating _libeep_recinfo_map and _libeep_recinfo_size */
 static struct record_info_s *
 _libeep_get_recinfo(recinfo_t handle) {
-	struct record_info_s *rv = NULL;
-	if (handle < 0) {
-		fprintf(stderr, "libeep: invalid recording info handle %i\n", handle);
-		exit(-1);
-	}
-	if (_libeep_recinfo_map == NULL) {
-		fprintf(stderr, "libeep: recording info map not initialized\n");
-		exit(-1);
-	}
-	if (handle >= _libeep_recinfo_size) {
-		fprintf(stderr, "libeep: invalid recording info handle %i\n", handle);
-		exit(-1);
-	}
-	rv = _libeep_recinfo_map[handle];
-	// check valid handle
-	if (rv == NULL) {
-		fprintf(stderr, "libeep: invalid recording info handle %i\n", handle);
-		exit(-1);
-	}
-	return rv;
+  struct record_info_s *rv = NULL;
+  if (handle < 0) {
+    fprintf(stderr, "libeep: invalid recording info handle %i\n", handle);
+    exit(-1);
+  }
+  if (_libeep_recinfo_map == NULL) {
+    fprintf(stderr, "libeep: recording info map not initialized\n");
+    exit(-1);
+  }
+  if (handle >= _libeep_recinfo_size) {
+    fprintf(stderr, "libeep: invalid recording info handle %i\n", handle);
+    exit(-1);
+  }
+  rv = _libeep_recinfo_map[handle];
+  // check valid handle
+  if (rv == NULL) {
+    fprintf(stderr, "libeep: invalid recording info handle %i\n", handle);
+    exit(-1);
+  }
+  return rv;
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* local helper for manipulating _libeep_recinfo_map and _libeep_recinfo_size */
 static void
 _libeep_free_recinfo_map() {
-    int i;
-	for (i = 0; i < _libeep_recinfo_size; ++i) {
-		if (_libeep_recinfo_map[i] != NULL) {
-			_libeep_recinfo_free(i);
-		}
-	}
-	if (_libeep_recinfo_map != NULL) {
-		free(_libeep_recinfo_map);
-	}
-	_libeep_recinfo_map = NULL;
-	_libeep_recinfo_size = 0;
+  int i;
+  for (i = 0; i < _libeep_recinfo_size; ++i) {
+    if (_libeep_recinfo_map[i] != NULL) {
+      _libeep_recinfo_free(i);
+    }
+  }
+  if (_libeep_recinfo_map != NULL) {
+    free(_libeep_recinfo_map);
+  }
+  _libeep_recinfo_map = NULL;
+  _libeep_recinfo_size = 0;
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* local helper for manipulating _libeep_channel_map and _libeep_channel_size */
 static chaninfo_t
 _libeep_channels_allocate() {
-	struct _libeep_channels ** new_channel_map = NULL;
-	new_channel_map = realloc(_libeep_channel_map, sizeof(struct _libeep_channels *) * (_libeep_channel_size + 1));
-	if (new_channel_map == NULL) {
-		return -1;
-	}
-	_libeep_channel_map = new_channel_map;
-	_libeep_channel_map[_libeep_channel_size] = (struct _libeep_channels *)malloc(sizeof(struct _libeep_channels));
-	if (_libeep_channel_map[_libeep_channel_size] == NULL) {
-		return -1;
-	}
-	_libeep_channel_map[_libeep_channel_size]->channels = NULL;
-	_libeep_channel_map[_libeep_channel_size]->count = 0;
-	_libeep_channel_size += 1;
-	return _libeep_channel_size - 1;
+  struct _libeep_channels ** new_channel_map = NULL;
+  new_channel_map = realloc(_libeep_channel_map, sizeof(struct _libeep_channels *) * (_libeep_channel_size + 1));
+  if (new_channel_map == NULL) {
+    return -1;
+  }
+  _libeep_channel_map = new_channel_map;
+  _libeep_channel_map[_libeep_channel_size] = (struct _libeep_channels *)malloc(sizeof(struct _libeep_channels));
+  if (_libeep_channel_map[_libeep_channel_size] == NULL) {
+    return -1;
+  }
+  _libeep_channel_map[_libeep_channel_size]->channels = NULL;
+  _libeep_channel_map[_libeep_channel_size]->count = 0;
+  _libeep_channel_size += 1;
+  return _libeep_channel_size - 1;
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* local helper for manipulating _libeep_channel_map and _libeep_channel_size */
 static void
 _libeep_channels_free(chaninfo_t handle) {
-	if (_libeep_channel_map[handle] == NULL) {
-		fprintf(stderr, "libeep: cannot free channel info handle %i\n", handle);
-		return;
-	}
-	if (_libeep_channel_map[handle]->channels != NULL) {
-		free(_libeep_channel_map[handle]->channels);
-	}
-	// close handle
-	free(_libeep_channel_map[handle]);
-	// set null
-	_libeep_channel_map[handle] = NULL;
+  if (_libeep_channel_map[handle] == NULL) {
+    fprintf(stderr, "libeep: cannot free channel info handle %i\n", handle);
+    return;
+  }
+  if (_libeep_channel_map[handle]->channels != NULL) {
+    free(_libeep_channel_map[handle]->channels);
+  }
+  // close handle
+  free(_libeep_channel_map[handle]);
+  // set null
+  _libeep_channel_map[handle] = NULL;
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* local helper for manipulating _libeep_channel_map and _libeep_channel_size */
 static struct _libeep_channels *
 _libeep_get_channels(chaninfo_t handle) {
-	struct _libeep_channels *rv = NULL;
-	if (handle < 0) {
-		fprintf(stderr, "libeep: invalid channel info handle %i\n", handle);
-		exit(-1);
-	}
-	if (_libeep_channel_map == NULL) {
-		fprintf(stderr, "libeep: channel info map not initialized\n");
-		exit(-1);
-	}
-	if (handle >= _libeep_channel_size) {
-		fprintf(stderr, "libeep: invalid channel info handle %i\n", handle);
-		exit(-1);
-	}
-	rv = _libeep_channel_map[handle];
-	// check valid handle
-	if (rv == NULL) {
-		fprintf(stderr, "libeep: invalid channel info handle %i\n", handle);
-		exit(-1);
-	}
-	return rv;
+  struct _libeep_channels *rv = NULL;
+  if (handle < 0) {
+    fprintf(stderr, "libeep: invalid channel info handle %i\n", handle);
+    exit(-1);
+  }
+  if (_libeep_channel_map == NULL) {
+    fprintf(stderr, "libeep: channel info map not initialized\n");
+    exit(-1);
+  }
+  if (handle >= _libeep_channel_size) {
+    fprintf(stderr, "libeep: invalid channel info handle %i\n", handle);
+    exit(-1);
+  }
+  rv = _libeep_channel_map[handle];
+  // check valid handle
+  if (rv == NULL) {
+    fprintf(stderr, "libeep: invalid channel info handle %i\n", handle);
+    exit(-1);
+  }
+  return rv;
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* local helper for manipulating _libeep_channel_map and _libeep_channel_size */
 static void
 _libeep_free_channels_map() {
-    int i;
-	for (i = 0; i < _libeep_channel_size; ++i) {
-		if (_libeep_channel_map[i] != NULL) {
-			_libeep_channels_free(i);
-		}
-	}
-	if (_libeep_channel_map != NULL) {
-		free(_libeep_channel_map);
-	}
-	_libeep_channel_map = NULL;
-	_libeep_channel_size = 0;
+  int i;
+  for (i = 0; i < _libeep_channel_size; ++i) {
+    if (_libeep_channel_map[i] != NULL) {
+      _libeep_channels_free(i);
+    }
+  }
+  if (_libeep_channel_map != NULL) {
+    free(_libeep_channel_map);
+  }
+  _libeep_channel_map = NULL;
+  _libeep_channel_size = 0;
 }
 ///////////////////////////////////////////////////////////////////////////////
 void libeep_init() {
-	_libeep_entry_map = NULL;
-	_libeep_entry_size = 0;
-	_libeep_recinfo_map = NULL;
-	_libeep_recinfo_size = 0;
-	_libeep_channel_map = NULL;
-	_libeep_channel_size = 0;
+  _libeep_entry_map = NULL;
+  _libeep_entry_size = 0;
+  _libeep_recinfo_map = NULL;
+  _libeep_recinfo_size = 0;
+  _libeep_channel_map = NULL;
+  _libeep_channel_size = 0;
 }
 ///////////////////////////////////////////////////////////////////////////////
 void libeep_exit() {
-	_libeep_free_map();
-	_libeep_free_recinfo_map();
-	_libeep_free_channels_map();
+  _libeep_free_map();
+  _libeep_free_recinfo_map();
+  _libeep_free_channels_map();
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_version() {
-	return LIBEEP_VERSION;
+  return LIBEEP_VERSION;
 }
 ///////////////////////////////////////////////////////////////////////////////
 cntfile_t
@@ -305,20 +306,24 @@ libeep_read(const char *filename) {
   // read channel scale
   channel_count=eep_get_chanc(obj->eep);
   obj->scales=(float *)malloc(sizeof(float) * channel_count);
-  for(channel_id=0;channel_id<channel_count;channel_id++) {
+  for(channel_id=0; channel_id<channel_count; channel_id++) {
     obj->scales[channel_id]=(float)eep_get_chan_scale(obj->eep, channel_id);
   }
   // read triggers(if CNT)
   // read rejections(if CNT)
   // housekeeping
   obj->open_mode=om_read;
-  if(eep_has_data_of_type(obj->eep, DATATYPE_AVERAGE)) { obj->data_type=dt_avr; }
-  if(eep_has_data_of_type(obj->eep, DATATYPE_EEG))     { obj->data_type=dt_cnt; }
+  if(eep_has_data_of_type(obj->eep, DATATYPE_AVERAGE)) {
+    obj->data_type=dt_avr;
+  }
+  if(eep_has_data_of_type(obj->eep, DATATYPE_EEG))     {
+    obj->data_type=dt_cnt;
+  }
   return handle;
 }
 ///////////////////////////////////////////////////////////////////////////////
 cntfile_t
-libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle, recinfo_t recinfo_handle, int rf64) {
+libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle, int rf64) {
   eegchan_t *channel_structure;
   int handle=_libeep_allocate();
   struct _libeep_entry * obj=_libeep_get_object(handle, om_none);
@@ -341,10 +346,6 @@ libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle,
   if(obj->eep==NULL) {
     fprintf(stderr, "error in eep_init_from_values!\n");
     return -1;
-  }
-  if (recinfo_handle > -1) {
-    struct record_info_s * info = _libeep_get_recinfo(recinfo_handle);
-    eep_set_recording_info(obj->eep, info);
   }
   // eep struct
   int cf;
@@ -442,8 +443,8 @@ _libeep_get_samples_avr(struct _libeep_entry * obj, long from, long to) {
   float *buffer_unscaled,
         *buffer_scaled;
   const float * ptr_src,
-              * ptr_scales;
-        float * ptr_dst;
+        * ptr_scales;
+  float * ptr_dst;
   int n;
   int w;
   // seek
@@ -468,7 +469,7 @@ _libeep_get_samples_avr(struct _libeep_entry * obj, long from, long to) {
       w=to-from;
       ptr_scales=obj->scales;
     }
-    *ptr_dst++ = (float)(*ptr_src++) * *ptr_scales++;
+    *ptr_dst++ = (float)(*ptr_src++) **ptr_scales++;
     w--;
   }
   free(buffer_unscaled);
@@ -482,7 +483,7 @@ _libeep_get_samples_cnt(struct _libeep_entry * obj, long from, long to) {
   float * buffer_scaled;
   const sraw_t * ptr_src;
   const float  * ptr_scales;
-        float  * ptr_dst;
+  float  * ptr_dst;
   int n;
   int w;
   // seek
@@ -507,7 +508,7 @@ _libeep_get_samples_cnt(struct _libeep_entry * obj, long from, long to) {
       w=to-from;
       ptr_scales=obj->scales;
     }
-    *ptr_dst++ = (float)(*ptr_src++) * *ptr_scales++;
+    *ptr_dst++ = (float)(*ptr_src++) **ptr_scales++;
     w--;
   }
   free(buffer_unscaled);
@@ -517,8 +518,12 @@ _libeep_get_samples_cnt(struct _libeep_entry * obj, long from, long to) {
 float *
 libeep_get_samples(cntfile_t handle, long from, long to) {
   struct _libeep_entry * obj=_libeep_get_object(handle, om_read);
-  if(obj->data_type==dt_avr) { return _libeep_get_samples_avr(obj, from, to); }
-  if(obj->data_type==dt_cnt) { return _libeep_get_samples_cnt(obj, from, to); }
+  if(obj->data_type==dt_avr) {
+    return _libeep_get_samples_avr(obj, from, to);
+  }
+  if(obj->data_type==dt_cnt) {
+    return _libeep_get_samples_cnt(obj, from, to);
+  }
   return NULL;
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -534,7 +539,7 @@ libeep_add_samples(cntfile_t handle, const float *data, int n) {
   struct _libeep_entry * obj=_libeep_get_object(handle, om_write);
   sraw_t *buffer;
   const float  * ptr_src;
-        sraw_t * ptr_dst;
+  sraw_t * ptr_dst;
   int c;
 
   c=CNTBUF_SIZE(obj->eep, n);
@@ -554,27 +559,27 @@ libeep_add_samples(cntfile_t handle, const float *data, int n) {
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_add_raw_samples(cntfile_t handle, const int32_t *data, int n) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
-    eep_write_sraw(obj->eep, data, n);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+  eep_write_sraw(obj->eep, data, n);
 }
 ///////////////////////////////////////////////////////////////////////////////
 int32_t *
 libeep_get_raw_samples(cntfile_t handle, long from, long to) {
-    sraw_t *buffer_unscaled;
-    struct _libeep_entry * obj;
+  sraw_t *buffer_unscaled;
+  struct _libeep_entry * obj;
 
-    obj = _libeep_get_object(handle, om_read);
-    // seek
-    if (eep_seek(obj->eep, DATATYPE_EEG, from, 0)) {
-        return NULL;
-    }
-    // get unscaled data
-    buffer_unscaled = (sraw_t *)malloc(CNTBUF_SIZE(obj->eep, to - from));
-    if (eep_read_sraw(obj->eep, DATATYPE_EEG, buffer_unscaled, to - from)) {
-        free(buffer_unscaled);
-        return NULL;
-    }
-    return buffer_unscaled;
+  obj = _libeep_get_object(handle, om_read);
+  // seek
+  if (eep_seek(obj->eep, DATATYPE_EEG, from, 0)) {
+    return NULL;
+  }
+  // get unscaled data
+  buffer_unscaled = (sraw_t *)malloc(CNTBUF_SIZE(obj->eep, to - from));
+  if (eep_read_sraw(obj->eep, DATATYPE_EEG, buffer_unscaled, to - from)) {
+    free(buffer_unscaled);
+    return NULL;
+  }
+  return buffer_unscaled;
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
@@ -585,304 +590,322 @@ libeep_free_raw_samples(int32_t *buffer) {
 }
 ///////////////////////////////////////////////////////////////////////////////
 recinfo_t
-libeep_create_recinfo()
-{
-	return _libeep_recinfo_allocate();
+libeep_create_recinfo() {
+  return _libeep_recinfo_allocate();
+}
+///////////////////////////////////////////////////////////////////////////////
+void
+libeep_add_recording_info(cntfile_t cnt_handle, recinfo_t recinfo_handle) {
+  struct _libeep_entry * cnt = _libeep_get_object(cnt_handle, om_write);
+  struct record_info_s * rec = _libeep_get_recinfo(recinfo_handle);
+
+  // fprintf(stderr, "%s  rc: %p\n", __FUNCTION__, rec);
+
+  // bail if this is not a cnt file
+  if(cnt->data_type != dt_cnt) {
+    return;
+  }
+
+  // bail if this is not a writable file
+  if(cnt->open_mode != om_write) {
+    return;
+  }
+
+  eep_set_recording_info(cnt->eep, rec);
 }
 ///////////////////////////////////////////////////////////////////////////////
 time_t
 libeep_get_start_time(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_recording_startdate_epoch(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_recording_startdate_epoch(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
-void 
+void
 libeep_get_start_date_and_fraction(recinfo_t handle, double* start_date, double* start_fraction) {
-	if (start_date) *start_date = 0.0;
-	if (start_fraction) *start_fraction = 0.0;
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-	record_info_t rec_inf;
-	if (eep_has_recording_info(obj->eep)) {
-		eep_get_recording_info(obj->eep, &rec_inf);
-		if (start_date) *start_date = rec_inf.m_startDate;
-		if (start_fraction) *start_fraction = rec_inf.m_startFraction;
-	}
+  if (start_date) *start_date = 0.0;
+  if (start_fraction) *start_fraction = 0.0;
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  record_info_t rec_inf;
+  if (eep_has_recording_info(obj->eep)) {
+    eep_get_recording_info(obj->eep, &rec_inf);
+    if (start_date) *start_date = rec_inf.m_startDate;
+    if (start_fraction) *start_fraction = rec_inf.m_startFraction;
+  }
 }
-
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_start_time(recinfo_t handle, time_t start_time) {
-	struct record_info_s * obj = _libeep_get_recinfo(handle);
-	eep_unixdate_to_exceldate(start_time, &obj->m_startDate, &obj->m_startFraction);
+  struct record_info_s * obj = _libeep_get_recinfo(handle);
+  eep_unixdate_to_exceldate(start_time, &obj->m_startDate, &obj->m_startFraction);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_start_date_and_fraction(recinfo_t handle, double start_date, double start_fraction) {
-	struct record_info_s * obj = _libeep_get_recinfo(handle);
-	obj->m_startDate = start_date;
-	obj->m_startFraction = start_fraction;
+  struct record_info_s * obj = _libeep_get_recinfo(handle);
+  obj->m_startDate = start_date;
+  obj->m_startFraction = start_fraction;
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_hospital(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_hospital(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_hospital(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_hospital(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szHospital) / sizeof(obj->m_szHospital[0]) - 1;
-		strncpy(obj->m_szHospital, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szHospital) / sizeof(obj->m_szHospital[0]) - 1;
+    strncpy(obj->m_szHospital, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_test_name(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_test_name(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_test_name(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_test_name(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szTestName) / sizeof(obj->m_szTestName[0]) - 1;
-		strncpy(obj->m_szTestName, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szTestName) / sizeof(obj->m_szTestName[0]) - 1;
+    strncpy(obj->m_szTestName, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_test_serial(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_test_serial(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_test_serial(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_test_serial(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szTestSerial) / sizeof(obj->m_szTestSerial[0]) - 1;
-		strncpy(obj->m_szTestSerial, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szTestSerial) / sizeof(obj->m_szTestSerial[0]) - 1;
+    strncpy(obj->m_szTestSerial, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_physician(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_physician(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_physician(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_physician(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szPhysician) / sizeof(obj->m_szPhysician[0]) - 1;
-		strncpy(obj->m_szPhysician, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szPhysician) / sizeof(obj->m_szPhysician[0]) - 1;
+    strncpy(obj->m_szPhysician, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_technician(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_technician(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_technician(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_technician(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szTechnician) / sizeof(obj->m_szTechnician[0]) - 1;
-		strncpy(obj->m_szTechnician, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szTechnician) / sizeof(obj->m_szTechnician[0]) - 1;
+    strncpy(obj->m_szTechnician, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_machine_make(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_machine_make(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_machine_make(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_machine_make(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szMachineMake) / sizeof(obj->m_szMachineMake[0]) - 1;
-		strncpy(obj->m_szMachineMake, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szMachineMake) / sizeof(obj->m_szMachineMake[0]) - 1;
+    strncpy(obj->m_szMachineMake, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_machine_model(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_machine_model(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_machine_model(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_machine_model(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szMachineModel) / sizeof(obj->m_szMachineModel[0]) - 1;
-		strncpy(obj->m_szMachineModel, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szMachineModel) / sizeof(obj->m_szMachineModel[0]) - 1;
+    strncpy(obj->m_szMachineModel, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_machine_serial_number(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_machine_serial_number(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_machine_serial_number(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_machine_serial_number(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szMachineSN) / sizeof(obj->m_szMachineSN[0]) - 1;
-		strncpy(obj->m_szMachineSN, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szMachineSN) / sizeof(obj->m_szMachineSN[0]) - 1;
+    strncpy(obj->m_szMachineSN, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_patient_name(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_patient_name(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_patient_name(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_patient_name(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szName) / sizeof(obj->m_szName[0]) - 1;
-		strncpy(obj->m_szName, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szName) / sizeof(obj->m_szName[0]) - 1;
+    strncpy(obj->m_szName, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_patient_id(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_patient_id(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_patient_id(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_patient_id(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szID) / sizeof(obj->m_szID[0]) - 1;
-		strncpy(obj->m_szID, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szID) / sizeof(obj->m_szID[0]) - 1;
+    strncpy(obj->m_szID, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_patient_address(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_patient_address(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_patient_address(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_patient_address(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szAddress) / sizeof(obj->m_szAddress[0]) - 1;
-		strncpy(obj->m_szAddress, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szAddress) / sizeof(obj->m_szAddress[0]) - 1;
+    strncpy(obj->m_szAddress, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_patient_phone(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_patient_phone(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_patient_phone(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_patient_phone(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szPhone) / sizeof(obj->m_szPhone[0]) - 1;
-		strncpy(obj->m_szPhone, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szPhone) / sizeof(obj->m_szPhone[0]) - 1;
+    strncpy(obj->m_szPhone, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_comment(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_comment(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_comment(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_comment(recinfo_t handle, const char *value) {
-	if (value) {
-		struct record_info_s * obj = _libeep_get_recinfo(handle);
-		const size_t len = sizeof(obj->m_szComment) / sizeof(obj->m_szComment[0]) - 1;
-		strncpy(obj->m_szComment, value, len);
-	}
+  if (value) {
+    struct record_info_s * obj = _libeep_get_recinfo(handle);
+    const size_t len = sizeof(obj->m_szComment) / sizeof(obj->m_szComment[0]) - 1;
+    strncpy(obj->m_szComment, value, len);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 char
 libeep_get_patient_sex(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_patient_sex(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_patient_sex(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_patient_sex(recinfo_t handle, char value) {
-	struct record_info_s * obj = _libeep_get_recinfo(handle);
-	obj->m_chSex = value;
+  struct record_info_s * obj = _libeep_get_recinfo(handle);
+  obj->m_chSex = value;
 }
 ///////////////////////////////////////////////////////////////////////////////
 char
 libeep_get_patient_handedness(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return eep_get_patient_handedness(obj->eep);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return eep_get_patient_handedness(obj->eep);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_patient_handedness(recinfo_t handle, char value) {
-	struct record_info_s * obj = _libeep_get_recinfo(handle);
-	obj->m_chHandedness = value;
+  struct record_info_s * obj = _libeep_get_recinfo(handle);
+  obj->m_chHandedness = value;
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_get_date_of_birth(cntfile_t handle, int * year, int * month, int  * day) {
-	struct tm *dob = NULL;
-	struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-	dob = eep_get_patient_day_of_birth(obj->eep);
-    *year = dob->tm_year + 1900;
-    *month = dob->tm_mon + 1;
-    *day = dob->tm_mday;
+  struct tm *dob = NULL;
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  dob = eep_get_patient_day_of_birth(obj->eep);
+  *year = dob->tm_year + 1900;
+  *month = dob->tm_mon + 1;
+  *day = dob->tm_mday;
 }
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_set_date_of_birth(recinfo_t handle, int year, int month, int day) {
-	struct record_info_s * obj = _libeep_get_recinfo(handle);
-    struct tm temp;
-    memset(&temp, 0, sizeof(temp));
-    temp.tm_year = year - 1900;
-    temp.tm_mon = month - 1;
-    temp.tm_mday = day;
+  struct record_info_s * obj = _libeep_get_recinfo(handle);
+  struct tm temp;
+  memset(&temp, 0, sizeof(temp));
+  temp.tm_year = year - 1900;
+  temp.tm_mon = month - 1;
+  temp.tm_mday = day;
 
-    // fill in blanks(tm_wday and tm_yday);
-    mktime(&temp);
+  // fill in blanks(tm_wday and tm_yday);
+  mktime(&temp);
 
-	memmove(&obj->m_DOB, &temp, sizeof(struct tm));
+  memmove(&obj->m_DOB, &temp, sizeof(struct tm));
 }
 ///////////////////////////////////////////////////////////////////////////////
 int
 libeep_add_trigger(cntfile_t handle, uint64_t sample, const char *code) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
-    return trg_set(eep_get_trg(obj->eep), sample, code);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_write);
+  return trg_set(eep_get_trg(obj->eep), sample, code);
 }
 ///////////////////////////////////////////////////////////////////////////////
 int
 libeep_get_trigger_count(cntfile_t handle) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return trg_get_c(eep_get_trg(obj->eep));
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return trg_get_c(eep_get_trg(obj->eep));
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_trigger(cntfile_t handle, int idx, uint64_t *sample) {
-    struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-    return trg_get(eep_get_trg(obj->eep), idx, sample);
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
+  return trg_get(eep_get_trg(obj->eep), idx, sample);
 }
 ///////////////////////////////////////////////////////////////////////////////
 long
@@ -931,31 +954,32 @@ libeep_get_trials_averaged(cntfile_t handle) {
 }
 ///////////////////////////////////////////////////////////////////////////////
 chaninfo_t libeep_create_channel_info() {
-	return _libeep_channels_allocate();
+  return _libeep_channels_allocate();
 }
 ///////////////////////////////////////////////////////////////////////////////
 int libeep_add_channel(chaninfo_t handle, const char *label, const char *ref_label, const char *unit) {
-	eegchan_t *channels = NULL;
-	const char *default_ref_label = "ref";
-	const char *default_unit = "uV";
-	struct _libeep_channels * obj = _libeep_get_channels(handle);
-	// the channel label shall have a value; ref_label and unit might be NULL
-	if (label == NULL) {
-		return obj->count;
-	}
-	if (ref_label == NULL) {
-		ref_label = default_ref_label;
-	}
-	if (unit == NULL) {
-		unit = default_unit;
-	}
-	channels = (eegchan_t *)realloc(obj->channels, sizeof(eegchan_t) * (obj->count + 1));
-	if (channels == NULL) {
-		return obj->count;
-	}
-	obj->channels = channels;
-	eep_chan_set(obj->channels, obj->count, label, 1, 1.0 / SCALING_FACTOR, unit);
-	eep_chan_set_reflab(obj->channels, obj->count, ref_label);
-	obj->count += 1;
-	return obj->count;
+  eegchan_t *channels = NULL;
+  const char *default_ref_label = "ref";
+  const char *default_unit = "uV";
+  struct _libeep_channels * obj = _libeep_get_channels(handle);
+  // the channel label shall have a value; ref_label and unit might be NULL
+  if (label == NULL) {
+    return obj->count;
+  }
+  if (ref_label == NULL) {
+    ref_label = default_ref_label;
+  }
+  if (unit == NULL) {
+    unit = default_unit;
+  }
+  channels = (eegchan_t *)realloc(obj->channels, sizeof(eegchan_t) * (obj->count + 1));
+  if (channels == NULL) {
+    return obj->count;
+  }
+  obj->channels = channels;
+  eep_chan_set(obj->channels, obj->count, label, 1, 1.0 / SCALING_FACTOR, unit);
+  eep_chan_set_reflab(obj->channels, obj->count, ref_label);
+  obj->count += 1;
+  return obj->count;
 }
+

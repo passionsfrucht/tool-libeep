@@ -122,6 +122,7 @@ EXPORTS
   is_rejected_epoch
   libeep_add_channel
   libeep_add_raw_samples
+  libeep_add_recording_info
   libeep_add_samples
   libeep_add_trigger
   libeep_close

@@ -181,8 +181,12 @@ EXPORTS
   libeep_set_patient_name
   libeep_set_patient_phone
   libeep_set_patient_sex
+  libeep_set_physician
   libeep_set_start_date_and_fraction
   libeep_set_start_time
+  libeep_set_technician
+  libeep_set_test_name 
+  libeep_set_test_serial
   libeep_write_cnt
   raw3_free
   raw3_get_ERR_FLAG_0

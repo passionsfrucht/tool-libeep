@@ -50,7 +50,7 @@ typedef struct {
 
   unsigned short trialc;                 /* total number of trials */
   unsigned short rejtrialc;              /* number of rejected trials */
-  uint64_t       sample0;                /* index (with respect to trigger) of first sample */  
+  int64_t        sample0;                /* index (with respect to trigger) of first sample */  
   uint64_t       samplec;                /* number of samples */
   float          period;                 /* sampling intervall in seconds */
 

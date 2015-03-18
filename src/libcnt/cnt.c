@@ -2680,6 +2680,8 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
   /* Remember the current file position */
   uint64_t filepos = eepio_ftell(f);
 
+  int recinfo_chunk_size;
+
   /* Do everything that eep_finish_file() normally takes care of, such as closing the
     active data chunk, writing the corresponding EPochs chunk, the header, etc.
   */
@@ -2690,7 +2692,7 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
   if (NULL != cnt->recording_info) {
     uint64_t fp_pre_recinfo = eepio_ftell(f);
     write_recinfo_chunk(cnt, cnt->recording_info);
-    int recinfo_chunk_size = (int)(eepio_ftell(f) - fp_pre_recinfo);
+    recinfo_chunk_size = (int)(eepio_ftell(f) - fp_pre_recinfo);
     if(!finalize && recinfo_chunk_size) {
       if(cnt->mode==CNT_RIFF) {
         RET_ON_CNTERROR(decrease_chunksize(f, &cnt->info, recinfo_chunk_size, 1));

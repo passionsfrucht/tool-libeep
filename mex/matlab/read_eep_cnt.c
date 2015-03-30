@@ -34,8 +34,7 @@
 #define NAME "read_eep_cnt"
 
 void
-mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
-{
+mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
 
   /* these variables are MPI-ANT specific for reading the data */
   char filename[256];
@@ -56,8 +55,9 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   mxArray *nsample;
   mxArray *time;
   mxArray *data;
+  mxArray *triggers;
 
-  const int nfields = 7;
+  const int nfields = 8;
   const char *field_names[] = {
     "label",                     /* label			*/
     "rate",                      /* 1/(period)			*/
@@ -65,7 +65,18 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     "nchan",                     /* chanc			*/
     "nsample",                   /* nsample of the whole data	*/
     "time",                      /* 				*/
-    "data"};                     /* data			*/
+    "triggers",                  /* 				*/
+    "data"
+  };                     /* data			*/
+
+  trg_t              * trigger_struct;
+  const int            trigger_field_count = 4;
+  const char         * trigger_field_names[] = { "time", "offset", "code", "type"};
+  int                  trigger_array_index;
+  int                  trigger_index;
+  int                  trigger_count;
+  char               * trigger_label;
+  unsigned long long   trigger_offset;
 
   if (nrhs!=3)
     mexErrMsgTxt ("Invalid number of input arguments");
@@ -76,7 +87,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   length = se-sb+1;
 
   /* open the data file */
- if ((fp = eepio_fopen(filename, "rb"))==NULL)
+  if ((fp = eepio_fopen(filename, "rb"))==NULL)
     mexErrMsgTxt ("Could not open file");
 
   /* read header information */
@@ -101,10 +112,14 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     mexErrMsgTxt ("End sample should be less than the number of samples in the data");
 
   /* rate      = mxCreateDoubleMatrix(1,1,mxREAL); *mxGetPr(rate     ) = (double)1/period; */
-  rate      = mxCreateDoubleMatrix(1,1,mxREAL); *mxGetPr(rate     ) = (double)eep_get_rate(hdr);
-  npnt      = mxCreateDoubleMatrix(1,1,mxREAL); *mxGetPr(npnt     ) = (double)length;
-  nchan     = mxCreateDoubleMatrix(1,1,mxREAL); *mxGetPr(nchan    ) = (double)chanc;
-  nsample   = mxCreateDoubleMatrix(1,1,mxREAL); *mxGetPr(nsample  ) = (double)samplec;
+  rate      = mxCreateDoubleMatrix(1,1,mxREAL);
+  *mxGetPr(rate     ) = (double)eep_get_rate(hdr);
+  npnt      = mxCreateDoubleMatrix(1,1,mxREAL);
+  *mxGetPr(npnt     ) = (double)length;
+  nchan     = mxCreateDoubleMatrix(1,1,mxREAL);
+  *mxGetPr(nchan    ) = (double)chanc;
+  nsample   = mxCreateDoubleMatrix(1,1,mxREAL);
+  *mxGetPr(nsample  ) = (double)samplec;
   data      = mxCreateDoubleMatrix(chanc,length,mxREAL);
   time      = mxCreateDoubleMatrix(1,length,mxREAL);
   label     = mxCreateCellMatrix(chanc,1);
@@ -130,6 +145,49 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   /* create the struct array with dimensions 1x1 */
   plhs[0] = mxCreateStructArray(2, dims, nfields, field_names);
 
+  /* trigger stuff */
+  trigger_struct = eep_get_trg(hdr);
+  if(trigger_struct != NULL) {
+    // pass one, count triggers
+    trigger_count = 0;
+    for(trigger_index=0;trigger_index<trg_get_c(trigger_struct);trigger_index++) {
+      trigger_label = trg_get(trigger_struct, trigger_index, & trigger_offset);
+      if( (trigger_offset >= sb) && (trigger_offset < se) ) {
+        trigger_count++;
+      }
+    }
+    // pass two, fill triggers
+    triggers  = mxCreateStructMatrix(1, trigger_count, trigger_field_count, trigger_field_names);
+    trigger_array_index = 0;
+    for(trigger_index=0;trigger_index<trg_get_c(trigger_struct);trigger_index++) {
+      trigger_label = trg_get(trigger_struct, trigger_index, & trigger_offset);
+      if(trigger_offset >= sb && trigger_offset < se) {
+        mxArray * time;
+        mxArray * offset;
+        mxArray * code;
+        mxArray * type;
+
+        time = mxCreateDoubleMatrix(1,1,mxREAL);
+        *mxGetPr(time) = (double) trigger_offset * period;
+
+        offset = mxCreateDoubleMatrix(1,1,mxREAL);
+        *mxGetPr(offset) = (double) trigger_offset;
+
+        code = mxCreateString(trigger_label);
+
+        type = mxCreateDoubleMatrix(1,1,mxREAL);
+        *mxGetPr(type) = (double) atof(trigger_label);
+
+        /* fill the struct array with the variables */
+        mxSetField(triggers, trigger_array_index, "time", time );
+        mxSetField(triggers, trigger_array_index, "offset", offset );
+        mxSetField(triggers, trigger_array_index, "code", code );
+        mxSetField(triggers, trigger_array_index, "type", type );
+        trigger_array_index++;
+      }
+    }
+  }
+
   /* fill the struct array with the variables */
   mxSetField(plhs[0], 0, "rate",      rate     );
   mxSetField(plhs[0], 0, "npnt",      npnt     );
@@ -138,6 +196,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   mxSetField(plhs[0], 0, "data",      data     );
   mxSetField(plhs[0], 0, "time",      time     );
   mxSetField(plhs[0], 0, "label",     label    );
+  mxSetField(plhs[0], 0, "triggers",  triggers );
 
   /* close the file */
   eep_free(hdr);

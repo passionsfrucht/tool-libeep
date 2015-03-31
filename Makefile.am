@@ -13,5 +13,6 @@ pkgconfig_DATA = $(PACKAGE_NAME).pc
 bin_SCRIPTS = libeep-config
 
 dist_data_DATA = \
+  CMakeLists.txt \
   LICENSE \
   LICENSE.addendum

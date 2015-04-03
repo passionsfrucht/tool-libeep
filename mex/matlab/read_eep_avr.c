@@ -28,7 +28,8 @@
 #include <math.h>
 #include "mex.h"		/* Matlab specific  */
 #include "matrix.h"		/* Matlab specific  */
-#include "cnt/cnt.h"
+#include <eep/eepio.h>   /* MPI-ANT specific */
+#include <cnt/cnt.h>
 
 #define NAME "read_eep_avr"
 

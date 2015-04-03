@@ -28,8 +28,9 @@
 #include <math.h>
 #include "mex.h"		/* Matlab specific  */
 #include "matrix.h"		/* Matlab specific  */
-#include <eep/eepmisc.h>		/* MPI-ANT specific */
-#include <cnt/cnt.h>		/* MPI-ANT specific */
+#include <eep/eepmisc.h> /* MPI-ANT specific */
+#include <eep/eepio.h>   /* MPI-ANT specific */
+#include <cnt/cnt.h>	 /* MPI-ANT specific */
 
 #define NAME "write_eep_cnt"
 

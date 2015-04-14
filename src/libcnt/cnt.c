@@ -2680,37 +2680,19 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
   /* Remember the current file position */
   uint64_t filepos = eepio_ftell(f);
 
-  int recinfo_chunk_size;
-
   /* Do everything that eep_finish_file() normally takes care of, such as closing the
     active data chunk, writing the corresponding EPochs chunk, the header, etc.
   */
   if (DATATYPE_UNDEFINED != cnt->current_datachunk)
     close_data_chunk(cnt, finalize, &cnt->store[cnt->current_datachunk]);
-
+  
   /* Write the Recording info chunk, if one is specified */
   if (NULL != cnt->recording_info) {
-    uint64_t fp_pre_recinfo = eepio_ftell(f);
     write_recinfo_chunk(cnt, cnt->recording_info);
-    recinfo_chunk_size = (int)(eepio_ftell(f) - fp_pre_recinfo);
-    if(!finalize && recinfo_chunk_size) {
-      if(cnt->mode==CNT_RIFF) {
-        RET_ON_CNTERROR(decrease_chunksize(f, &cnt->info, recinfo_chunk_size, 1));
-      } else {
-        RET_ON_CNTERROR(decrease_chunksize(f, &cnt->info, recinfo_chunk_size, 0));
-      }
-    }
   }
 
   /* create and write the ascii header */
   RET_ON_CNTERROR(write_eeph_chunk(cnt));
-  if (cnt->eep_header.chunk_size> 0) {
-    if(cnt->mode==CNT_RIFF) {
-      RET_ON_CNTERROR(decrease_chunksize(f, &cnt->eeph, cnt->eep_header.chunk_size + 8, 1));
-    } else {
-      RET_ON_CNTERROR(decrease_chunksize(f, &cnt->eeph, cnt->eep_header.chunk_size + 12, 0));
-    }
-  }
   cnt->eep_header.chunk_size = cnt->eeph.size;
   cnt->eep_header.chunk_size += cnt->eep_header.chunk_size & 1; /* Make sure it's even! */
 
@@ -2718,13 +2700,6 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
   if (cnt->store[DATATYPE_TIMEFREQ].initialized)
   {
     RET_ON_CNTERROR(write_tfh_chunk(cnt));
-    if (cnt->tf_header.chunk_size > 0) {
-      if(cnt->mode==CNT_RIFF) {
-        RET_ON_CNTERROR(decrease_chunksize(f, &cnt->tfh, cnt->tf_header.chunk_size + 8, 1));
-      } else {
-        RET_ON_CNTERROR(decrease_chunksize(f, &cnt->tfh, cnt->tf_header.chunk_size + 12, 0));
-      }
-    }
     cnt->tf_header.chunk_size = cnt->tfh.size;
     cnt->tf_header.chunk_size += cnt->tf_header.chunk_size & 1; /* Make sure it's even! */
   }
@@ -2734,6 +2709,17 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
   {
     if( cnt->trg && (cnt->trg->c > 0) )
       write_trigger_chunk(cnt);
+  }
+
+  // correct CNT chunk
+  uint64_t file_offset2 = eepio_ftell(f);
+  eepio_fseek(f, cnt->cnt.start, SEEK_SET);
+  if(cnt->mode==CNT_RIFF) {
+    cnt->cnt.size = file_offset2 - 8;
+    RET_ON_RIFFERROR(riff_put_chunk(f, cnt->cnt), CNTERR_FILE);
+  } else {
+    cnt->cnt.size = file_offset2 - 12;
+    RET_ON_RIFFERROR(riff64_put_chunk(f, cnt->cnt), CNTERR_FILE);
   }
 
   /* Finally, restore the file pointer to it's original position */

@@ -44,18 +44,18 @@
 #define CHUNK64HEADER_SIZE 12
 #define PARENT64HEADER_SIZE 16
 
+// #define RIFF_DEBUG
+
 void
 _riff64_dump_chunk(const chunk64_t *c) {
   fprintf(stderr, "chunk(");
   fprintf(stderr, " fcc=%c%c%c%c", ((char *)&c->id)[0], ((char *)&c->id)[1], ((char *)&c->id)[2], ((char *)&c->id)[3]);
   fprintf(stderr, ", start=%10" PRIu64, c->start);
   fprintf(stderr, ", size=%10" PRIu64, c->size);
-  fprintf(stderr, ")\n");
-/*
-  if(c->parent) {
-    fprintf(stderr, "  parent.. %c%c%c%c\n", ((char *)&c->parent->id)[0], ((char *)&c->parent->id)[1], ((char *)&c->parent->id)[2], ((char *)&c->parent->id)[3]);
+  if(c->size % 4 != 0) {
+    fprintf(stderr, " size not multiple of 4!");
   }
-*/
+  fprintf(stderr, ")\n");
 }
 
 int _riff64_get_id(FILE *f, fourcc_t *in) {
@@ -74,8 +74,6 @@ int _riff64_put_id(FILE *f, fourcc_t out) {
   id[1] =  (char) ((out >> 8) & 0xff);
   id[2] =  (char) ((out >> 16) & 0xff);
   id[3] =  (char) ((out >> 24) & 0xff);
-
-  // fprintf(stderr, "%s: @%i: %c%c%c%c\n", __FUNCTION__, eepio_ftell(f), id[0], id[1], id[2], id[3]);
 
   eepio_fwrite(id, 4, 1, f);
 
@@ -246,17 +244,11 @@ int riff64_list_new(FILE *f, chunk64_t *chunk, fourcc_t listtype, chunk64_t *par
 
 int riff64_new(FILE *f, chunk64_t *chunk, fourcc_t chunktype, chunk64_t *parent) {
   chunk64_t *x;
-/*
-  uint64_t ft_save = eepio_ftell(f);
-  eepio_fseek(f, 0, SEEK_END);
-*/
   chunk->id = chunktype;
   chunk->start = eepio_ftell(f);
   chunk->parent = parent;
   chunk->size = 0;
-/*
-  eepio_fseek(f, ft_save, SEEK_SET);
-*/
+
   if (riff64_put_chunk(f, *chunk)) return RIFFERR_FILE;
   x = chunk;
   while (x->parent != NULL) {
@@ -297,7 +289,6 @@ int riff64_close(FILE *f, chunk64_t chunk) {
   }
 
   /* force next start at even filepos */
-  /*eepio_fseek(f, 0, SEEK_END); Next line will be equivalent in case of seek_end == true */
   eepio_fseek(f, start, SEEK_SET);
   if (fillbytes) eepio_fwrite(&junk, 1, 1, f);
 
@@ -306,8 +297,6 @@ int riff64_close(FILE *f, chunk64_t chunk) {
 
 int riff64_write(const char *buf, size_t size, size_t num_items, FILE *f, chunk64_t *chunk) {
   uint64_t sizeinc = size * num_items;
-
-  // fprintf(stderr, "%s: @%i: %c%c%c%c\n", __FUNCTION__, eepio_ftell(f), ((char *)&chunk->id)[0], ((char *)&chunk->id)[1], ((char *)&chunk->id)[2], ((char *)&chunk->id)[3]);
 
   if (eepio_fwrite(buf, size, num_items, f) != num_items) return RIFFERR_FILE;
   chunk->size += sizeinc;

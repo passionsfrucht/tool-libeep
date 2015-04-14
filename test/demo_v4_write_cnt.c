@@ -37,14 +37,15 @@ handle_file(const char *filename) {
     fprintf(stderr, "error opening %s", filename);
   }
 
+  float * samples = (float *)malloc(sizeof(float) * CHANNEL_COUNT);
   for(i=0;i<sampling_rate * duration;++i) {
-    float * samples = (float *)malloc(sizeof(float) * CHANNEL_COUNT);
     for(c=0;c<CHANNEL_COUNT;++c) {
       samples[c] = (float)(i);
     }
     libeep_add_samples(cnt_handle, samples, 1);
     // for testing
   }
+  free(samples);
 
   // add recording info
   libeep_add_recording_info(cnt_handle, recording_info_handle);

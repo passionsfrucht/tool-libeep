@@ -2677,6 +2677,8 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
 {
   FILE* f = cnt->f;
 
+  uint64_t file_offset;
+
   /* Remember the current file position */
   uint64_t filepos = eepio_ftell(f);
 
@@ -2712,13 +2714,13 @@ int make_partial_output_consistent(eeg_t *cnt, int finalize)
   }
 
   // correct CNT chunk
-  uint64_t file_offset2 = eepio_ftell(f);
+  file_offset = eepio_ftell(f);
   eepio_fseek(f, cnt->cnt.start, SEEK_SET);
   if(cnt->mode==CNT_RIFF) {
-    cnt->cnt.size = file_offset2 - 8;
+    cnt->cnt.size = file_offset - 8;
     RET_ON_RIFFERROR(riff_put_chunk(f, cnt->cnt), CNTERR_FILE);
   } else {
-    cnt->cnt.size = file_offset2 - 12;
+    cnt->cnt.size = file_offset - 12;
     RET_ON_RIFFERROR(riff64_put_chunk(f, cnt->cnt), CNTERR_FILE);
   }
 

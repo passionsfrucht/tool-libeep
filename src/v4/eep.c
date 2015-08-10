@@ -484,32 +484,44 @@ _libeep_get_samples_cnt(struct _libeep_entry * obj, long from, long to) {
   const sraw_t * ptr_src;
   const float  * ptr_scales;
   float  * ptr_dst;
-  int n;
+  int i;
   int w;
+  long sample_count;
+  short channel_count;
   // seek
   if(eep_seek(obj->eep, DATATYPE_EEG, from, 0)) {
     return NULL;
   }
+
+  // convenience values
+  channel_count = eep_get_chanc(obj->eep);
+  sample_count = to - from;
+
   // get unscaled data
-  buffer_unscaled = (sraw_t *)malloc(CNTBUF_SIZE(obj->eep, to-from));
-  if(eep_read_sraw(obj->eep, DATATYPE_EEG, buffer_unscaled, to-from)) {
+  buffer_unscaled = (sraw_t *)malloc(sizeof(sraw_t) * channel_count * sample_count);
+
+  if(eep_read_sraw(obj->eep, DATATYPE_EEG, buffer_unscaled, sample_count)) {
     free(buffer_unscaled);
     return NULL;
   }
   // scale data
-  buffer_scaled = (float *)malloc(sizeof(float) * (to-from) * eep_get_chanc(obj->eep));
+  buffer_scaled = (float *)malloc(sizeof(float) * channel_count * sample_count);
   ptr_src=buffer_unscaled;
-  ptr_scales=obj->scales;
   ptr_dst=buffer_scaled;
-  n=eep_get_chanc(obj->eep) * (to-from);
+  ptr_scales = NULL;
   w = 0;
-  while(n--) {
+  i = 0;
+  while(i<(channel_count * sample_count)) {
     if(!w) {
-      w=to-from;
+      w=channel_count;
       ptr_scales=obj->scales;
     }
-    *ptr_dst++ = (float)(*ptr_src++) **ptr_scales++;
-    w--;
+    *ptr_dst = (float)(*ptr_src) * (*ptr_scales);
+	++ptr_dst;
+	++ptr_src;
+	++ptr_scales;
+    --w;
+	++i;
   }
   free(buffer_unscaled);
   return buffer_scaled;

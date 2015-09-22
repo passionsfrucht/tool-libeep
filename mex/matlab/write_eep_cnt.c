@@ -55,6 +55,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   mxArray *mx_data;
   mxArray *mx_label;
   mxArray *mx_tmp;
+  mxArray *mx_triggers;
 
   /*****************************
    * test proper function call *
@@ -72,6 +73,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   mx_data = mxGetField(prhs[1], 0, "data");
   mx_label = mxGetField(prhs[1], 0, "label");
   mx_data_ptr=mxGetPr(mx_data);
+  mx_triggers = mxGetField(prhs[1], 0, "triggers");
 
   /******************
    * build channels *
@@ -130,6 +132,21 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     /* write */
     if(eep_write_sraw(cnt, buf, 1) != CNTERR_NONE) {
       mexErrMsgTxt ("error writing sample");
+    }
+  }
+  /************
+   * triggers *
+   ************/
+  if(mx_triggers != NULL) {
+    size_t trigger_i;
+    size_t trigger_count = mxGetN(mx_triggers);
+  
+    for(trigger_i=0;trigger_i<trigger_count;++trigger_i) {
+      trg_set(
+        eep_get_trg(cnt),
+        mxGetScalar(mxGetField(mx_triggers, trigger_i, "time")) * rate,
+        mxArrayToString(mxGetField(mx_triggers, trigger_i, "code"))
+      );
     }
   }
   /*************************

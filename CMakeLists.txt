@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(LIBEEP_VERSION_MAJOR 3)
 set(LIBEEP_VERSION_MINOR 3)
-set(LIBEEP_VERSION_PATCH 173)
+set(LIBEEP_VERSION_PATCH 174)
 set(LIBEEP_VERSION "${LIBEEP_VERSION_MAJOR}.${LIBEEP_VERSION_MINOR}.${LIBEEP_VERSION_PATCH}")
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(PACKAGE libeep)
@@ -61,6 +61,7 @@ add_library(Eep SHARED
   $<TARGET_OBJECTS:EepObjects>
   ${Eep_def}
 )
+# set_target_properties(Eep PROPERTIES VERSION ${LIBEEP_VERSION_MAJOR}.${LIBEEP_VERSION_MINOR}.${LIBEEP_VERSION_PATCH} SOVERSION ${LIBEEP_VERSION_MAJOR})
 include_directories(src)
 include_directories(${CMAKE_BINARY_DIR}/gen/include)
 
@@ -120,12 +121,15 @@ if(IS_DIRECTORY $ENV{MATLAB})
   endforeach()
 
 
-  foreach(matlab_target read_eep_avr read_eep_cnt read_eep_trg write_eep_avr write_eep_cnt)
+  foreach(matlab_target read_eep_avr read_eep_cnt read_eep_trg write_eep_avr write_eep_cnt get_eep_version)
     add_custom_command(OUTPUT ${matlab_target}.${MATLAB_EXT}
                        COMMAND ${MATLAB_BIN}/mex
                        ARGS ${CMAKE_SOURCE_DIR}/mex/matlab/${matlab_target}.c -I${CMAKE_SOURCE_DIR}/src -L${CMAKE_BINARY_DIR}/debug
                             ${Eep_sources_abs}
                             ${MATLAB_MEX_CFLAGS}
+                            -DLIBEEP_VERSION_MAJOR=${LIBEEP_VERSION_MAJOR}
+                            -DLIBEEP_VERSION_MINOR=${LIBEEP_VERSION_MINOR}
+                            -DLIBEEP_VERSION_PATCH=${LIBEEP_VERSION_PATCH}
                        DEPENDS ${CMAKE_SOURCE_DIR}/mex/matlab/${matlab_target}.c ${Eep_sources}
                       )
     # target_link_libraries(${matlab_target}.${MATLAB_EXT} Eep)

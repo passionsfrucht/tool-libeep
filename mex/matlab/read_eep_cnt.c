@@ -67,8 +67,8 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
     "nsample",                   /* nsample of the whole data	*/
     "time",                      /* 				*/
     "triggers",                  /* 				*/
-    "data"
-  };                     /* data			*/
+    "data"                       /* data			*/
+  };
 
   trg_t              * trigger_struct;
   const int            trigger_field_count = 4;

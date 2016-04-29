@@ -75,7 +75,8 @@ header = fgetl(fid);
 while ~feof(fid)
   tmp = fscanf(fid, '%f %d %s', 3);
   if ~isempty(tmp)
-    new.time   = tmp(1)*1000;			% in ms
+    new.time_s = tmp(1);      		% in s
+    new.time   = tmp(1)*1000;		% in ms
     new.offset = tmp(2)+1;			% offset 1
     new.code   = char(tmp(3:end));		% string
     new.type   = str2double(new.code);		% numeric

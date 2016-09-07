@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(LIBEEP_VERSION_MAJOR 3)
 set(LIBEEP_VERSION_MINOR 3)
-set(LIBEEP_VERSION_PATCH 174)
+set(LIBEEP_VERSION_PATCH 175)
 set(LIBEEP_VERSION "${LIBEEP_VERSION_MAJOR}.${LIBEEP_VERSION_MINOR}.${LIBEEP_VERSION_PATCH}")
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(PACKAGE libeep)
@@ -11,8 +11,9 @@ project(libeep-${LIBEEP_VERSION})
 
 add_definitions(-DLIBEEP_VERSION="${LIBEEP_VERSION}")
 if(UNIX)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   configure_file(libeep.pc.in ${CMAKE_BINARY_DIR}/libeep.pc)
@@ -36,6 +37,7 @@ endif(WIN32)
 set(Eep_sources
   src/libavr/avr.c
   src/libavr/avrcfg.c
+  src/libcnt/evt.c
   src/libcnt/cnt.c
   src/libcnt/cntutils.c
   src/libcnt/raw3.c
@@ -149,15 +151,17 @@ endif(UNIX)
 
 add_executable(demo_read_avr test/demo_read_avr.c)
 add_executable(demo_read_cnt test/demo_read_cnt.c)
+add_executable(demo_read_evt  test/demo_read_evt.c)
+add_executable(demo_v4_read_cnt test/demo_v4_read_cnt.c)
+add_executable(demo_v4_write_cnt test/demo_v4_write_cnt.c)
 add_executable(demo_write_avr test/demo_write_avr.c)
 add_executable(demo_write_cnt test/demo_write_cnt.c)
 add_executable(libeep_info test/libeep_info.c)
-add_executable(demo_v4_write_cnt test/demo_v4_write_cnt.c)
-add_executable(demo_v4_read_cnt test/demo_v4_read_cnt.c)
 target_link_libraries(demo_read_avr Eep ${MATH})
 target_link_libraries(demo_read_cnt Eep ${MATH})
+target_link_libraries(demo_read_evt Eep ${MATH})
+target_link_libraries(demo_v4_read_cnt Eep ${MATH})
+target_link_libraries(demo_v4_write_cnt Eep ${MATH})
 target_link_libraries(demo_write_avr Eep ${MATH})
 target_link_libraries(demo_write_cnt Eep ${MATH})
 target_link_libraries(libeep_info Eep)
-target_link_libraries(demo_v4_write_cnt Eep ${MATH})
-target_link_libraries(demo_v4_read_cnt Eep ${MATH})

@@ -6,25 +6,42 @@
 ///////////////////////////////////////////////////////////////////////////////
 void
 handle_file(const char *filename) {
-  int handle, c, chanc;
+  int i, handle, c, chanc, triggerc;
   long s, sampc;
 
-  handle = libeep_read(filename);
+  handle = libeep_read_with_external_triggers(filename);
   if(handle == -1) {
     fprintf(stderr, "error opening %s", filename);
   }
 
+  // channels
   chanc = libeep_get_channel_count(handle);
-  sampc = libeep_get_sample_count(handle);
+  printf("channels: %i\n", chanc);
+
+  // samples
+  sampc = 10; // libeep_get_sample_count(handle);
   for(s=0;s<sampc;++s) {
     float * sample = libeep_get_samples(handle, s, s+1);
-    printf("sample[%5i]:", s);
+    printf("sample[%5lu]:", s);
     for(c=0;c<chanc;++c) {
       printf(" %f", sample[c]);
     }
     free(sample);
     printf("\n");
   }
+
+  // triggers
+  triggerc = libeep_get_trigger_count(handle); 
+  printf("triggers: %i\n", triggerc);
+  for(i=0;i<triggerc;++i) {
+    const char * code;
+    uint64_t     offset;
+    code = libeep_get_trigger(handle, i, & offset);
+    printf("trigger: %s / %lu\n", code, (unsigned long)offset);
+  }
+
+  // close
+  libeep_close(handle);
 }
 ///////////////////////////////////////////////////////////////////////////////
 int

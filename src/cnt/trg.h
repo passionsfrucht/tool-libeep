@@ -122,8 +122,8 @@ int trg_set_EEP20(trg_t *trg, uint64_t sample, unsigned short flag);
   full trigger loops
   get the total count and go on step by step
 */
-int   trg_get_c(trg_t *trg);
-char *trg_get  (trg_t *trg, int i, uint64_t *sample);
+int   trg_get_c(const trg_t *trg);
+char *trg_get  (const trg_t *trg, int i, uint64_t *sample);
 /*
   trg_get as above, but also set cls char
 */

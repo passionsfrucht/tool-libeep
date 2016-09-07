@@ -508,12 +508,12 @@ int trg_set_EEP20(trg_t *trg, uint64_t sample, unsigned short flag)
   return r;
 }
 
-int trg_get_c (trg_t *trg)
+int trg_get_c (const trg_t *trg)
 {
   return trg->c;
 }
 
-char *trg_get  (trg_t *trg, int i, uint64_t *sample)
+char *trg_get  (const trg_t *trg, int i, uint64_t *sample)
 {
   *sample = trg->v[i].sample;
   return trg->v[i].code;

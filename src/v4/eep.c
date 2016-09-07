@@ -1,10 +1,13 @@
 // system
-#include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 // libeep
 #include <v4/eep.h>
 #include <cnt/cnt.h>
+#include <cnt/trg.h>
 #include <eep/eepio.h> // for the definition of eepio_fopen
 #include <cnt/cnt_private.h> // for the definition of eegchan_s
 ///////////////////////////////////////////////////////////////////////////////
@@ -13,12 +16,20 @@
 typedef enum { dt_none, dt_avr, dt_cnt } data_type;
 typedef enum { om_none, om_read, om_write } open_mode;
 ///////////////////////////////////////////////////////////////////////////////
+struct _processed_trigger {
+  char     * label;
+  uint64_t   sample;
+};
+///////////////////////////////////////////////////////////////////////////////
 struct _libeep_entry {
   FILE      * file;
   eeg_t     * eep;
   data_type   data_type;
   open_mode   open_mode;
   float     * scales;
+  // processed trigger data
+  int                         processed_trigger_count;
+  struct _processed_trigger * processed_trigger_data;
 };
 
 struct _libeep_channels {
@@ -264,6 +275,100 @@ _libeep_free_channels_map() {
   _libeep_channel_size = 0;
 }
 ///////////////////////////////////////////////////////////////////////////////
+/* local helper to return string with the end replaced */
+static char *
+_replace_string_end(const char * input, const char * end) {
+  char   * input_dup;
+  size_t   input_len;
+  size_t   end_len;
+
+  input_len = strlen(input);
+  end_len = strlen(end);
+
+  if(input_len > end_len) {
+    input_dup = (char *)malloc(input_len + 1);
+    strcpy(input_dup, input);
+    sprintf(input_dup + input_len - end_len, end);
+    return input_dup;
+  }
+
+  return NULL;
+}
+///////////////////////////////////////////////////////////////////////////////
+/* convert libeep trg_t structure to processed trigger structure */
+static void
+_libeep_trg_t_to_processed(const trg_t * external_trg, struct _libeep_entry * obj) {
+   obj->processed_trigger_count = trg_get_c(external_trg);
+   obj->processed_trigger_data = (struct _processed_trigger *)malloc(sizeof(struct _processed_trigger) * obj->processed_trigger_count);
+   for(int i=0;i<trg_get_c(external_trg);++i) {
+     char *code;
+     code=trg_get(external_trg, i, &obj->processed_trigger_data[i].sample);
+
+     obj->processed_trigger_data[i].label = (char *)malloc(strlen(code) + 1);
+     strcpy(obj->processed_trigger_data[i].label, code);
+   }
+}
+///////////////////////////////////////////////////////////////////////////////
+/* process triggers
+ * try .trg file first
+ * if not found, get the triggers from the cnt
+ */
+static void
+_libeep_init_processed_triggers(const char * filename, struct _libeep_entry * obj, int external_triggers) {
+  if(external_triggers) {
+    // TODO: .evt file
+
+    // .trg file
+    char * external_trg_filename = _replace_string_end(filename, "trg");
+    if(external_trg_filename) {
+      FILE *external_trg_file=eepio_fopen(external_trg_filename, "r");
+      if(external_trg_file) {
+        trg_t * external_trg = trg_file_read(external_trg_file, eep_get_period(obj->eep));
+        if(external_trg) {
+          _libeep_trg_t_to_processed(external_trg, obj);
+
+          free(external_trg);
+        }
+      }
+      free(external_trg_filename);
+    }
+    // return if triggers were found
+    if(obj->processed_trigger_count) {
+      return;
+    }
+  }
+
+  // embedded triggers
+  _libeep_trg_t_to_processed(obj->eep->trg, obj);
+  // return if triggers were found
+  if(obj->processed_trigger_count) {
+    return;
+  }
+#if 0
+  // dummy data
+  obj->processed_trigger_count = 1;
+  obj->processed_trigger_data = (struct _processed_trigger *)malloc(sizeof(struct _processed_trigger) * obj->processed_trigger_count);
+  obj->processed_trigger_data[0].sample = 13;
+  const char * dummy_code = "dummy13";
+  obj->processed_trigger_data[0].label = (char *)malloc(strlen(dummy_code) + 1);
+  strcpy(obj->processed_trigger_data[0].label, dummy_code);
+#endif
+}
+///////////////////////////////////////////////////////////////////////////////
+/* clean up processed triggers resource */
+static void
+_libeep_fini_processed_triggers(struct _libeep_entry * obj) {
+  if(obj->processed_trigger_data) {
+    int i;
+    for(i=0;i<obj->processed_trigger_count;++i) {
+      free(obj->processed_trigger_data[i].label);
+    }
+    free(obj->processed_trigger_data);
+    obj->processed_trigger_count = 0;
+    obj->processed_trigger_data = NULL;
+  }
+}
+///////////////////////////////////////////////////////////////////////////////
 void libeep_init() {
   _libeep_entry_map = NULL;
   _libeep_entry_size = 0;
@@ -285,7 +390,7 @@ libeep_get_version() {
 }
 ///////////////////////////////////////////////////////////////////////////////
 cntfile_t
-libeep_read(const char *filename) {
+_libeep_read_delegate(const char *filename, int external_triggers) {
   int status;
   int handle=_libeep_allocate();
   int channel_id;
@@ -309,8 +414,10 @@ libeep_read(const char *filename) {
   for(channel_id=0; channel_id<channel_count; channel_id++) {
     obj->scales[channel_id]=(float)eep_get_chan_scale(obj->eep, channel_id);
   }
-  // read triggers(if CNT)
-  // read rejections(if CNT)
+  // prepare structures for external trigger files
+  obj->processed_trigger_count = 0;
+  obj->processed_trigger_data = NULL;
+  _libeep_init_processed_triggers(filename, obj, external_triggers);
   // housekeeping
   obj->open_mode=om_read;
   if(eep_has_data_of_type(obj->eep, DATATYPE_AVERAGE)) {
@@ -320,6 +427,16 @@ libeep_read(const char *filename) {
     obj->data_type=dt_cnt;
   }
   return handle;
+}
+///////////////////////////////////////////////////////////////////////////////
+cntfile_t
+libeep_read(const char *filename) {
+  return _libeep_read_delegate(filename, 0);
+}
+///////////////////////////////////////////////////////////////////////////////
+cntfile_t
+libeep_read_with_external_triggers(const char *filename) {
+  return _libeep_read_delegate(filename, 1);
 }
 ///////////////////////////////////////////////////////////////////////////////
 cntfile_t
@@ -366,6 +483,9 @@ libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle,
   eep_set_keep_file_consistent(obj->eep, 1);
   // scalings
   obj->scales = (float *)malloc(sizeof(float)* channels_obj->count);
+  // prepare structures for external trigger files
+  obj->processed_trigger_count = 0;
+  obj->processed_trigger_data = NULL;
   // housekeeping
   obj->open_mode=om_write;
   obj->data_type=dt_cnt;
@@ -385,6 +505,8 @@ libeep_close(cntfile_t handle) {
   }
   // close scales
   free(_libeep_entry_map[handle]->scales);
+  // clear structures for external trigger files
+  _libeep_fini_processed_triggers(obj);
   // cleanup
   eepio_fclose(obj->file);
   _libeep_free(handle);
@@ -911,13 +1033,14 @@ libeep_add_trigger(cntfile_t handle, uint64_t sample, const char *code) {
 int
 libeep_get_trigger_count(cntfile_t handle) {
   struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-  return trg_get_c(eep_get_trg(obj->eep));
+  return obj->processed_trigger_count;
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_trigger(cntfile_t handle, int idx, uint64_t *sample) {
   struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-  return trg_get(eep_get_trg(obj->eep), idx, sample);
+  *sample = obj->processed_trigger_data[idx].sample;
+  return obj->processed_trigger_data[idx].label;
 }
 ///////////////////////////////////////////////////////////////////////////////
 long
@@ -994,4 +1117,3 @@ int libeep_add_channel(chaninfo_t handle, const char *label, const char *ref_lab
   obj->count += 1;
   return obj->count;
 }
-

@@ -63,6 +63,7 @@ EXPORTS
   eep_get_samplec_full
   eep_get_total_trials
   eep_get_trg
+  eep_get_time_struct
   eep_has_data_of_type
   eep_has_history
   eep_has_recording_info
@@ -131,6 +132,10 @@ EXPORTS
   libeep_exit
   libeep_free_raw_samples
   libeep_free_samples
+  libeep_evt_read
+  libeep_evt_header_print
+  libeep_evt_event_print
+  libeep_evt_delete
   libeep_get_channel_count
   libeep_get_channel_index
   libeep_get_channel_label
@@ -169,6 +174,7 @@ EXPORTS
   libeep_get_zero_offset
   libeep_init
   libeep_read
+  libeep_read_with_external_triggers
   libeep_set_comment
   libeep_set_date_of_birth
   libeep_set_hospital

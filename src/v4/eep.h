@@ -61,6 +61,12 @@ const char * libeep_get_version();
  */
 cntfile_t libeep_read(const char *filename);
 /**
+ * @brief open file for reading, and load triggers from external .evt or .trg file if exist, otherwise, use internal trgs from cnt.
+ * @param filename the filename to the CNT or AVR to open
+ * @return -1 on error, handle otherwise
+ */
+cntfile_t libeep_read_with_external_triggers(const char *filename);
+/**
  * @brief open cnt file for writing
  * @param filename the filename to the CNT or AVR to open
  * @param rate the sampling rate(in Hz)

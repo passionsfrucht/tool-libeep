@@ -74,6 +74,14 @@ Java_com_antneuro_libeep_read(JNIEnv *env, jclass, jstring filename) {
   return rv;
 }
 ///////////////////////////////////////////////////////////////////////////////
+JNIEXPORT jint JNICALL
+Java_com_antneuro_libeep_read_with_external_triggers(JNIEnv *env, jclass, jstring filename) {
+  const char *native_filename = env->GetStringUTFChars(filename, 0);
+  jint rv=libeep_read_with_external_triggers(native_filename);
+  env->ReleaseStringUTFChars(filename, native_filename);
+  return rv;
+}
+///////////////////////////////////////////////////////////////////////////////
 JNIEXPORT void JNICALL
 Java_com_antneuro_libeep_close(JNIEnv *, jclass, jint handle) {
   return libeep_close(handle);

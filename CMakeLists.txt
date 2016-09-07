@@ -11,7 +11,7 @@ project(libeep-${LIBEEP_VERSION})
 
 add_definitions(-DLIBEEP_VERSION="${LIBEEP_VERSION}")
 if(UNIX)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+  # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)

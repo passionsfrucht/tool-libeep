@@ -69,7 +69,7 @@ include_directories(${CMAKE_BINARY_DIR}/gen/include)
 
 install(TARGETS Eep DESTINATION lib)
 
-install(FILES src/v4/eep.h DESTINATION include/${CMAKE_PROJECT_NAME}/v4)
+install(FILES src/v4/eep.h DESTINATION include/libeep-${LIBEEP_VERSION}/v4)
 
 ########
 # java #

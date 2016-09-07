@@ -114,12 +114,9 @@ if(IS_DIRECTORY $ENV{MATLAB})
   message("MATLAB_EXT.......... ${MATLAB_EXT}")
   message("CMAKE_BINARY_DIR.... ${CMAKE_BINARY_DIR}")
 
-
   foreach(eep_source_file ${Eep_sources})
     get_filename_component(eep_source_file_abs ${eep_source_file} ABSOLUTE)
     set(Eep_sources_abs ${Eep_sources_abs} ${eep_source_file_abs})
-
-    message("file: ${eep_source_file_abs}")
   endforeach()
 
 

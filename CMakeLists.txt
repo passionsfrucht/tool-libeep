@@ -144,6 +144,26 @@ elseif()
   message("please set the environment variable MATLAB to a matlab directry to build the MATLAB plugin")
 endif()
 
+##########
+# python #
+##########
+find_package(PythonLibs 2.7)
+if(PYTHONLIBS_FOUND)
+  message("python libs: ${PYTHON_LIBRARIES}")
+  add_library(pyeep MODULE python/pyeep.c)
+  target_include_directories(pyeep PRIVATE ${PYTHON_INCLUDE_DIRS})
+  target_link_libraries(pyeep PRIVATE EepStatic ${MATH} ${PYTHON_LIBRARIES})
+  install(FILES python/__init__.py DESTINATION share/libeep/python/libeep)
+  install(TARGETS pyeep DESTINATION share/libeep/python/libeep)
+
+  if(UNIX)
+    set_target_properties(pyeep PROPERTIES PREFIX "")
+  endif()
+  if(WIN32)
+    set_target_properties(pyeep PROPERTIES SUFFIX .pyd)
+  endif()
+endif()
+
 if(UNIX)
   find_library(Math m)
   target_link_libraries(Eep ${Math})

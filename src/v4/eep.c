@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string.h>
+#include <string.h>
 #include <time.h>
 // libeep
 #include <v4/eep.h>

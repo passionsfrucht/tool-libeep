@@ -11,7 +11,7 @@ public class WriteCNT {
         com.antneuro.libeep.add_channel(channel_info_handle, "chan" + channel, "ref", "uV");
       }
       // create file
-      int cnt_handle            = com.antneuro.libeep.writeCnt(filename, 512, channel_info_handle, 1);
+      int cnt_handle            = com.antneuro.libeep.write_cnt(filename, 512, channel_info_handle, 1);
       for(int sample = 0;sample<512;++sample) {
         com.antneuro.libeep.add_samples(cnt_handle, new float[10 * channel_count], 10);
       }

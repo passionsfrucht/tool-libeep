@@ -14,8 +14,8 @@ public class libeep {
   public static native int create_channel_info();
   public static native int add_channel(int channel_info_handle, String label, String ref, String unit);
 
-  public static native int  writeCnt(String filename, int rate, int channel_info_handle, int rf64);
-  public static native int  read(String filename);
+  public static native int  write_cnt(String filename, int rate, int channel_info_handle, int rf64);
+  public static native int  read_cnt(String filename);
   public static native void close(int handle);
 
   public static native int    get_channel_count(int handle);

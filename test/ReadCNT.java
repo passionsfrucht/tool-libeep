@@ -4,7 +4,7 @@ public class ReadCNT {
   public static void main(String[] args) {
     System.out.printf("libeep version: %s\n", com.antneuro.libeep.get_version());
     for(String filename : args) {
-      int handle=com.antneuro.libeep.read(filename);
+      int handle=com.antneuro.libeep.read_cnt(filename);
       if(handle!=-1) {
         System.out.printf("data file: %s\n", filename);
         System.out.printf("  zero offset: %s\n", com.antneuro.libeep.get_zero_offset(handle));

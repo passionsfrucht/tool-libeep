@@ -165,7 +165,7 @@ int trg_line_read_2_or_4_items(asciiline_t line, double period, trgentry_t *t)
 int trg_line_read_3_or_5_items(asciiline_t line, double period, trgentry_t *t)
 {
   double time;
-  uint64_t pos;
+  uint32_t pos;
   asciiline_t code;
   asciiline_t cls_text;
   char cls_code;

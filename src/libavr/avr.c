@@ -349,6 +349,7 @@ int get_avr_header(avr_t *avr, FILE *f)
 int get_chan_header(avr_t *avr, FILE *f, short chan)
 {
   int i;
+  uint32_t u32;
   const int ofs = avr->header_size + chan * avr->channel_header_size;
   avrchan_t *c = &(avr->chanv[chan]);
   
@@ -358,7 +359,8 @@ int get_chan_header(avr_t *avr, FILE *f, short chan)
   c->lab[i - 1] = '\0';
   
   eepio_fseek(f, ofs + AVROFS_FILEPOS, SEEK_SET);
-  read_u32(f, &(c->filepos));
+  read_u32(f, &u32);
+  c->filepos = u32;
   
   return ferror(f);
 }

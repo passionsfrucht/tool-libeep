@@ -37,7 +37,7 @@ handle_file(const char *filename) {
     const char * code;
     uint64_t     offset;
     code = libeep_get_trigger(handle, i, & offset);
-    printf("trigger: %s / %lu\n", code, (unsigned long)offset);
+    printf("trigger(%i, %s, %lu)\n", i, code, offset);
   }
 
   // close

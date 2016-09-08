@@ -76,7 +76,7 @@ void *v_malloc(size_t size, const char *mtypefrag)
 
 void *v_realloc(void *ptr, size_t size, const char *mtypefrag)
 {
-  void *p;
+  void *p = NULL;
   
   if (ptr == NULL && size != 0) {
     p = (void *) malloc(size);

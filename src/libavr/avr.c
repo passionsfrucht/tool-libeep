@@ -687,6 +687,8 @@ int avr_read_slice(avr_t *avr, FILE *Avr, uint64_t start, uint64_t length,
   
   in = (float *) v_malloc(avr->samplec * sizeof(float), "in");
   
+  sample = 0;
+
   for (chan = 0; chan < chanc; chan++) {
     if ((i = avr_eep_get_chan_index(avr, chanv[chan], chan)) < 0) {
       eeperror("channel %s not in avr\n", chanv[chan]);

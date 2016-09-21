@@ -1094,6 +1094,10 @@ chaninfo_t libeep_create_channel_info() {
   return _libeep_channels_allocate();
 }
 ///////////////////////////////////////////////////////////////////////////////
+void libeep_close_channel_info(chaninfo_t c) {
+  _libeep_channels_free(c);
+}
+///////////////////////////////////////////////////////////////////////////////
 int libeep_add_channel(chaninfo_t handle, const char *label, const char *ref_label, const char *unit) {
   eegchan_t *channels = NULL;
   const char *default_ref_label = "ref";

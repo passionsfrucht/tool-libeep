@@ -29,6 +29,21 @@ pyeep_read(PyObject* self, PyObject* args) {
 ///////////////////////////////////////////////////////////////////////////////
 static
 PyObject *
+pyeep_write_cnt(PyObject* self, PyObject* args) {
+  char       * filename;
+  int          rate;
+  chaninfo_t   channel_info_handle;    
+  int          rf64;
+
+  if(!PyArg_ParseTuple(args, "siii", & filename, & rate, & channel_info_handle, & rf64)) {
+    return NULL;
+  }
+
+  return Py_BuildValue("i", libeep_write_cnt(filename, rate, channel_info_handle, rf64));
+}
+///////////////////////////////////////////////////////////////////////////////
+static
+PyObject *
 pyeep_close(PyObject* self, PyObject* args) {
   int handle;
 
@@ -151,6 +166,30 @@ pyeep_get_samples(PyObject* self, PyObject* args) {
 ///////////////////////////////////////////////////////////////////////////////
 static
 PyObject *
+pyeep_add_samples(PyObject* self, PyObject* args) {
+  int        handle;
+  PyObject * obj;
+  int        channel_count;
+  int        i;
+  int        n;
+
+  if(!PyArg_ParseTuple(args, "iOi", & handle, & obj, & channel_count)) {
+    return NULL;
+  }
+
+  n=PyList_Size(obj);
+  float * local_data = (float *)malloc(sizeof(float) * n);
+  for(i=0;i<n;++i) {
+    local_data[i]=PyFloat_AsDouble(PyList_GetItem(obj, i));
+  }
+  libeep_add_samples(handle, local_data, n / channel_count);
+  free(local_data);
+
+  return Py_BuildValue("");
+}
+///////////////////////////////////////////////////////////////////////////////
+static
+PyObject *
 pyeep_get_trigger_count(PyObject* self, PyObject* args) {
   int handle;
 
@@ -178,10 +217,51 @@ pyeep_get_trigger(PyObject* self, PyObject* args) {
   return Py_BuildValue("si", trigger, sample);
 }
 ///////////////////////////////////////////////////////////////////////////////
+static
+PyObject *
+pyeep_create_channel_info(PyObject* self, PyObject* args) {
+  if(!PyArg_ParseTuple(args, "")) {
+    return NULL;
+  }
+
+  return Py_BuildValue("i", libeep_create_channel_info());
+}
+///////////////////////////////////////////////////////////////////////////////
+static
+PyObject *
+pyeep_close_channel_info(PyObject* self, PyObject* args) {
+  int handle;
+
+  if(!PyArg_ParseTuple(args, "i", & handle)) {
+    return NULL;
+  }
+
+  libeep_close_channel_info(handle);
+
+  return Py_BuildValue("");
+}
+///////////////////////////////////////////////////////////////////////////////
+static
+PyObject *
+pyeep_add_channel(PyObject* self, PyObject* args) {
+  int    handle;
+  char * label;
+  char * ref_label;
+  char * unit;
+
+  if(!PyArg_ParseTuple(args, "isss", & handle, & label, & ref_label, & unit)) {
+    return NULL;
+  }
+
+  libeep_add_channel(handle, label, ref_label, unit);
+
+  return Py_BuildValue("");
+}
+///////////////////////////////////////////////////////////////////////////////
 static PyMethodDef methods[] = {
   {"get_version",              pyeep_get_version,              METH_VARARGS, "get libeep version"},
   {"read",                     pyeep_read,                     METH_VARARGS, "open libeep file for reading"},
-// libeep_write_cnt
+  {"write_cnt",                pyeep_write_cnt,                METH_VARARGS, "open libeep cnt file for writing"},
   {"close",                    pyeep_close,                    METH_VARARGS, "close handle"},
   {"get_channel_count",        pyeep_get_channel_count,        METH_VARARGS, "get channel count"},
   {"get_channel_label",        pyeep_get_channel_label,        METH_VARARGS, "get channel label"},
@@ -192,7 +272,7 @@ static PyMethodDef methods[] = {
   {"get_sample_frequency",     pyeep_get_sample_frequency,     METH_VARARGS, "get sample frequency"},
   {"get_sample_count",         pyeep_get_sample_count,         METH_VARARGS, "get sample count"},
   {"get_samples",              pyeep_get_samples,              METH_VARARGS, "get samples"},
-// void libeep_add_samples(cntfile_t handle, const float *data, int n);
+  {"add_samples",              pyeep_add_samples,              METH_VARARGS, "add samples"},
 // void libeep_add_raw_samples(cntfile_t handle, const int32_t *data, int n);
 // int32_t * libeep_get_raw_samples(cntfile_t handle, long from, long to);
 // void libeep_free_raw_samples(int32_t *data);
@@ -242,8 +322,9 @@ static PyMethodDef methods[] = {
 // const char * libeep_get_condition_color(cntfile_t handle);
 // long libeep_get_trials_total(cntfile_t handle);
 // long libeep_get_trials_averaged(cntfile_t handle);
-// chaninfo_t libeep_create_channel_info();
-// int libeep_add_channel(chaninfo_t handle, const char *label, const char *ref_label, const char *unit);
+  {"create_channel_info",      pyeep_create_channel_info,      METH_VARARGS, "create channel info handle"},
+  {"close_channel_info",       pyeep_close_channel_info,       METH_VARARGS, "close channel info handle"},
+  {"add_channel",              pyeep_add_channel,              METH_VARARGS, "add channel to channel info handle"},
   {NULL, NULL, 0, NULL}
 };
 ///////////////////////////////////////////////////////////////////////////////

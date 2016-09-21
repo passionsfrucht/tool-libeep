@@ -7,10 +7,11 @@ class cnt_base:
     self._handle = handle
 
   def __del__(self):
-    pyeep.close(self._handle)
+    if self._handle >= 0:
+      pyeep.close(self._handle)
 ###############################################################################
 class cnt_in(cnt_base):
-  def __init(self, handle):
+  def __init__(self, handle):
     cnt_base.__init__(self, handle)
 
   def get_channel_count(self):
@@ -34,7 +35,29 @@ class cnt_in(cnt_base):
   def get_trigger(self, index):
     return pyeep.get_trigger(self._handle, index)
 ###############################################################################
+class cnt_out(cnt_base):
+  def __init__(self, handle, channel_count):
+    cnt_base.__init__(self, handle)
+    self._channel_count=channel_count
+
+  def add_samples(self, samples):
+    return pyeep.add_samples(self._handle, samples, self._channel_count)
+###############################################################################
 def read_cnt(filename):
   if not filename.endswith('.cnt'):
     raise Exception('unsupported extension')
   return cnt_in(pyeep.read(filename))
+###############################################################################
+def write_cnt(filename, rate, channels, rf64 = 0):
+  if not filename.endswith('.cnt'):
+    raise Exception('unsupported extension')
+
+  channels_handle = pyeep.create_channel_info()
+  for c in channels:
+    pyeep.add_channel(channels_handle, c[0], c[1], c[2])
+
+  rv = cnt_out(pyeep.write_cnt(filename, rate, channels_handle, rf64), len(channels))
+
+  pyeep.close_channel_info(channels_handle)
+
+  return rv

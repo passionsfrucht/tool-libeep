@@ -127,15 +127,16 @@ EXPORTS
   libeep_add_samples
   libeep_add_trigger
   libeep_close
+  libeep_close_channel_info
   libeep_create_channel_info
   libeep_create_recinfo
+  libeep_evt_delete
+  libeep_evt_event_print
+  libeep_evt_header_print
+  libeep_evt_read
   libeep_exit
   libeep_free_raw_samples
   libeep_free_samples
-  libeep_evt_read
-  libeep_evt_header_print
-  libeep_evt_event_print
-  libeep_evt_delete
   libeep_get_channel_count
   libeep_get_channel_index
   libeep_get_channel_label

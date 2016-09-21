@@ -437,6 +437,10 @@ long libeep_get_trials_averaged(cntfile_t handle);
 */
 chaninfo_t libeep_create_channel_info();
 /**
+* @brief close channel info handle
+*/
+void libeep_close_channel_info(chaninfo_t);
+/**
 * @brief adds information about a channel
 * @param handle handle obtained by a call to libeep_create_channel_info()
 * @param label the label for this channel. cannot be NULL

@@ -2,12 +2,12 @@ import pyeep
 ###############################################################################
 class cnt_base:
   def __init__(self, handle):
-    if handle == -1:
-      raise Exception('not a valid libeep handle')
     self._handle = handle
+    if self._handle == -1:
+      raise Exception('not a valid libeep handle')
 
   def __del__(self):
-    if self._handle >= 0:
+    if self._handle != -1:
       pyeep.close(self._handle)
 ###############################################################################
 class cnt_in(cnt_base):
@@ -49,6 +49,15 @@ def read_cnt(filename):
   return cnt_in(pyeep.read(filename))
 ###############################################################################
 def write_cnt(filename, rate, channels, rf64 = 0):
+  """
+  create an object for writing a .cnt file.
+
+  rate -- sampling rate in Herz
+  channels -- list of tuples, where tuples contains three strings:
+              channel label, channel reference and unit, i,e,:
+              ['Cz', 'ref', 'uV')]
+  rf64 -- if 0, create default 32-bit cnt data. otherwise 64 bit(for larger tan 2GB files)
+  """
   if not filename.endswith('.cnt'):
     raise Exception('unsupported extension')
 

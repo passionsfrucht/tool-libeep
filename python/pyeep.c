@@ -1,7 +1,13 @@
 // system
 #include <math.h>
 // python
+#ifdef _DEBUG
+#undef _DEBUG
 #include <Python.h>
+#define _DEBUG
+#else
+#include <Python.h>
+#endif
 // libeep
 #include <v4/eep.h>
 ///////////////////////////////////////////////////////////////////////////////

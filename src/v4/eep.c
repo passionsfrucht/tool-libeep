@@ -300,15 +300,16 @@ _replace_string_end(const char * input, const char * end) {
 /* convert libeep trg_t structure to processed trigger structure */
 static void
 _libeep_trg_t_to_processed(const trg_t * external_trg, struct _libeep_entry * obj) {
-   obj->processed_trigger_count = trg_get_c(external_trg);
-   obj->processed_trigger_data = (struct _processed_trigger *)malloc(sizeof(struct _processed_trigger) * obj->processed_trigger_count);
-   for(int i=0;i<trg_get_c(external_trg);++i) {
-     char *code;
-     code=trg_get(external_trg, i, &obj->processed_trigger_data[i].sample);
-
-     obj->processed_trigger_data[i].label = (char *)malloc(strlen(code) + 1);
-     strcpy(obj->processed_trigger_data[i].label, code);
-   }
+  int i;
+  obj->processed_trigger_count = trg_get_c(external_trg);
+  obj->processed_trigger_data = (struct _processed_trigger *)malloc(sizeof(struct _processed_trigger) * obj->processed_trigger_count);
+  for(i=0;i<trg_get_c(external_trg);++i) {
+    char *code;
+    code=trg_get(external_trg, i, &obj->processed_trigger_data[i].sample);
+  
+    obj->processed_trigger_data[i].label = (char *)malloc(strlen(code) + 1);
+    strcpy(obj->processed_trigger_data[i].label, code);
+  }
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* process triggers
@@ -388,7 +389,9 @@ void libeep_exit() {
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_version() {
-  return LIBEEP_VERSION;
+  static char version_string[128];
+  snprintf(version_string, 128, "%i.%i.%i", LIBEEP_VERSION_MAJOR, LIBEEP_VERSION_MINOR, LIBEEP_VERSION_PATCH);
+  return version_string;
 }
 ///////////////////////////////////////////////////////////////////////////////
 cntfile_t
@@ -443,6 +446,7 @@ libeep_read_with_external_triggers(const char *filename) {
 ///////////////////////////////////////////////////////////////////////////////
 cntfile_t
 libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle, int rf64) {
+  int cf;
   eegchan_t *channel_structure;
   int handle=_libeep_allocate();
   struct _libeep_entry * obj=_libeep_get_object(handle, om_none);
@@ -467,7 +471,6 @@ libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle,
     return -1;
   }
   // eep struct
-  int cf;
   if(rf64) {
     cf=eep_create_file64(obj->eep, filename, obj->file, filename);
   } else {
@@ -758,10 +761,10 @@ libeep_get_start_time(cntfile_t handle) {
 ///////////////////////////////////////////////////////////////////////////////
 void
 libeep_get_start_date_and_fraction(recinfo_t handle, double* start_date, double* start_fraction) {
+  record_info_t rec_inf;
+  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
   if (start_date) *start_date = 0.0;
   if (start_fraction) *start_fraction = 0.0;
-  struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
-  record_info_t rec_inf;
   if (eep_has_recording_info(obj->eep)) {
     eep_get_recording_info(obj->eep, &rec_inf);
     if (start_date) *start_date = rec_inf.m_startDate;

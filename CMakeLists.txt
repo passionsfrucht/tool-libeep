@@ -9,9 +9,11 @@ set(PACKAGE libeep)
 
 project(libeep-${LIBEEP_VERSION})
 
-add_definitions(-DLIBEEP_VERSION="${LIBEEP_VERSION}")
+add_definitions(-DLIBEEP_VERSION_MAJOR=${LIBEEP_VERSION_MAJOR})
+add_definitions(-DLIBEEP_VERSION_MINOR=${LIBEEP_VERSION_MINOR})
+add_definitions(-DLIBEEP_VERSION_PATCH=${LIBEEP_VERSION_PATCH})
 if(UNIX)
-  # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
@@ -27,11 +29,6 @@ if(WIN32)
   add_definitions(-DVC_EXTRALEAN)
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   set(Eep_def windows/Eep.def)
-
-  configure_file(
-    installer.nsi.in
-    ${CMAKE_BINARY_DIR}/installer.nsi
-  )
 endif(WIN32)
 
 set(Eep_sources
@@ -51,10 +48,10 @@ set(Eep_sources
   src/libeep/eepraw.c
   src/libeep/val.c
   src/libeep/var_string.c
+  src/v4/eep.c
 )
 add_library(EepObjects OBJECT
   ${Eep_sources}
-  src/v4/eep.c
 )
 add_library(EepStatic STATIC
   $<TARGET_OBJECTS:EepObjects>
@@ -63,7 +60,6 @@ add_library(Eep SHARED
   $<TARGET_OBJECTS:EepObjects>
   ${Eep_def}
 )
-# set_target_properties(Eep PROPERTIES VERSION ${LIBEEP_VERSION_MAJOR}.${LIBEEP_VERSION_MINOR}.${LIBEEP_VERSION_PATCH} SOVERSION ${LIBEEP_VERSION_MAJOR})
 include_directories(src)
 include_directories(${CMAKE_BINARY_DIR}/gen/include)
 
@@ -120,22 +116,22 @@ if(IS_DIRECTORY $ENV{MATLAB})
   endforeach()
 
 
-  foreach(matlab_target read_eep_avr read_eep_cnt read_eep_trg write_eep_avr write_eep_cnt get_eep_version)
+  foreach(matlab_target read_eep_avr read_eep_cnt read_eep_trg write_eep_avr write_eep_cnt get_eep_version eepv4_read_info eepv4_read)
     add_custom_command(OUTPUT ${matlab_target}.${MATLAB_EXT}
                        COMMAND ${MATLAB_BIN}/mex
-                       ARGS ${CMAKE_SOURCE_DIR}/mex/matlab/${matlab_target}.c -I${CMAKE_SOURCE_DIR}/src -L${CMAKE_BINARY_DIR}/debug
+                       ARGS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c -I${CMAKE_CURRENT_SOURCE_DIR}/src -L${CMAKE_BINARY_DIR}/debug
                             ${Eep_sources_abs}
                             ${MATLAB_MEX_CFLAGS}
                             -DLIBEEP_VERSION_MAJOR=${LIBEEP_VERSION_MAJOR}
                             -DLIBEEP_VERSION_MINOR=${LIBEEP_VERSION_MINOR}
                             -DLIBEEP_VERSION_PATCH=${LIBEEP_VERSION_PATCH}
-                       DEPENDS ${CMAKE_SOURCE_DIR}/mex/matlab/${matlab_target}.c ${Eep_sources}
+                       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c ${Eep_sources}
                       )
     # target_link_libraries(${matlab_target}.${MATLAB_EXT} Eep)
     add_custom_target(${matlab_target} ALL DEPENDS ${matlab_target}.${MATLAB_EXT})
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${matlab_target}.${MATLAB_EXT} DESTINATION share/libeep/matlab)
-    install(FILES ${CMAKE_SOURCE_DIR}/mex/matlab/${matlab_target}.m DESTINATION share/libeep/matlab)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.m DESTINATION share/libeep/matlab)
   endforeach()
 elseif()
   message("please set the environment variable MATLAB to a matlab directry to build the MATLAB plugin")

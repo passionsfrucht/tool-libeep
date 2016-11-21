@@ -354,9 +354,11 @@ _libeep_helper_date_fraction_to_offset(double rate, double cnt_date, double cnt_
  */
 static void
 _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * obj, int external_triggers) {
+  char * external_evt_filename;
+  char * external_trg_filename;
   if(external_triggers) {
     // .evt file
-    char * external_evt_filename = _replace_string_end(filename, "evt");
+    external_evt_filename = _replace_string_end(filename, "evt");
     if(external_evt_filename) {
       // struct tm            cnt_time = {0};
       int                  pass;
@@ -414,7 +416,7 @@ _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * ob
     }
 
     // .trg file
-    char * external_trg_filename = _replace_string_end(filename, "trg");
+    external_trg_filename = _replace_string_end(filename, "trg");
     if(external_trg_filename) {
       FILE *external_trg_file=eepio_fopen(external_trg_filename, "r");
       if(external_trg_file) {

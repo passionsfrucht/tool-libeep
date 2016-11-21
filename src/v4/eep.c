@@ -8,6 +8,7 @@
 #include <time.h>
 // libeep
 #include <v4/eep.h>
+#include <cnt/evt.h>
 #include <cnt/cnt.h>
 #include <cnt/trg.h>
 #include <eep/eepio.h> // for the definition of eepio_fopen
@@ -312,6 +313,41 @@ _libeep_trg_t_to_processed(const trg_t * external_trg, struct _libeep_entry * ob
   }
 }
 ///////////////////////////////////////////////////////////////////////////////
+static double
+_libeep_helper_excel_to_double(double excel, double fraction) {
+  double return_value=0;
+
+  // 27538 -> 1970jan1
+  // 2958464 -> 30dec9999
+  if(excel >= 27538 && excel <= 2958464) {
+    return_value=((excel*3600.0*24.0) - 2209161600) + fraction;
+  }
+
+  return return_value;
+}
+///////////////////////////////////////////////////////////////////////////////
+/* helper to convert excel date to offset
+ */
+static int
+_libeep_helper_date_fraction_to_offset(double rate, double cnt_date, double cnt_fraction, double evt_date, double evt_fraction, uint64_t * offset) {
+  double cnt_double = _libeep_helper_excel_to_double(cnt_date, cnt_fraction);
+  double evt_double = _libeep_helper_excel_to_double(evt_date, evt_fraction);
+  double diff_double = (evt_double - cnt_double);
+/*
+  fprintf(stderr, "to offset(%g, %g, %g, %g, %g)\n", rate, cnt_date, cnt_fraction, evt_date, evt_fraction);
+  fprintf(stderr, "  cnt double: %g\n", cnt_double);
+  fprintf(stderr, "  evt double: %g\n", evt_double);
+  fprintf(stderr, "  diff double: %g\n", diff_double);
+  fprintf(stderr, "  offset: %i\n", (int)(rate * diff_double));
+*/
+  if(evt_date > 0 && evt_date >= cnt_date && diff_double >= 0) {
+    *offset = rate * diff_double;
+    return 1;
+  }
+
+  return 0;
+}
+///////////////////////////////////////////////////////////////////////////////
 /* process triggers
  * try .trg file first
  * if not found, get the triggers from the cnt
@@ -319,7 +355,63 @@ _libeep_trg_t_to_processed(const trg_t * external_trg, struct _libeep_entry * ob
 static void
 _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * obj, int external_triggers) {
   if(external_triggers) {
-    // TODO: .evt file
+    // .evt file
+    char * external_evt_filename = _replace_string_end(filename, "evt");
+    if(external_evt_filename) {
+      // struct tm            cnt_time = {0};
+      int                  pass;
+      double               cnt_date = 0;
+      double               cnt_fraction = 0;
+      record_info_t        rec_inf;
+      libeep_evt_event_t * e;
+      libeep_evt_t       * evt = libeep_evt_read(external_evt_filename);
+      free(external_evt_filename);
+
+      // cnt time stamp
+      if (eep_has_recording_info(obj->eep)) {
+        eep_get_recording_info(obj->eep, &rec_inf);
+        cnt_date = rec_inf.m_startDate;
+        cnt_fraction = rec_inf.m_startFraction;
+      }
+
+      if(evt != NULL) {
+        int i=0;
+        obj->processed_trigger_count=0;
+        // in pass 0, count triggers,
+        // in pass 1, copy triggers
+        for(pass=0;pass<2;++pass) {
+          e=evt->evt_list_first;
+          while(e != NULL) {
+            uint64_t offset;
+            if(_libeep_helper_date_fraction_to_offset(1.0 / eep_get_period(obj->eep), cnt_date, cnt_fraction, e->time_stamp.date, e->time_stamp.fraction, & offset)) {
+              if(offset < eep_get_samplec(obj->eep)) {
+                // TODO, add
+                if(pass==0) {
+                  obj->processed_trigger_count++;
+                  // libeep_evt_event_print(e);
+                } else {
+                  obj->processed_trigger_data[i].label = (char *)malloc(strlen(e->name) + 1);
+                  strcpy(obj->processed_trigger_data[i].label, e->name);
+
+                  obj->processed_trigger_data[i].sample = offset;
+
+                  ++i;
+                }
+              }
+            }
+            e = e->next_event;
+          }
+          if(pass==0 && obj->processed_trigger_count) {
+            obj->processed_trigger_data = (struct _processed_trigger *)malloc(sizeof(struct _processed_trigger) * obj->processed_trigger_count);
+          }
+        }
+        libeep_evt_delete(evt);
+      }
+    }
+    // return if triggers were found
+    if(obj->processed_trigger_count) {
+      return;
+    }
 
     // .trg file
     char * external_trg_filename = _replace_string_end(filename, "trg");
@@ -330,8 +422,9 @@ _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * ob
         if(external_trg) {
           _libeep_trg_t_to_processed(external_trg, obj);
 
-          free(external_trg);
+          trg_free(external_trg);
         }
+        fclose(external_trg_file);
       }
       free(external_trg_filename);
     }
@@ -405,6 +498,7 @@ _libeep_read_delegate(const char *filename, int external_triggers) {
   obj->file=eepio_fopen(filename, "rb");
   if(obj->file==NULL) {
     fprintf(stderr, "libeep: cannot open(1) %s\n", filename);
+    _libeep_free(handle);
     return -1;
   }
   // eep struct

@@ -172,6 +172,7 @@ _libeep_evt_read_string(FILE * f) {
 
   rv=(char *)malloc(length + 1);
   if(fread(rv, length, 1, f) == 1) {
+    rv[length] = 0;
     _libeep_evt_log(evt_log_dbg, "%s: string: %s\n", __FUNCTION__, rv);
   } else {
     /* something went wrong reading the string */

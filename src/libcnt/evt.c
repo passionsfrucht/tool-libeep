@@ -171,8 +171,8 @@ _libeep_evt_read_string(FILE * f) {
   _libeep_evt_log(evt_log_dbg, "%s: length: %li\n", __FUNCTION__, length);
 
   rv=(char *)malloc(length + 1);
+  memset(rv, 0, length + 1);
   if(fread(rv, length, 1, f) == 1) {
-    rv[length] = 0;
     _libeep_evt_log(evt_log_dbg, "%s: string: %s\n", __FUNCTION__, rv);
   } else {
     /* something went wrong reading the string */
@@ -191,12 +191,16 @@ _libeep_evt_read_wstring(FILE * f) {
   int32_t   i = 0;
   int32_t   length = 0;
   if(fread(&length, sizeof(int32_t), 1, f) == 1) {
-    rv = (wchar_t *)malloc(sizeof(wchar_t)*(length + 1));
-    for(i=0;i<length;++i) {
-      int16_t tmp;
-      fread(&tmp, sizeof(int16_t), 1, f);
-      rv[i] = (wchar_t)tmp;
-    }
+
+    _libeep_evt_log(evt_log_dbg, "%s: length: %li\n", __FUNCTION__, length);
+
+    rv = (wchar_t *)malloc(length + 2);
+    memset(rv, 0, length + 2);
+    fread(rv, length, 1, f);
+    _libeep_evt_log(evt_log_dbg, "%s: wstring: %ls\n", __FUNCTION__, rv);
+  } else {
+    /* something went wrong reading the string */
+    TODO_MARKER;
   }
 
   return rv;

@@ -32,6 +32,7 @@
 
 void
 mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
+  const        matlab_offset_correction = 1;
   char         filename[256];
   cntfile_t    libeep_handle;
   const int    dimensions_1_1[] = {1, 1};
@@ -107,7 +108,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
       mxArray * code;
 
       offset = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(offset) = (double)trigger_offset;
+      *mxGetPr(offset) = (double)trigger_offset + matlab_offset_correction;
 
       code = mxCreateString(trigger_label);
 

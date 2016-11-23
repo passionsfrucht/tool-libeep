@@ -32,6 +32,7 @@
 
 void
 mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
+  const        matlab_offset_correction = 1;
   char         filename[256];
   int          sample1;
   int          sample2;
@@ -62,8 +63,8 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
 
   // get parameters
   mxGetString(prhs[0], filename, 256);
-  sample1 = (int)(mxGetScalar(prhs[1]));
-  sample2 = (int)(mxGetScalar(prhs[2]));
+  sample1 = (int)(mxGetScalar(prhs[1])) - matlab_offset_correction;
+  sample2 = (int)(mxGetScalar(prhs[2])) - matlab_offset_correction;
   sample_count = sample2 - sample1;
 
   if(sample2 <= sample1) {
@@ -118,7 +119,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
       mxArray * code;
 
       offset = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(offset) = (double)trigger_offset - sample1; // correct for section of data we need
+      *mxGetPr(offset) = (double)trigger_offset + matlab_offset_correction - sample1; // correct for section of data we need
 
       code = mxCreateString(trigger_label);
 

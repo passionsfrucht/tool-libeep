@@ -80,40 +80,6 @@ void libeep_evt_delete(libeep_evt_t * e) {
     free(e);
   }
 }
-#if 0
-/*****************************************************************************/
-static
-void
-_liveep_evt_read_1byte(FILE *f, void * d) {
-  if(fread(&d, 1, 1, f) != 1) {
-    _libeep_evt_log(evt_log_err, "could not read 1 byte from file");
-  }
-}
-/*****************************************************************************/
-static
-void
-_liveep_evt_read_2byte(FILE *f, void * d) {
-  if(fread(&d, 2, 1, f) != 1) {
-    _libeep_evt_log(evt_log_err, "could not read 2 bytes from file");
-  }
-}
-/*****************************************************************************/
-static
-void
-_liveep_evt_read_4byte(FILE *f, void * d) {
-  if(fread(&d, 4, 1, f) != 1) {
-    _libeep_evt_log(evt_log_err, "could not read 4 bytes from file");
-  }
-}
-/*****************************************************************************/
-static
-void
-_liveep_evt_read_8byte(FILE *f, void * d) {
-  if(fread(&d, 8, 1, f) != 1) {
-    _libeep_evt_log(evt_log_err, "could not read 8 bytes from file");
-  }
-}
-#endif
 /******************************************************************************
  * internal function; add to list
  *****************************************************************************/

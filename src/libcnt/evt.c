@@ -154,7 +154,6 @@ static
 wchar_t *
 _libeep_evt_read_wstring(FILE * f) {
   wchar_t * rv = NULL;
-  int32_t   i = 0;
   int32_t   length = 0;
   if(fread(&length, sizeof(int32_t), 1, f) == 1) {
 
@@ -237,7 +236,7 @@ libeep_evt_event_delete(libeep_evt_event_t * e) {
   }
 }
 /******************************************************************************
- * internal function; read evt events
+ * internal enum; read evt events
  *****************************************************************************/
 enum vt_e {
   vt_empty = 0,

@@ -1,6 +1,7 @@
 #ifndef __libeep_cnt_evt_h__
 #define __libeep_cnt_evt_h__
 
+// system
 #include <stdint.h>
 
 /********************************************************************************
@@ -48,13 +49,16 @@ struct double_date {
 };
 typedef struct double_date double_date_t;
 
+/********************************************************************************
+ * libeep_evt event
+ ********************************************************************************/
 struct libeep_evt_event {
   int32_t             visible_id;
   libeep_evt_GUID_t * guid;
-  
+
   char              * name;
   char              * user_visible_name;
-  
+
   int32_t             type;
   int32_t             state;
   int8_t              original;

@@ -1,22 +1,30 @@
+// system
 #include <assert.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h>
+// libeep
 #include <cnt/evt.h>
+#include <eep/winsafe.h>
 /******************************************************************************
  * misc
  *****************************************************************************/
-#define TODO_MARKER { fprintf(stderr, "TODO: %s(%i): %s\n", __FILE__, __LINE__, __FUNCTION__); exit(-1); }
+#define TODO_MARKER { fprintf(stderr, "TODO: %s(%i): %s\n", __FILE__, __LINE__, __FUNCTION__); }
 /*****************************************************************************/
 enum _libeep_evt_log_level { evt_log_dbg, evt_log_inf, evt_log_err };
 static
 void
-_libeep_evt_log(int level, const char * fmt, ...) {
+_libeep_evt_log(int level, int indent, const char * fmt, ...) {
   if(level >= evt_log_inf) {
+    int     i;
     va_list args;
+
+    for(i=0;i<indent;++i) {
+      fprintf(stderr, "  ");
+    }
+
     va_start(args, fmt);
     vfprintf(stderr, fmt, args);
     va_end (args);
@@ -26,14 +34,6 @@ _libeep_evt_log(int level, const char * fmt, ...) {
 static
 void
 _libeep_evt_string_delete(char * s) {
-  if(s != NULL) {
-    free(s);
-  }
-}
-/*****************************************************************************/
-static
-void
-_libeep_evt_wstring_delete(wchar_t * s) {
   if(s != NULL) {
     free(s);
   }
@@ -99,7 +99,7 @@ _libeep_evt_event_list_add_back(libeep_evt_t * l, libeep_evt_event_t *n) {
  *****************************************************************************/
 static
 char *
-_libeep_evt_read_string(FILE * f) {
+_libeep_evt_read_string(FILE * f, int indent) {
   char    * rv = NULL;
   size_t    length = 0;
   uint8_t   byte = 0;
@@ -134,12 +134,12 @@ _libeep_evt_read_string(FILE * f) {
     return NULL;
   }
 
-  _libeep_evt_log(evt_log_dbg, "%s: length: %li\n", __FUNCTION__, length);
+  // _libeep_evt_log(evt_log_dbg, indent, "%s: length: %li\n", __FUNCTION__, length);
 
   rv=(char *)malloc(length + 1);
   memset(rv, 0, length + 1);
   if(fread(rv, length, 1, f) == 1) {
-    _libeep_evt_log(evt_log_dbg, "%s: string: %s\n", __FUNCTION__, rv);
+    // _libeep_evt_log(evt_log_dbg, indent, "%s: string: %s\n", __FUNCTION__, rv);
   } else {
     /* something went wrong reading the string */
     TODO_MARKER;
@@ -147,22 +147,45 @@ _libeep_evt_read_string(FILE * f) {
 
   return rv;
 }
+/*****************************************************************************/
+struct char_pair {
+  char lo;
+  char hi;
+};
+typedef struct char_pair char_pair_t;
 /******************************************************************************
  * internal function; read wstring
+ * does a rough conversion from wchar_t * to char * by ingnoring high byte.
  *****************************************************************************/
 static
-wchar_t *
-_libeep_evt_read_wstring(FILE * f) {
-  wchar_t * rv = NULL;
-  int32_t   length = 0;
-  if(fread(&length, sizeof(int32_t), 1, f) == 1) {
+char *
+_libeep_evt_read_wstring(FILE * f, int indent) {
+  char    * rv;
+  int32_t   length;
+  int32_t   bytes;
+  int32_t   i;
 
-    _libeep_evt_log(evt_log_dbg, "%s: length: %li\n", __FUNCTION__, length);
+  rv = NULL;
+  if(fread(&bytes, sizeof(int32_t), 1, f) == 1) {
+    // character pair buffer
+    char_pair_t * cp_array;
+    cp_array = (char_pair_t *)malloc(bytes);
+    fread(cp_array, bytes, 1, f);
 
-    rv = (wchar_t *)malloc(length + 2);
-    memset(rv, 0, length + 2);
-    fread(rv, length, 1, f);
-    _libeep_evt_log(evt_log_dbg, "%s: wstring: %ls\n", __FUNCTION__, rv);
+    // allocate return value
+    length = bytes / 2;
+    rv = (char *)malloc(length + 1);
+    memset(rv, 0, length + 1);
+
+    // convert
+    for(i=0;i<length;++i) {
+      if(cp_array[i].hi == 0) {
+        rv[i] = cp_array[i].lo;
+      }
+    }
+
+    // free
+    free(cp_array);
   } else {
     /* something went wrong reading the string */
     TODO_MARKER;
@@ -175,7 +198,7 @@ _libeep_evt_read_wstring(FILE * f) {
  *****************************************************************************/
 static
 libeep_evt_class_t *
-_libeep_evt_read_class(FILE * f) {
+_libeep_evt_read_class(FILE * f, int indent) {
   libeep_evt_class_t * rv = libeep_evt_class_new();
 
   if(fread(&rv->tag, sizeof(int32_t), 1, f) == 1) {
@@ -183,14 +206,14 @@ _libeep_evt_read_class(FILE * f) {
       case 0:
         break;
       case -1: /* string */
-        rv->name = _libeep_evt_read_string(f);
+        rv->name = _libeep_evt_read_string(f, indent + 1);
         break;
       default: /* unicode */
         break;
     }
   }
 
-  _libeep_evt_log(evt_log_dbg, "%s: class(%i, %s)\n", __FUNCTION__, rv->tag, rv->name);
+  _libeep_evt_log(evt_log_dbg, indent, "%s: class(%i, %s)\n", __FUNCTION__, rv->tag, rv->name);
 
   return rv;
 }
@@ -250,64 +273,64 @@ enum vt_e {
   vt_array = 0x2000,
   vt_byref = 0x4000,
 };
+struct libeep_evt_variant {
+  int16_t  type;
+  int16_t  i16;
+  int32_t  i32;
+  float    f;
+  double   d;
+  char   * string;
+};
+typedef struct libeep_evt_variant libeep_evt_variant_t;
 /*****************************************************************************/
 static
-int32_t
-_libeep_evt_read_variant_base(FILE *f) {
-  int32_t type = 0;
-  if(fread(&type, sizeof(int16_t), 1, f) == 1) {
-    _libeep_evt_log(evt_log_dbg, "%s: type: %i\n", __FUNCTION__, type);
+void
+_libeep_evt_read_variant_base(FILE *f, int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * variant) {
+  if(fread(&variant->type, sizeof(int16_t), 1, f) == 1) {
+    _libeep_evt_log(evt_log_dbg, indent, "%s: type: %i\n", __FUNCTION__, variant->type);
 
-    if (type == vt_empty || type == vt_null) {
-    } else if (type == vt_i2) {
-      int16_t tmp;
-      fread(&tmp, sizeof(int16_t), 1, f);
-      _libeep_evt_log(evt_log_dbg, "%s: i2: %i\n", __FUNCTION__, tmp);
-    } else if (type == vt_i4) {
-      int32_t tmp;
-      fread(&tmp, sizeof(int32_t), 1, f);
-      _libeep_evt_log(evt_log_dbg, "%s: i4: %i\n", __FUNCTION__, tmp);
-    } else if (type == vt_r4) {
-      float tmp;
-      fread(&tmp, sizeof(float), 1, f);
-      _libeep_evt_log(evt_log_dbg, "%s: r4: %i\n", __FUNCTION__, tmp);
-    } else if (type == vt_r8) {
-      double tmp;
-      fread(&tmp, sizeof(double), 1, f);
-      _libeep_evt_log(evt_log_dbg, "%s: r8: %g\n", __FUNCTION__, tmp);
-    } else if (type == vt_bstr) {
-      wchar_t * tmp;
-      tmp = _libeep_evt_read_wstring(f);
+    if (variant->type == vt_empty || variant->type == vt_null) {
+    } else if (variant->type == vt_i2) {
+      fread(&variant->i16, sizeof(int16_t), 1, f);
+      _libeep_evt_log(evt_log_dbg, indent, "%s: i2: %i\n", __FUNCTION__, variant->i16);
+    } else if (variant->type == vt_i4) {
+      fread(&variant->i32, sizeof(int32_t), 1, f);
+      _libeep_evt_log(evt_log_dbg, indent, "%s: i4: %i\n", __FUNCTION__, variant->i32);
+    } else if (variant->type == vt_r4) {
+      fread(&variant->f, sizeof(float), 1, f);
+      _libeep_evt_log(evt_log_dbg, indent, "%s: r4: %i\n", __FUNCTION__, variant->f);
+    } else if (variant->type == vt_r8) {
+      fread(&variant->d, sizeof(double), 1, f);
+      _libeep_evt_log(evt_log_dbg, indent, "%s: r8: %g\n", __FUNCTION__, variant->d);
+    } else if (variant->type == vt_bstr) {
+      variant->string = _libeep_evt_read_wstring(f, indent + 1);
 
-      _libeep_evt_log(evt_log_dbg, "%s: wstring: %ls\n", __FUNCTION__, tmp);
+      _libeep_evt_log(evt_log_dbg, indent, "%s: wstring: %ls\n", __FUNCTION__, variant->string);
 
-      _libeep_evt_wstring_delete(tmp);
-    } else if (type == vt_bool) {
+    } else if (variant->type == vt_bool) {
       TODO_MARKER;
     } else {
-/*
-      _libeep_evt_log(evt_log_err, "%s: type: %i\n", __FUNCTION__, type);
-      TODO_MARKER;
-*/
+      // _libeep_evt_log(evt_log_err, "%s: variant->type: %i\n", __FUNCTION__, variant->type);
+      // TODO_MARKER;
     }
   }
-  return type;
 }
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_variant_array(FILE *f) {
-  int32_t variant_type = 0;
+_libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_event_t * ev) {
+  libeep_evt_variant_t variant;
+  memset(&variant, 0, sizeof(libeep_evt_variant_t));
 
-  variant_type = _libeep_evt_read_variant_base(f);
+  _libeep_evt_read_variant_base(f, indent + 1, ev, &variant);
 
-  _libeep_evt_log(evt_log_dbg, "%s: variant_type: %i\n", __FUNCTION__, variant_type);
+  _libeep_evt_log(evt_log_dbg, indent, "%s: variant.type: %i\n", __FUNCTION__, variant.type);
 
-  if (variant_type == vt_i2) {
+  if (variant.type == vt_i2) {
     TODO_MARKER;
-  } else if (variant_type == vt_i4) {
+  } else if (variant.type == vt_i4) {
     TODO_MARKER;
-  } else if (variant_type == vt_r4) {
+  } else if (variant.type == vt_r4) {
     uint32_t size;
     uint32_t i;
     float    tmp;
@@ -315,11 +338,11 @@ _libeep_evt_read_variant_array(FILE *f) {
     for(i=0;i<size;++i) {
       fread(&tmp, sizeof(float), 1, f);
     }
-  } else if (variant_type == vt_r8) {
+  } else if (variant.type == vt_r8) {
     TODO_MARKER;
-  } else if (variant_type == vt_bool) {
+  } else if (variant.type == vt_bool) {
     TODO_MARKER;
-  } else if (variant_type == vt_bstr) {
+  } else if (variant.type == vt_bstr) {
     TODO_MARKER;
   }
 
@@ -327,12 +350,10 @@ _libeep_evt_read_variant_array(FILE *f) {
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_variant(FILE *f) {
-  int32_t variant_type = 0;
+_libeep_evt_read_variant(FILE *f, int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * variant) {
+  _libeep_evt_read_variant_base(f, indent + 1, ev, variant);
 
-  variant_type = _libeep_evt_read_variant_base(f);
-
-  switch(variant_type) {
+  switch(variant->type) {
     case vt_i2:
     case vt_i4:
     case vt_r4:
@@ -341,8 +362,8 @@ _libeep_evt_read_variant(FILE *f) {
     case vt_bstr:
       break;
     default:
-      if( (variant_type & vt_byref) || (variant_type & vt_array) ) {
-        _libeep_evt_read_variant_array(f);
+      if( (variant->type & vt_byref) || (variant->type & vt_array) ) {
+        _libeep_evt_read_variant_array(f, indent + 1, ev);
       }
       break;
   }
@@ -350,59 +371,88 @@ _libeep_evt_read_variant(FILE *f) {
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_epoch_descriptors(FILE *f) {
+_libeep_evt_event_process_variant(int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * variant, const char * descriptor_name, const char * descriptor_unit) {
+  if(!strcmp(descriptor_name, "EventCode")) {
+    char tmp[1024];
+    snprintf(tmp, 1024, "%s, event: %i", ev->name, variant->i32);
+    _libeep_evt_string_delete(ev->name);
+    ev->name = strdup(tmp);
+  } else if(!strcmp(descriptor_name, "Condition")) {
+    char tmp[1024];
+    snprintf(tmp, 1024, "%s, condition: %s", ev->name, variant->string);
+    _libeep_evt_string_delete(ev->name);
+    ev->name = strdup(tmp);
+  } else {
+    char tmp[1024];
+    snprintf(tmp, 1024, "%s, %s", ev->name, descriptor_name);
+    _libeep_evt_string_delete(ev->name);
+    ev->name = strdup(tmp);
+
+    _libeep_evt_log(evt_log_dbg, indent, "%s: unhandled descriptor name: %s\n", __FUNCTION__, descriptor_name);
+  }
+}
+/*****************************************************************************/
+static
+void
+_libeep_evt_read_epoch_descriptors(FILE *f, int indent, libeep_evt_event_t * ev) {
   int32_t i = 0;
   int32_t size = 0;
 
   if(fread(&size, sizeof(int32_t), 1, f) == 1) {
 
-    _libeep_evt_log(evt_log_dbg, "%s: size: %i\n", __FUNCTION__, size);
+    // _libeep_evt_log(evt_log_dbg, indent, "%s: size: %i\n", __FUNCTION__, size);
 
     for(i=0;i<size;++i) {
-      char * descriptor_name;
-      char * descriptor_unit;
+      libeep_evt_variant_t   variant;
+      char                 * descriptor_name;
+      char                 * descriptor_unit;
 
-      _libeep_evt_log(evt_log_dbg, "%s: i: %i\n", __FUNCTION__, i);
+      memset(&variant, 0, sizeof(libeep_evt_variant_t));
 
-      descriptor_name = _libeep_evt_read_string(f);
-      _libeep_evt_log(evt_log_dbg, "%s: descriptor_name: %s\n", __FUNCTION__, descriptor_name);
+      // _libeep_evt_log(evt_log_dbg, indent, "%s: i: %i\n", __FUNCTION__, i);
 
-      _libeep_evt_read_variant(f);
+      descriptor_name = _libeep_evt_read_string(f, indent + 1);
+      _libeep_evt_log(evt_log_dbg, indent, "%s: descriptor_name: %s\n", __FUNCTION__, descriptor_name);
 
-      descriptor_unit = _libeep_evt_read_string(f);
-      _libeep_evt_log(evt_log_dbg, "%s: descriptor_unit: %s\n", __FUNCTION__, descriptor_unit);
+      _libeep_evt_read_variant(f, indent + 1, ev, &variant);
+
+      descriptor_unit = _libeep_evt_read_string(f, indent + 1);
+      _libeep_evt_log(evt_log_dbg, indent, "%s: descriptor_unit: %s\n", __FUNCTION__, descriptor_unit);
+
+      _libeep_evt_event_process_variant(indent + 1, ev, &variant, descriptor_name, descriptor_unit);
 
       _libeep_evt_string_delete(descriptor_name);
       _libeep_evt_string_delete(descriptor_unit);
+      _libeep_evt_string_delete(variant.string);
     }
   }
 }
 /*****************************************************************************/
 static
 libeep_evt_GUID_t *
-_libeep_evt_read_GUID(FILE * f) {
+_libeep_evt_read_GUID(FILE * f, int indent) {
   libeep_evt_GUID_t * rv = NULL;
 
   rv = libeep_evt_GUID_new();
 
   if(fread(rv, sizeof(libeep_evt_GUID_t), 1, f) == 1) {
-    _libeep_evt_log(evt_log_dbg, "%s: GUID %i %i %i [%i %i %i %i %i %i %i %i] ....:\n", __FUNCTION__, rv->data1, rv->data2, rv->data3, rv->data4[0], rv->data4[1], rv->data4[2], rv->data4[3], rv->data4[4], rv->data4[5], rv->data4[6], rv->data4[7]);
+    _libeep_evt_log(evt_log_dbg, indent, "%s: GUID %i %i %i [%i %i %i %i %i %i %i %i] ....:\n", __FUNCTION__, rv->data1, rv->data2, rv->data3, rv->data4[0], rv->data4[1], rv->data4[2], rv->data4[3], rv->data4[4], rv->data4[5], rv->data4[6], rv->data4[7]);
   }
   return rv;
 }
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
+_libeep_evt_read_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
   libeep_evt_class_t * clss = NULL;
 
   if(fread(&ev->visible_id, sizeof(int32_t), 1, f) == 1) {
-    ev->guid = _libeep_evt_read_GUID(f);
-    clss = _libeep_evt_read_class(f);
+    ev->guid = _libeep_evt_read_GUID(f, indent + 1);
+    clss = _libeep_evt_read_class(f, indent + 1);
     libeep_evt_class_delete(clss);
-    ev->name = _libeep_evt_read_string(f);
+    ev->name = _libeep_evt_read_string(f, indent + 1);
     if(e->header.version >= 78) {
-      ev->user_visible_name = _libeep_evt_read_string(f);
+      ev->user_visible_name = _libeep_evt_read_string(f, indent + 1);
     }
     if(fread(&ev->type, sizeof(int32_t), 1, f) == 1) {
       if(fread(&ev->state, sizeof(int32_t), 1, f) == 1) {
@@ -411,18 +461,13 @@ _libeep_evt_read_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
             if(fread(&ev->duration_offset, sizeof(double), 1, f) == 1) {
               if(fread(&ev->time_stamp.date, sizeof(double), 1, f) == 1) {
                 if(fread(&ev->time_stamp.fraction, sizeof(double), 1, f) == 1) {
-                  _libeep_evt_log(evt_log_dbg, "%s: type: %i\n", __FUNCTION__, ev->type);
-                  _libeep_evt_log(evt_log_dbg, "%s: state: %i\n", __FUNCTION__, ev->state);
-                  _libeep_evt_log(evt_log_dbg, "%s: original: %i\n", __FUNCTION__, ev->original);
-                  _libeep_evt_log(evt_log_dbg, "%s: duration: %g\n", __FUNCTION__, ev->duration);
-                  _libeep_evt_log(evt_log_dbg, "%s: duration_offset: %g\n", __FUNCTION__, ev->duration_offset);
-                  _libeep_evt_log(evt_log_dbg, "%s: time_stamp.date: %g\n", __FUNCTION__, ev->time_stamp.date);
-                  _libeep_evt_log(evt_log_dbg, "%s: time_stamp.fraction: %g\n", __FUNCTION__, ev->time_stamp.fraction);
+                  _libeep_evt_log(evt_log_dbg, indent, "%s: type: %i state: %i original: %i duration: %g offset: %g date: %g fraction: %g\n", __FUNCTION__, ev->type, ev->state, ev->original, ev->duration, ev->duration_offset, ev->time_stamp.date, ev->time_stamp.fraction);
+
                   if(e->header.version >= 11 && e->header.version < 19) {
                     TODO_MARKER;
                   }
                   if(e->header.version >= 19) {
-                    _libeep_evt_read_epoch_descriptors(f);
+                    _libeep_evt_read_epoch_descriptors(f, indent + 1, ev);
                   }
                 }
               }
@@ -436,15 +481,15 @@ _libeep_evt_read_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_channel_info(FILE * f) {
+_libeep_evt_read_channel_info(FILE * f, int indent) {
   char * channel_active;
   char * channel_reference;
 
-  channel_active = _libeep_evt_read_string(f);
-  channel_reference = _libeep_evt_read_string(f);
+  channel_active = _libeep_evt_read_string(f, indent + 1);
+  channel_reference = _libeep_evt_read_string(f, indent + 1);
 
-  _libeep_evt_log(evt_log_dbg, "%s: channel_active: %s\n", __FUNCTION__, channel_active);
-  _libeep_evt_log(evt_log_dbg, "%s: channel_reference: %s\n", __FUNCTION__, channel_reference);
+  _libeep_evt_log(evt_log_dbg, indent, "%s: channel_active: %s\n", __FUNCTION__, channel_active);
+  _libeep_evt_log(evt_log_dbg, indent, "%s: channel_reference: %s\n", __FUNCTION__, channel_reference);
 
   _libeep_evt_string_delete(channel_active);
   _libeep_evt_string_delete(channel_reference);
@@ -452,25 +497,25 @@ _libeep_evt_read_channel_info(FILE * f) {
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_epoch_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
-  _libeep_evt_read_event(f, e, ev);
+_libeep_evt_read_epoch_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
+  _libeep_evt_read_event(f, indent + 1, e, ev);
   if(e->header.version < 33) {
     int32_t tmp;
     fread(&tmp, sizeof(int32_t), 1, f);
-    _libeep_evt_log(evt_log_dbg, "%s: tmp: %s\n", __FUNCTION__, tmp);
+    _libeep_evt_log(evt_log_dbg, indent, "%s: tmp: %s\n", __FUNCTION__, tmp);
   }
 }
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_event_marker(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
+_libeep_evt_read_event_marker(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
   int32_t   show_amplitude = 0;
   int8_t    show_duration = 0;
   char    * description = NULL;
 
-  _libeep_evt_read_event(f, e, ev);
-  _libeep_evt_read_channel_info(f);
-  description = _libeep_evt_read_string(f);
+  _libeep_evt_read_event(f, indent + 1, e, ev);
+  _libeep_evt_read_channel_info(f, indent + 1);
+  description = _libeep_evt_read_string(f, indent + 1);
   if(e->header.version >= 35) {
     if(e->header.version >= 103) {
       fread(&show_amplitude, sizeof(int32_t), 1, f);
@@ -481,23 +526,23 @@ _libeep_evt_read_event_marker(FILE * f, libeep_evt_t * e, libeep_evt_event_t * e
     }
     fread(&show_duration, sizeof(int8_t), 1, f);
   }
-  _libeep_evt_log(evt_log_dbg, "%s: show_amplitude: %i\n", __FUNCTION__, show_amplitude);
-  _libeep_evt_log(evt_log_dbg, "%s: show_duration: %i\n", __FUNCTION__, show_duration);
-  _libeep_evt_log(evt_log_dbg, "%s: description: %s\n", __FUNCTION__, description);
+  _libeep_evt_log(evt_log_dbg, indent, "%s: show_amplitude: %i\n", __FUNCTION__, show_amplitude);
+  _libeep_evt_log(evt_log_dbg, indent, "%s: show_duration: %i\n", __FUNCTION__, show_duration);
+  _libeep_evt_log(evt_log_dbg, indent, "%s: description: %s\n", __FUNCTION__, description);
 
   _libeep_evt_string_delete(description);
 }
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_artefact_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
+_libeep_evt_read_artefact_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
   char * description = NULL;
 
-  _libeep_evt_read_event(f, e, ev);
-  _libeep_evt_read_channel_info(f);
+  _libeep_evt_read_event(f, indent, e, ev);
+  _libeep_evt_read_channel_info(f, indent + 1);
   if(e->header.version >= 174) {
-    description = _libeep_evt_read_string(f);
-    _libeep_evt_log(evt_log_dbg, "%s: description: %s\n", __FUNCTION__, description);
+    description = _libeep_evt_read_string(f, indent + 1);
+    _libeep_evt_log(evt_log_dbg, indent, "%s: description: %s\n", __FUNCTION__, description);
   }
 
   _libeep_evt_string_delete(description);
@@ -505,96 +550,99 @@ _libeep_evt_read_artefact_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t *
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_spike_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
-  _libeep_evt_read_event(f, e, ev);
+_libeep_evt_read_spike_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
+  _libeep_evt_read_event(f, indent + 1, e, ev);
   TODO_MARKER;
 }
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_seizure_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
-  _libeep_evt_read_event(f, e, ev);
+_libeep_evt_read_seizure_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
+  _libeep_evt_read_event(f, indent + 1, e, ev);
   TODO_MARKER;
 }
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_sleep_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
-  _libeep_evt_read_event(f, e, ev);
+_libeep_evt_read_sleep_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
+  _libeep_evt_read_event(f, indent + 1, e, ev);
   TODO_MARKER;
 }
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_rpeak_event(FILE * f, libeep_evt_t * e, libeep_evt_event_t * ev) {
-  _libeep_evt_read_event(f, e, ev);
+_libeep_evt_read_rpeak_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
+  _libeep_evt_read_event(f, indent + 1, e, ev);
   TODO_MARKER;
 }
 /*****************************************************************************/
 void
 libeep_evt_header_print(const libeep_evt_header_t * h) {
-  _libeep_evt_log(evt_log_inf, "header:\n");
-  _libeep_evt_log(evt_log_inf, "  ctime: %i\n", h->ctime);
-  _libeep_evt_log(evt_log_inf, "  mtime: %i\n", h->mtime);
-  _libeep_evt_log(evt_log_inf, "  atime: %i\n", h->atime);
-  _libeep_evt_log(evt_log_inf, "  version: %i\n", h->version);
-  _libeep_evt_log(evt_log_inf, "  comp.mode: %i\n", h->compression_mode);
-  _libeep_evt_log(evt_log_inf, "  encr.mode: %i\n", h->encryption_mode);
+  _libeep_evt_log(evt_log_inf, 0, "header:\n");
+  _libeep_evt_log(evt_log_inf, 0, "  ctime: %i\n", h->ctime);
+  _libeep_evt_log(evt_log_inf, 0, "  mtime: %i\n", h->mtime);
+  _libeep_evt_log(evt_log_inf, 0, "  atime: %i\n", h->atime);
+  _libeep_evt_log(evt_log_inf, 0, "  version: %i\n", h->version);
+  _libeep_evt_log(evt_log_inf, 0, "  comp.mode: %i\n", h->compression_mode);
+  _libeep_evt_log(evt_log_inf, 0, "  encr.mode: %i\n", h->encryption_mode);
 }
 /*****************************************************************************/
 void
 libeep_evt_event_print(const libeep_evt_event_t * e) {
-  _libeep_evt_log(evt_log_inf, "libeep_evt_event_t {\n");
-  _libeep_evt_log(evt_log_inf, "  visible_id......... %i\n", e->visible_id);
+  _libeep_evt_log(evt_log_inf, 0, "libeep_evt_event_t {\n");
+  _libeep_evt_log(evt_log_inf, 0, "  visible_id......... %i\n", e->visible_id);
   if(e->guid) {
-    _libeep_evt_log(evt_log_inf, "  GUID............... %i %i %i [%i %i %i %i %i %i %i %i]\n", e->guid->data1, e->guid->data2, e->guid->data3, e->guid->data4[0], e->guid->data4[1], e->guid->data4[2], e->guid->data4[3], e->guid->data4[4], e->guid->data4[5], e->guid->data4[6], e->guid->data4[7]);
+    _libeep_evt_log(evt_log_inf, 0, "  GUID............... %i %i %i [%i %i %i %i %i %i %i %i]\n", e->guid->data1, e->guid->data2, e->guid->data3, e->guid->data4[0], e->guid->data4[1], e->guid->data4[2], e->guid->data4[3], e->guid->data4[4], e->guid->data4[5], e->guid->data4[6], e->guid->data4[7]);
   }
-  _libeep_evt_log(evt_log_inf, "  name............... %s\n", e->name);
-  _libeep_evt_log(evt_log_inf, "  user_visible_name.. %s\n", e->user_visible_name);
-  _libeep_evt_log(evt_log_inf, "  type............... %i\n", e->type);
-  _libeep_evt_log(evt_log_inf, "  state.............. %i\n", e->state);
-  _libeep_evt_log(evt_log_inf, "  original........... %i\n", e->original);
-  _libeep_evt_log(evt_log_inf, "  duration........... %g\n", e->duration);
-  _libeep_evt_log(evt_log_inf, "  duration_offset.... %g\n", e->duration_offset);
-  _libeep_evt_log(evt_log_inf, "  timestamp.......... %8.8f / %8.8f\n", e->time_stamp.date, e->time_stamp.fraction);
-  _libeep_evt_log(evt_log_inf, "}\n");
+  _libeep_evt_log(evt_log_inf, 0, "  name............... %s\n", e->name);
+  _libeep_evt_log(evt_log_inf, 0, "  user_visible_name.. %s\n", e->user_visible_name);
+  _libeep_evt_log(evt_log_inf, 0, "  type............... %i\n", e->type);
+  _libeep_evt_log(evt_log_inf, 0, "  state.............. %i\n", e->state);
+  _libeep_evt_log(evt_log_inf, 0, "  original........... %i\n", e->original);
+  _libeep_evt_log(evt_log_inf, 0, "  duration........... %g\n", e->duration);
+  _libeep_evt_log(evt_log_inf, 0, "  duration_offset.... %g\n", e->duration_offset);
+  _libeep_evt_log(evt_log_inf, 0, "  timestamp.......... %8.8f / %8.8f\n", e->time_stamp.date, e->time_stamp.fraction);
+  _libeep_evt_log(evt_log_inf, 0, "}\n");
 }
 /******************************************************************************
  * internal function; read evt library
  *****************************************************************************/
 static
 void
-_libeep_evt_read_library(FILE * f, libeep_evt_t * e) {
+_libeep_evt_read_library(FILE * f, int indent, libeep_evt_t * e) {
   char               * library_name;
   uint32_t             length;
   uint32_t             i;
   libeep_evt_class_t * clss;
 
-  library_name = _libeep_evt_read_string(f);
+  library_name = _libeep_evt_read_string(f, indent + 1);
 
-  _libeep_evt_log(evt_log_dbg, "%s: library_name: %s\n", __FUNCTION__, library_name);
+  _libeep_evt_log(evt_log_dbg, indent, "%s: library_name: %s\n", __FUNCTION__, library_name);
 
   _libeep_evt_string_delete(library_name);
 
   if(fread(&length, sizeof(uint32_t), 1, f) == 1) {
-    _libeep_evt_log(evt_log_dbg, "%u library items\n", length);
+    _libeep_evt_log(evt_log_dbg, indent, "%s: %u library items\n", __FUNCTION__, length);
 
     for(i=0;i<length;++i) {
       libeep_evt_event_t * ev = libeep_evt_event_new();
-      clss = _libeep_evt_read_class(f);
 
-      _libeep_evt_log(evt_log_dbg, "%s: i: %u class(%i, %s)\n", __FUNCTION__, i, clss->tag, clss->name);
+      long offset = ftell(f);
+
+      clss = _libeep_evt_read_class(f, indent + 1);
+
+      _libeep_evt_log(evt_log_dbg, indent, "%s: i: %u offset: 0x%lx(%ld) class(%i, %s)\n", __FUNCTION__, i, offset, offset, clss->tag, clss->name);
 
       if(clss->name) {
-        if (!strcmp(clss->name, "class dcEpochEvent_c"))         { _libeep_evt_read_epoch_event(f, e, ev); }
-        else if (!strcmp(clss->name, "class dcEventMarker_c"))   { _libeep_evt_read_event_marker(f, e, ev); }
-        else if (!strcmp(clss->name, "class dcArtefactEvent_c")) { _libeep_evt_read_artefact_event(f, e, ev); }
-        else if (!strcmp(clss->name, "class dcSpikeEvent_c"))    { _libeep_evt_read_spike_event(f, e, ev); }
-        else if (!strcmp(clss->name, "class dcSeizureEvent_c"))  { _libeep_evt_read_seizure_event(f, e, ev); }
-        else if (!strcmp(clss->name, "class dcSleepEvent_c"))    { _libeep_evt_read_sleep_event(f, e, ev); }
-        else if (!strcmp(clss->name, "class dcRPeakEvent_c"))    { _libeep_evt_read_rpeak_event(f, e, ev); }
+        if (!strcmp(clss->name, "class dcEpochEvent_c"))         { _libeep_evt_read_epoch_event(f, indent + 1, e, ev); }
+        else if (!strcmp(clss->name, "class dcEventMarker_c"))   { _libeep_evt_read_event_marker(f, indent + 1, e, ev); }
+        else if (!strcmp(clss->name, "class dcArtefactEvent_c")) { _libeep_evt_read_artefact_event(f, indent + 1, e, ev); }
+        else if (!strcmp(clss->name, "class dcSpikeEvent_c"))    { _libeep_evt_read_spike_event(f, indent + 1, e, ev); }
+        else if (!strcmp(clss->name, "class dcSeizureEvent_c"))  { _libeep_evt_read_seizure_event(f, indent + 1, e, ev); }
+        else if (!strcmp(clss->name, "class dcSleepEvent_c"))    { _libeep_evt_read_sleep_event(f, indent + 1, e, ev); }
+        else if (!strcmp(clss->name, "class dcRPeakEvent_c"))    { _libeep_evt_read_rpeak_event(f, indent + 1, e, ev); }
         else {
-          _libeep_evt_log(evt_log_err, "unknown class: %s\n", clss->name);
+          _libeep_evt_log(evt_log_err, indent, "unknown class: %s\n", clss->name);
 /*
           TODO_MARKER;
 */
@@ -611,7 +659,7 @@ _libeep_evt_read_library(FILE * f, libeep_evt_t * e) {
  *****************************************************************************/
 static
 void
-_libeep_evt_read_file(FILE * f, libeep_evt_t * e) {
+_libeep_evt_read_file(FILE * f, int indent, libeep_evt_t * e) {
   libeep_evt_class_t * clss;
 
   if(fread(&e->header, sizeof(libeep_evt_header_t), 1, f) != 1) {
@@ -620,9 +668,9 @@ _libeep_evt_read_file(FILE * f, libeep_evt_t * e) {
 
   /* libeep_evt_header_print(&e->header); */
 
-  clss = _libeep_evt_read_class(f);
+  clss = _libeep_evt_read_class(f, indent + 1);
   if(clss && clss->tag==-1 && !strcmp("class dcEventsLibrary_c", clss->name)) {
-    _libeep_evt_read_library(f, e);
+    _libeep_evt_read_library(f, indent + 1, e);
   }
   libeep_evt_class_delete(clss);
 }
@@ -640,7 +688,7 @@ libeep_evt_read(const char * filename) {
   }
 
   rv = libeep_evt_new();
-  _libeep_evt_read_file(f, rv); 
+  _libeep_evt_read_file(f, 0, rv);
 
   fclose(f);
 

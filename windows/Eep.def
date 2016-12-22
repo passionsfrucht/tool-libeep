@@ -170,6 +170,7 @@ EXPORTS
   libeep_get_trials_averaged
   libeep_get_trials_total
   libeep_get_trigger
+  libeep_get_trigger_with_duration
   libeep_get_trigger_count
   libeep_get_version
   libeep_get_zero_offset

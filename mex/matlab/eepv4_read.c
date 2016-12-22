@@ -44,14 +44,15 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   int          t;
   const char * trigger_label;
   uint64_t     trigger_offset;
+  uint64_t     trigger_duration;
   cntfile_t    libeep_handle;
   float      * libeep_sample_data;
   float      * libeep_sample_data_ptr;
   const int    dimensions_1_1[] = {1, 1};
   const int    field_names_count = 2;
   const char * field_names[] = { "samples", "triggers" };
-  const int    trigger_field_names_count = 2;
-  const char * trigger_field_names[] = { "offset", "code" };
+  const int    trigger_field_names_count = 3;
+  const char * trigger_field_names[] = { "offset", "code", "duration" };
   mxArray    * mx_sample_data;
   double     * mx_sample_data_ptr;
   int          mx_trigger_count;
@@ -112,19 +113,24 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   mx_triggers = mxCreateStructMatrix(1, trigger_count, trigger_field_names_count, trigger_field_names);
   mx_trigger_count = 0;
   for(t=0;t<libeep_get_trigger_count(libeep_handle);++t) {
-    trigger_label = libeep_get_trigger(libeep_handle, t, &trigger_offset);
+    trigger_label = libeep_get_trigger_with_duration(libeep_handle, t, &trigger_offset, &trigger_duration);
     if(trigger_offset >= sample1 && trigger_offset < sample2) {
       // copy
       mxArray * offset;
       mxArray * code;
+      mxArray * duration;
 
       offset = mxCreateDoubleMatrix(1,1,mxREAL);
       *mxGetPr(offset) = (double)trigger_offset + matlab_offset_correction - sample1; // correct for section of data we need
+
+      duration = mxCreateDoubleMatrix(1,1,mxREAL);
+      *mxGetPr(duration) = (double)trigger_duration;
 
       code = mxCreateString(trigger_label);
 
       mxSetField(mx_triggers, mx_trigger_count, "offset", offset);
       mxSetField(mx_triggers, mx_trigger_count, "code", code);
+      mxSetField(mx_triggers, mx_trigger_count, "duration", duration);
       ++mx_trigger_count;
     }
   }

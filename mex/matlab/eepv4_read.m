@@ -10,6 +10,6 @@ function [data] = eepv4_read(fn);
 % data then contains:
 %
 % data.samples  ... array [nchan x npnt] containing eeg data (uV) 
-% data.triggers ... array [offset, code] trigger info, where each trigger has an offset(in samples) and a code
+% data.triggers ... array [offset, code, duration] trigger info, where each trigger has an offset(in samples), a code and duration(in samples)
 
 error('could not locate mex file');

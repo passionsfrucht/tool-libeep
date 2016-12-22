@@ -40,12 +40,13 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   const char * field_names[] = { "channel_count", "channels", "sample_count", "sample_rate", "trigger_count", "triggers" };
   const int    channel_field_names_count = 2;
   const char * channel_field_names[] = { "label", "unit" };
-  const int    trigger_field_names_count = 2;
-  const char * trigger_field_names[] = { "offset", "code" };
+  const int    trigger_field_names_count = 3;
+  const char * trigger_field_names[] = { "offset", "code", "duration" };
   int          c;
   int          t;
   const char * trigger_label;
   uint64_t     trigger_offset;
+  uint64_t     trigger_duration;
   mxArray    * mx_channel_count;
   mxArray    * mx_channels;
   mxArray    * mx_sample_count;
@@ -101,19 +102,24 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   // triggers
   mx_triggers = mxCreateStructMatrix(1, libeep_get_trigger_count(libeep_handle), trigger_field_names_count, trigger_field_names);
   for(t=0;t<libeep_get_trigger_count(libeep_handle);++t) {
-    trigger_label = libeep_get_trigger(libeep_handle, t, &trigger_offset);
+    trigger_label = libeep_get_trigger_with_duration(libeep_handle, t, &trigger_offset, &trigger_duration);
     {
       // copy
       mxArray * offset;
       mxArray * code;
+      mxArray * duration;
 
       offset = mxCreateDoubleMatrix(1,1,mxREAL);
       *mxGetPr(offset) = (double)trigger_offset + matlab_offset_correction;
+
+      duration = mxCreateDoubleMatrix(1,1,mxREAL);
+      *mxGetPr(duration) = (double)trigger_duration;
 
       code = mxCreateString(trigger_label);
 
       mxSetField(mx_triggers, t, "offset", offset);
       mxSetField(mx_triggers, t, "code", code);
+      mxSetField(mx_triggers, t, "duration", duration);
     }
   }
   mxSetField(plhs[0], 0, field_names[5], mx_triggers);

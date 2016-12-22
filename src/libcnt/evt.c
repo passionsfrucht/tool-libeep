@@ -374,12 +374,17 @@ void
 _libeep_evt_event_process_variant(int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * variant, const char * descriptor_name, const char * descriptor_unit) {
   if(!strcmp(descriptor_name, "EventCode")) {
     char tmp[1024];
-    snprintf(tmp, 1024, "%s, event: %i", ev->name, variant->i32);
+    snprintf(tmp, 1024, "%s, eventcode: %i", ev->name, variant->i32);
     _libeep_evt_string_delete(ev->name);
     ev->name = strdup(tmp);
   } else if(!strcmp(descriptor_name, "Condition")) {
     char tmp[1024];
     snprintf(tmp, 1024, "%s, condition: %s", ev->name, variant->string);
+    _libeep_evt_string_delete(ev->name);
+    ev->name = strdup(tmp);
+  } else if(!strcmp(descriptor_name, "VideoFileName")) {
+    char tmp[1024];
+    snprintf(tmp, 1024, "%s, videofilename: %s", ev->name, variant->string);
     _libeep_evt_string_delete(ev->name);
     ev->name = strdup(tmp);
   } else {

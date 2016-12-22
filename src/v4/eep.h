@@ -403,6 +403,14 @@ int libeep_get_trigger_count(cntfile_t handle);
 */
 const char *libeep_get_trigger(cntfile_t handle, int idx, uint64_t *sample);
 /**
+* @brief returns the label of the trigger at certain position in the trigger table
+* @param handle handle obtained by a call to libeep_read()
+* @param handle trigger index in the trigger table
+* @param sample the sample at which the trigger is positioned
+* @param duration duration in samples of the trigger
+*/
+const char *libeep_get_trigger_with_duration(cntfile_t handle, int idx, uint64_t *sample, uint64_t * duration);
+/**
  * @brief get zero offset(averages only)
  * @param handle handle obtained by a call to libeep_read()
  * @return offset of sample where event occurred

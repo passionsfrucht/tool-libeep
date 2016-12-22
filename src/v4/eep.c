@@ -22,6 +22,7 @@ typedef enum { om_none, om_read, om_write } open_mode;
 struct _processed_trigger {
   char     * label;
   uint64_t   sample;
+  uint64_t   duration_samples;
 };
 ///////////////////////////////////////////////////////////////////////////////
 struct _libeep_entry {
@@ -310,6 +311,7 @@ _libeep_trg_t_to_processed(const trg_t * external_trg, struct _libeep_entry * ob
   
     obj->processed_trigger_data[i].label = (char *)malloc(strlen(code) + 1);
     strcpy(obj->processed_trigger_data[i].label, code);
+    obj->processed_trigger_data[i].duration_samples = 0;
   }
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -396,6 +398,7 @@ _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * ob
                   strcpy(obj->processed_trigger_data[i].label, e->name);
 
                   obj->processed_trigger_data[i].sample = offset;
+                  obj->processed_trigger_data[i].duration_samples = e->duration / eep_get_period(obj->eep);
 
                   ++i;
                 }
@@ -1139,8 +1142,16 @@ libeep_get_trigger_count(cntfile_t handle) {
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_trigger(cntfile_t handle, int idx, uint64_t *sample) {
+  return libeep_get_trigger_with_duration(handle, idx, sample, NULL);
+}
+///////////////////////////////////////////////////////////////////////////////
+const char *
+libeep_get_trigger_with_duration(cntfile_t handle, int idx, uint64_t *sample, uint64_t * duration) {
   struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
   *sample = obj->processed_trigger_data[idx].sample;
+  if(duration != NULL) {
+    *duration = obj->processed_trigger_data[idx].duration_samples;
+  }
   return obj->processed_trigger_data[idx].label;
 }
 ///////////////////////////////////////////////////////////////////////////////

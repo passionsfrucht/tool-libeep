@@ -38,6 +38,32 @@ _libeep_evt_string_delete(char * s) {
     free(s);
   }
 }
+/*****************************************************************************/
+static
+void
+_libeep_evt_string_append_string(char ** s1, const char * s2) {
+  char   * tmp;
+  size_t   len_s1;
+  size_t   len_s2;
+
+  len_s1=strlen(*s1);
+  len_s2=strlen(s2);
+
+  tmp=(char *)malloc(len_s1 + len_s2 + 1);
+  sprintf(tmp, "%s%s", *s1, s2);
+
+  _libeep_evt_string_delete(*s1);
+
+  *s1 = tmp;
+}
+/*****************************************************************************/
+static
+void
+_libeep_evt_string_append_float(char ** s1, const char * fmt, float f) {
+  char tmp[16];
+  snprintf(tmp, 16, fmt, f);
+  _libeep_evt_string_append_string(s1, tmp);
+}
 /******************************************************************************
  * libeep evt class
  *****************************************************************************/
@@ -134,12 +160,9 @@ _libeep_evt_read_string(FILE * f, int indent) {
     return NULL;
   }
 
-  // _libeep_evt_log(evt_log_dbg, indent, "%s: length: %li\n", __FUNCTION__, length);
-
   rv=(char *)malloc(length + 1);
   memset(rv, 0, length + 1);
   if(fread(rv, length, 1, f) == 1) {
-    // _libeep_evt_log(evt_log_dbg, indent, "%s: string: %s\n", __FUNCTION__, rv);
   } else {
     /* something went wrong reading the string */
     TODO_MARKER;
@@ -274,12 +297,14 @@ enum vt_e {
   vt_byref = 0x4000,
 };
 struct libeep_evt_variant {
-  int16_t  type;
-  int16_t  i16;
-  int32_t  i32;
-  float    f;
-  double   d;
-  char   * string;
+  int16_t    type;
+  int16_t    i16;
+  int32_t    i32;
+  float      f;
+  float    * f_array;
+  uint32_t   f_array_size;
+  double     d;
+  char     * string;
 };
 typedef struct libeep_evt_variant libeep_evt_variant_t;
 /*****************************************************************************/
@@ -310,15 +335,13 @@ _libeep_evt_read_variant_base(FILE *f, int indent, libeep_evt_event_t * ev, libe
     } else if (variant->type == vt_bool) {
       TODO_MARKER;
     } else {
-      // _libeep_evt_log(evt_log_err, "%s: variant->type: %i\n", __FUNCTION__, variant->type);
-      // TODO_MARKER;
     }
   }
 }
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_event_t * ev) {
+_libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * outer_variant) {
   libeep_evt_variant_t variant;
   memset(&variant, 0, sizeof(libeep_evt_variant_t));
 
@@ -331,13 +354,11 @@ _libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_event_t * ev) {
   } else if (variant.type == vt_i4) {
     TODO_MARKER;
   } else if (variant.type == vt_r4) {
-    uint32_t size;
-    uint32_t i;
-    float    tmp;
-    fread(&size, sizeof(uint32_t), 1, f);
-    for(i=0;i<size;++i) {
-      fread(&tmp, sizeof(float), 1, f);
-    }
+    assert(outer_variant->f_array == NULL);
+    fread(&outer_variant->f_array_size, sizeof(uint32_t), 1, f);
+    _libeep_evt_log(evt_log_dbg, indent, "%s: outer_variant->f_array_size: %i\n", __FUNCTION__, outer_variant->f_array_size);
+    outer_variant->f_array=(float *)malloc(sizeof(float) * outer_variant->f_array_size);
+    fread(outer_variant->f_array, sizeof(float) * outer_variant->f_array_size, 1, f);
   } else if (variant.type == vt_r8) {
     TODO_MARKER;
   } else if (variant.type == vt_bool) {
@@ -345,7 +366,6 @@ _libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_event_t * ev) {
   } else if (variant.type == vt_bstr) {
     TODO_MARKER;
   }
-
 }
 /*****************************************************************************/
 static
@@ -363,7 +383,7 @@ _libeep_evt_read_variant(FILE *f, int indent, libeep_evt_event_t * ev, libeep_ev
       break;
     default:
       if( (variant->type & vt_byref) || (variant->type & vt_array) ) {
-        _libeep_evt_read_variant_array(f, indent + 1, ev);
+        _libeep_evt_read_variant_array(f, indent + 1, ev, variant);
       }
       break;
   }
@@ -374,19 +394,22 @@ void
 _libeep_evt_event_process_variant(int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * variant, const char * descriptor_name, const char * descriptor_unit) {
   if(!strcmp(descriptor_name, "EventCode")) {
     char tmp[1024];
-    snprintf(tmp, 1024, "%s, eventcode: %i", ev->name, variant->i32);
-    _libeep_evt_string_delete(ev->name);
-    ev->name = strdup(tmp);
+    snprintf(tmp, 1024, " eventcode: %i", variant->i32);
+    _libeep_evt_string_append_string(&ev->name, tmp);
   } else if(!strcmp(descriptor_name, "Condition")) {
     char tmp[1024];
-    snprintf(tmp, 1024, "%s, condition: %s", ev->name, variant->string);
-    _libeep_evt_string_delete(ev->name);
-    ev->name = strdup(tmp);
+    snprintf(tmp, 1024, " condition: %s", variant->string);
+    _libeep_evt_string_append_string(&ev->name, tmp);
   } else if(!strcmp(descriptor_name, "VideoFileName")) {
     char tmp[1024];
-    snprintf(tmp, 1024, "%s, videofilename: %s", ev->name, variant->string);
-    _libeep_evt_string_delete(ev->name);
-    ev->name = strdup(tmp);
+    snprintf(tmp, 1024, " videofilename: %s", variant->string);
+    _libeep_evt_string_append_string(&ev->name, tmp);
+  } else if(!strcmp(descriptor_name, "Impedance")) {
+    uint32_t n;
+    _libeep_evt_string_append_string(&ev->name, " impedance:");
+    for(n=0;n<variant->f_array_size;++n) {
+      _libeep_evt_string_append_float(&ev->name, " %f", variant->f_array[n]);
+    }
   } else {
     char tmp[1024];
     snprintf(tmp, 1024, "%s, %s", ev->name, descriptor_name);
@@ -404,17 +427,12 @@ _libeep_evt_read_epoch_descriptors(FILE *f, int indent, libeep_evt_event_t * ev)
   int32_t size = 0;
 
   if(fread(&size, sizeof(int32_t), 1, f) == 1) {
-
-    // _libeep_evt_log(evt_log_dbg, indent, "%s: size: %i\n", __FUNCTION__, size);
-
     for(i=0;i<size;++i) {
       libeep_evt_variant_t   variant;
       char                 * descriptor_name;
       char                 * descriptor_unit;
 
       memset(&variant, 0, sizeof(libeep_evt_variant_t));
-
-      // _libeep_evt_log(evt_log_dbg, indent, "%s: i: %i\n", __FUNCTION__, i);
 
       descriptor_name = _libeep_evt_read_string(f, indent + 1);
       _libeep_evt_log(evt_log_dbg, indent, "%s: descriptor_name: %s\n", __FUNCTION__, descriptor_name);
@@ -429,6 +447,9 @@ _libeep_evt_read_epoch_descriptors(FILE *f, int indent, libeep_evt_event_t * ev)
       _libeep_evt_string_delete(descriptor_name);
       _libeep_evt_string_delete(descriptor_unit);
       _libeep_evt_string_delete(variant.string);
+      if(variant.f_array != NULL) {
+        free(variant.f_array);
+      }
     }
   }
 }
@@ -648,9 +669,6 @@ _libeep_evt_read_library(FILE * f, int indent, libeep_evt_t * e) {
         else if (!strcmp(clss->name, "class dcRPeakEvent_c"))    { _libeep_evt_read_rpeak_event(f, indent + 1, e, ev); }
         else {
           _libeep_evt_log(evt_log_err, indent, "unknown class: %s\n", clss->name);
-/*
-          TODO_MARKER;
-*/
         }
       }
 

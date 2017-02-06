@@ -42,6 +42,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   int          s;
   int          c;
   int          t;
+  double       sample_rate;
   const char * trigger_label;
   uint64_t     trigger_offset;
   struct libeep_trigger_extension trigger_extension;
@@ -49,8 +50,8 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   float      * libeep_sample_data;
   float      * libeep_sample_data_ptr;
   const int    dimensions_1_1[] = {1, 1};
-  const int    field_names_count = 2;
-  const char * field_names[] = { "samples", "triggers" };
+  const int    field_names_count = 3;
+  const char * field_names[] = { "samples", "triggers", "start_in_seconds" };
   const int    trigger_field_names_count = 11;
   const char * trigger_field_names[] = { "offset_in_file", "offset_in_segment", "seconds_in_file", "seconds_in_segment", "label", "duration", "type", "code", "condition", "videofilename", "impedances" };
   mxArray    * mx_sample_data;
@@ -83,6 +84,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   if(libeep_handle == -1) {
     mexErrMsgTxt("Could not open file");
   }
+  sample_rate = libeep_get_sample_frequency(libeep_handle);
 
   // samples
   libeep_sample_data = libeep_get_samples(libeep_handle, sample1, sample2);
@@ -119,41 +121,6 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
     trigger_label = libeep_get_trigger_with_extensions(libeep_handle, t, &trigger_offset, &trigger_extension);
     if(trigger_offset >= sample1 && trigger_offset < sample2) {
       // copy
-      mxArray * offset_in_file;
-      mxArray * offset_in_segment;
-      mxArray * seconds_in_file;
-      mxArray * seconds_in_segment;
-      mxArray * label;
-      mxArray * duration;
-      mxArray * type;
-      mxArray * code;
-      mxArray * condition;
-      mxArray * videofilename;
-      mxArray * impedances;
-
-      offset_in_file = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(offset_in_file) = (double)trigger_offset;
-
-      offset_in_segment = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(offset_in_segment) = (double)(trigger_offset - sample1); // correct for section of data we need
-
-      seconds_in_file = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(seconds_in_file) = (double)(trigger_offset) / (double)libeep_get_sample_frequency(libeep_handle);;
-
-      seconds_in_segment = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(seconds_in_segment) = (double)(trigger_offset - sample1) / (double)libeep_get_sample_frequency(libeep_handle);;
-
-      duration = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(duration) = (double)trigger_extension.duration_in_samples;
-
-      label = mxCreateString(trigger_label);
-
-      type = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(type) = (double)trigger_extension.type;
-
-      code = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(code) = (double)trigger_extension.code;
-
       if(trigger_extension.condition) {
         mxSetField(mx_triggers, mx_trigger_count, "condition", mxCreateString(trigger_extension.condition));
       }
@@ -164,18 +131,21 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
         mxSetField(mx_triggers, mx_trigger_count, "impedances", mxCreateString(trigger_extension.impedances));
       }
 
-      mxSetField(mx_triggers, mx_trigger_count, "offset_in_file", offset_in_file);
-      mxSetField(mx_triggers, mx_trigger_count, "offset_in_segment", offset_in_segment);
-      mxSetField(mx_triggers, mx_trigger_count, "seconds_in_file", seconds_in_file);
-      mxSetField(mx_triggers, mx_trigger_count, "seconds_in_segment", seconds_in_segment);
-      mxSetField(mx_triggers, mx_trigger_count, "label", label);
-      mxSetField(mx_triggers, mx_trigger_count, "duration", duration);
-      mxSetField(mx_triggers, mx_trigger_count, "type", type);
-      mxSetField(mx_triggers, mx_trigger_count, "code", code);
+      mxSetField(mx_triggers, mx_trigger_count, "offset_in_file",     mxCreateDoubleScalar(trigger_offset));
+      mxSetField(mx_triggers, mx_trigger_count, "offset_in_segment",  mxCreateDoubleScalar(trigger_offset - sample1));
+      mxSetField(mx_triggers, mx_trigger_count, "seconds_in_file",    mxCreateDoubleScalar((double)(trigger_offset) / sample_rate));
+      mxSetField(mx_triggers, mx_trigger_count, "seconds_in_segment", mxCreateDoubleScalar((double)(trigger_offset - sample1) / sample_rate));
+      mxSetField(mx_triggers, mx_trigger_count, "label",              mxCreateString(trigger_label));
+      mxSetField(mx_triggers, mx_trigger_count, "duration",           mxCreateDoubleScalar(trigger_extension.duration_in_samples));
+      mxSetField(mx_triggers, mx_trigger_count, "type",               mxCreateDoubleScalar(trigger_extension.type));
+      mxSetField(mx_triggers, mx_trigger_count, "code",               mxCreateDoubleScalar(trigger_extension.code));
       ++mx_trigger_count;
     }
   }
   mxSetField(plhs[0], 0, field_names[1], mx_triggers);
+
+  // segment info
+  mxSetField(plhs[0], 0, field_names[2], mxCreateDoubleScalar((double)(sample1) / sample_rate));
 
   // close
   libeep_close(libeep_handle);

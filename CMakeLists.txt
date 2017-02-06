@@ -115,7 +115,7 @@ if(IS_DIRECTORY $ENV{MATLAB})
   endforeach()
 
 
-  foreach(matlab_target read_eep_avr read_eep_cnt read_eep_trg write_eep_avr write_eep_cnt eepv4_version eepv4_read_info eepv4_read)
+  foreach(matlab_target read_eep_avr read_eep_cnt write_eep_avr write_eep_cnt eepv4_version eepv4_read_info eepv4_read)
     add_custom_command(OUTPUT ${matlab_target}.${MATLAB_EXT}
                        COMMAND ${MATLAB_BIN}/mex
                        ARGS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c -I${CMAKE_CURRENT_SOURCE_DIR}/src -L${CMAKE_BINARY_DIR}/debug

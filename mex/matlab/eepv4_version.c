@@ -35,5 +35,5 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mexErrMsgTxt("No arguments needed.");
   }
 
-  plhs[0] = mxCreateString(libeep_get_version);
+  plhs[0] = mxCreateString(libeep_get_version());
 }

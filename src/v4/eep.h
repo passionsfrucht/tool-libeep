@@ -403,13 +403,24 @@ int libeep_get_trigger_count(cntfile_t handle);
 */
 const char *libeep_get_trigger(cntfile_t handle, int idx, uint64_t *sample);
 /**
+*
+*/
+struct libeep_trigger_extension {
+  int32_t      type;
+  int32_t      code;
+  uint64_t     duration_in_samples;
+  const char * condition;
+  const char * videofilename;
+  const char * impedances;
+};
+/**
 * @brief returns the label of the trigger at certain position in the trigger table
 * @param handle handle obtained by a call to libeep_read()
 * @param handle trigger index in the trigger table
 * @param sample the sample at which the trigger is positioned
 * @param duration duration in samples of the trigger
 */
-const char *libeep_get_trigger_with_duration(cntfile_t handle, int idx, uint64_t *sample, uint64_t * duration);
+const char *libeep_get_trigger_with_extensions(cntfile_t handle, int idx, uint64_t *sample, struct libeep_trigger_extension * te);
 /**
  * @brief get zero offset(averages only)
  * @param handle handle obtained by a call to libeep_read()

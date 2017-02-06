@@ -19,10 +19,18 @@
 typedef enum { dt_none, dt_avr, dt_cnt } data_type;
 typedef enum { om_none, om_read, om_write } open_mode;
 ///////////////////////////////////////////////////////////////////////////////
+struct _libeep_trigger_extension_mutable {
+  int32_t    type;
+  int32_t    code;
+  uint64_t   duration_in_samples;
+  char     * condition;
+  char     * videofilename;
+  char     * impedances;
+};
 struct _processed_trigger {
-  char     * label;
-  uint64_t   sample;
-  uint64_t   duration_samples;
+  char                                     * label;
+  uint64_t                                   sample;
+  struct _libeep_trigger_extension_mutable   te;
 };
 ///////////////////////////////////////////////////////////////////////////////
 struct _libeep_entry {
@@ -305,13 +313,21 @@ _libeep_trg_t_to_processed(const trg_t * external_trg, struct _libeep_entry * ob
   int i;
   obj->processed_trigger_count = trg_get_c(external_trg);
   obj->processed_trigger_data = (struct _processed_trigger *)malloc(sizeof(struct _processed_trigger) * obj->processed_trigger_count);
-  for(i=0;i<trg_get_c(external_trg);++i) {
+  memset(obj->processed_trigger_data, 0, sizeof(struct _processed_trigger) * obj->processed_trigger_count);
+  for(i=0;i<obj->processed_trigger_count;++i) {
     char *code;
     code=trg_get(external_trg, i, &obj->processed_trigger_data[i].sample);
   
     obj->processed_trigger_data[i].label = (char *)malloc(strlen(code) + 1);
     strcpy(obj->processed_trigger_data[i].label, code);
-    obj->processed_trigger_data[i].duration_samples = 0;
+/*
+    obj->processed_trigger_data[i].te.duration_in_samples = 0;
+    obj->processed_trigger_data[i].te.type = 0;
+    obj->processed_trigger_data[i].te.code = 0;
+    obj->processed_trigger_data[i].te.condition = NULL;
+    obj->processed_trigger_data[i].te.videofilename = NULL;
+    obj->processed_trigger_data[i].te.impedances = NULL;
+*/
   }
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -392,13 +408,25 @@ _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * ob
                 // TODO, add
                 if(pass==0) {
                   obj->processed_trigger_count++;
-                  // libeep_evt_event_print(e);
                 } else {
-                  obj->processed_trigger_data[i].label = (char *)malloc(strlen(e->name) + 1);
-                  strcpy(obj->processed_trigger_data[i].label, e->name);
+                  char tmp[16];
+                  sprintf(tmp, "%i", e->code);
+                  obj->processed_trigger_data[i].label = strdup(tmp);
 
                   obj->processed_trigger_data[i].sample = offset;
-                  obj->processed_trigger_data[i].duration_samples = e->duration / eep_get_period(obj->eep);
+                  obj->processed_trigger_data[i].te.duration_in_samples = e->duration / eep_get_period(obj->eep);
+
+                  obj->processed_trigger_data[i].te.type = e->type;
+                  obj->processed_trigger_data[i].te.code = e->code;
+                  if(e->condition) {
+                    obj->processed_trigger_data[i].te.condition = strdup(e->condition);
+                  }
+                  if(e->videofilename) {
+                    obj->processed_trigger_data[i].te.videofilename = strdup(e->videofilename);
+                  }
+                  if(e->impedances) {
+                    obj->processed_trigger_data[i].te.impedances = strdup(e->impedances);
+                  }
 
                   ++i;
                 }
@@ -408,6 +436,7 @@ _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * ob
           }
           if(pass==0 && obj->processed_trigger_count) {
             obj->processed_trigger_data = (struct _processed_trigger *)malloc(sizeof(struct _processed_trigger) * obj->processed_trigger_count);
+            memset(obj->processed_trigger_data, 0, sizeof(struct _processed_trigger) * obj->processed_trigger_count);
           }
         }
         libeep_evt_delete(evt);
@@ -463,6 +492,9 @@ _libeep_fini_processed_triggers(struct _libeep_entry * obj) {
     int i;
     for(i=0;i<obj->processed_trigger_count;++i) {
       free(obj->processed_trigger_data[i].label);
+      free(obj->processed_trigger_data[i].te.condition);
+      free(obj->processed_trigger_data[i].te.videofilename);
+      free(obj->processed_trigger_data[i].te.impedances);
     }
     free(obj->processed_trigger_data);
     obj->processed_trigger_count = 0;
@@ -837,8 +869,6 @@ libeep_add_recording_info(cntfile_t cnt_handle, recinfo_t recinfo_handle) {
   struct _libeep_entry * cnt = _libeep_get_object(cnt_handle, om_write);
   struct record_info_s * rec = _libeep_get_recinfo(recinfo_handle);
 
-  // fprintf(stderr, "%s  rc: %p\n", __FUNCTION__, rec);
-
   // bail if this is not a cnt file
   if(cnt->data_type != dt_cnt) {
     return;
@@ -1142,15 +1172,20 @@ libeep_get_trigger_count(cntfile_t handle) {
 ///////////////////////////////////////////////////////////////////////////////
 const char *
 libeep_get_trigger(cntfile_t handle, int idx, uint64_t *sample) {
-  return libeep_get_trigger_with_duration(handle, idx, sample, NULL);
+  return libeep_get_trigger_with_extensions(handle, idx, sample, NULL);
 }
 ///////////////////////////////////////////////////////////////////////////////
 const char *
-libeep_get_trigger_with_duration(cntfile_t handle, int idx, uint64_t *sample, uint64_t * duration) {
+libeep_get_trigger_with_extensions(cntfile_t handle, int idx, uint64_t *sample, struct libeep_trigger_extension * te) {
   struct _libeep_entry * obj = _libeep_get_object(handle, om_read);
   *sample = obj->processed_trigger_data[idx].sample;
-  if(duration != NULL) {
-    *duration = obj->processed_trigger_data[idx].duration_samples;
+  if(te != NULL) {
+    te->type = obj->processed_trigger_data[idx].te.type;
+    te->code = obj->processed_trigger_data[idx].te.code;
+    te->duration_in_samples = obj->processed_trigger_data[idx].te.duration_in_samples;
+    te->condition = obj->processed_trigger_data[idx].te.condition;
+    te->videofilename = obj->processed_trigger_data[idx].te.videofilename;
+    te->impedances = obj->processed_trigger_data[idx].te.impedances;
   }
   return obj->processed_trigger_data[idx].label;
 }

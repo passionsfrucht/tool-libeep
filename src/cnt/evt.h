@@ -56,8 +56,8 @@ struct libeep_evt_event {
   int32_t             visible_id;
   libeep_evt_GUID_t * guid;
 
-  char              * name;
-  char              * user_visible_name;
+  char              * unused_name;
+  char              * unused_user_visible_name;
 
   int32_t             type;
   int32_t             state;
@@ -65,6 +65,11 @@ struct libeep_evt_event {
   double              duration;
   double              duration_offset;
   double_date_t       time_stamp;
+
+  int32_t             code;
+  char              * condition;
+  char              * videofilename;
+  char              * impedances;
 
   /* linked list */
   struct libeep_evt_event * next_event;

@@ -40,13 +40,13 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   const char * field_names[] = { "channel_count", "channels", "sample_count", "sample_rate", "trigger_count", "triggers" };
   const int    channel_field_names_count = 2;
   const char * channel_field_names[] = { "label", "unit" };
-  const int    trigger_field_names_count = 3;
-  const char * trigger_field_names[] = { "offset", "code", "duration" };
+  const int    trigger_field_names_count = 9;
+  const char * trigger_field_names[] = { "offset_in_file", "seconds_in_file", "label", "duration", "type", "code", "condition", "videofilename", "impedances" };
   int          c;
   int          t;
   const char * trigger_label;
   uint64_t     trigger_offset;
-  uint64_t     trigger_duration;
+  struct libeep_trigger_extension trigger_extension;
   mxArray    * mx_channel_count;
   mxArray    * mx_channels;
   mxArray    * mx_sample_count;
@@ -60,6 +60,9 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
 
   // get parameters
   mxGetString(prhs[0], filename, 256);
+
+  // init library
+  libeep_init();
 
   // open
   libeep_handle = libeep_read_with_external_triggers(filename);
@@ -102,28 +105,59 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   // triggers
   mx_triggers = mxCreateStructMatrix(1, libeep_get_trigger_count(libeep_handle), trigger_field_names_count, trigger_field_names);
   for(t=0;t<libeep_get_trigger_count(libeep_handle);++t) {
-    trigger_label = libeep_get_trigger_with_duration(libeep_handle, t, &trigger_offset, &trigger_duration);
+    trigger_label = libeep_get_trigger_with_extensions(libeep_handle, t, &trigger_offset, &trigger_extension);
     {
       // copy
-      mxArray * offset;
-      mxArray * code;
+      mxArray * offset_in_file;
+      mxArray * seconds_in_file;
+      mxArray * label;
       mxArray * duration;
+      mxArray * type;
+      mxArray * code;
+      mxArray * condition;
+      mxArray * videofilename;
+      mxArray * impedances;
 
-      offset = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(offset) = (double)trigger_offset + matlab_offset_correction;
+      offset_in_file = mxCreateDoubleMatrix(1,1,mxREAL);
+      *mxGetPr(offset_in_file) = (double)trigger_offset;
+
+      seconds_in_file = mxCreateDoubleMatrix(1,1,mxREAL);
+      *mxGetPr(seconds_in_file) = (double)(trigger_offset) / (double)libeep_get_sample_frequency(libeep_handle);;
 
       duration = mxCreateDoubleMatrix(1,1,mxREAL);
-      *mxGetPr(duration) = (double)trigger_duration;
+      *mxGetPr(duration) = (double)trigger_extension.duration_in_samples;
 
-      code = mxCreateString(trigger_label);
+      label = mxCreateString(trigger_label);
 
-      mxSetField(mx_triggers, t, "offset", offset);
-      mxSetField(mx_triggers, t, "code", code);
+      type = mxCreateDoubleMatrix(1,1,mxREAL);
+      *mxGetPr(type) = (double)trigger_extension.type;
+
+      code = mxCreateDoubleMatrix(1,1,mxREAL);
+      *mxGetPr(code) = (double)trigger_extension.code;
+
+      if(trigger_extension.condition) {
+        mxSetField(mx_triggers, t, "condition", mxCreateString(trigger_extension.condition));
+      }
+      if(trigger_extension.videofilename) {
+        mxSetField(mx_triggers, t, "videofilename", mxCreateString(trigger_extension.videofilename));
+      }
+      if(trigger_extension.impedances) {
+        mxSetField(mx_triggers, t, "impedances", mxCreateString(trigger_extension.impedances));
+      }
+
+      mxSetField(mx_triggers, t, "offset_in_file", offset_in_file);
+      mxSetField(mx_triggers, t, "seconds_in_file", seconds_in_file);
+      mxSetField(mx_triggers, t, "label", label);
       mxSetField(mx_triggers, t, "duration", duration);
+      mxSetField(mx_triggers, t, "type", type);
+      mxSetField(mx_triggers, t, "code", code);
     }
   }
   mxSetField(plhs[0], 0, field_names[5], mx_triggers);
 
   // close
   libeep_close(libeep_handle);
+
+  // exit
+  libeep_exit();
 }

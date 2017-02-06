@@ -276,8 +276,11 @@ void
 libeep_evt_event_delete(libeep_evt_event_t * e) {
   if(e != NULL) {
     libeep_evt_GUID_delete(e->guid);
-    _libeep_evt_string_delete(e->name);
-    _libeep_evt_string_delete(e->user_visible_name);
+    _libeep_evt_string_delete(e->unused_name);
+    _libeep_evt_string_delete(e->unused_user_visible_name);
+    _libeep_evt_string_delete(e->condition);
+    _libeep_evt_string_delete(e->videofilename);
+    _libeep_evt_string_delete(e->impedances);
     free(e);
   }
 }
@@ -393,29 +396,23 @@ static
 void
 _libeep_evt_event_process_variant(int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * variant, const char * descriptor_name, const char * descriptor_unit) {
   if(!strcmp(descriptor_name, "EventCode")) {
-    char tmp[1024];
-    snprintf(tmp, 1024, " eventcode: %i", variant->i32);
-    _libeep_evt_string_append_string(&ev->name, tmp);
+    ev->code = variant->i32;
   } else if(!strcmp(descriptor_name, "Condition")) {
-    char tmp[1024];
-    snprintf(tmp, 1024, " condition: %s", variant->string);
-    _libeep_evt_string_append_string(&ev->name, tmp);
+    ev->condition=strdup(variant->string);
   } else if(!strcmp(descriptor_name, "VideoFileName")) {
-    char tmp[1024];
-    snprintf(tmp, 1024, " videofilename: %s", variant->string);
-    _libeep_evt_string_append_string(&ev->name, tmp);
+    ev->videofilename=strdup(variant->string);
   } else if(!strcmp(descriptor_name, "Impedance")) {
     uint32_t n;
-    _libeep_evt_string_append_string(&ev->name, " impedance:");
+    ev->impedances=(char *)malloc(1);
+    ev->impedances[0] = 0;
     for(n=0;n<variant->f_array_size;++n) {
-      _libeep_evt_string_append_float(&ev->name, " %f", variant->f_array[n]);
+      if(n) {
+        _libeep_evt_string_append_float(&ev->impedances, " %f", variant->f_array[n]);
+      } else {
+        _libeep_evt_string_append_float(&ev->impedances, "%f", variant->f_array[n]);
+      }
     }
   } else {
-    char tmp[1024];
-    snprintf(tmp, 1024, "%s, %s", ev->name, descriptor_name);
-    _libeep_evt_string_delete(ev->name);
-    ev->name = strdup(tmp);
-
     _libeep_evt_log(evt_log_dbg, indent, "%s: unhandled descriptor name: %s\n", __FUNCTION__, descriptor_name);
   }
 }
@@ -476,9 +473,9 @@ _libeep_evt_read_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_
     ev->guid = _libeep_evt_read_GUID(f, indent + 1);
     clss = _libeep_evt_read_class(f, indent + 1);
     libeep_evt_class_delete(clss);
-    ev->name = _libeep_evt_read_string(f, indent + 1);
+    ev->unused_name = _libeep_evt_read_string(f, indent + 1);
     if(e->header.version >= 78) {
-      ev->user_visible_name = _libeep_evt_read_string(f, indent + 1);
+      ev->unused_user_visible_name = _libeep_evt_read_string(f, indent + 1);
     }
     if(fread(&ev->type, sizeof(int32_t), 1, f) == 1) {
       if(fread(&ev->state, sizeof(int32_t), 1, f) == 1) {
@@ -620,14 +617,18 @@ libeep_evt_event_print(const libeep_evt_event_t * e) {
   if(e->guid) {
     _libeep_evt_log(evt_log_inf, 0, "  GUID............... %i %i %i [%i %i %i %i %i %i %i %i]\n", e->guid->data1, e->guid->data2, e->guid->data3, e->guid->data4[0], e->guid->data4[1], e->guid->data4[2], e->guid->data4[3], e->guid->data4[4], e->guid->data4[5], e->guid->data4[6], e->guid->data4[7]);
   }
-  _libeep_evt_log(evt_log_inf, 0, "  name............... %s\n", e->name);
-  _libeep_evt_log(evt_log_inf, 0, "  user_visible_name.. %s\n", e->user_visible_name);
+  _libeep_evt_log(evt_log_inf, 0, "  name............... %s\n", e->unused_name);
+  _libeep_evt_log(evt_log_inf, 0, "  user_visible_name.. %s\n", e->unused_user_visible_name);
   _libeep_evt_log(evt_log_inf, 0, "  type............... %i\n", e->type);
   _libeep_evt_log(evt_log_inf, 0, "  state.............. %i\n", e->state);
   _libeep_evt_log(evt_log_inf, 0, "  original........... %i\n", e->original);
   _libeep_evt_log(evt_log_inf, 0, "  duration........... %g\n", e->duration);
   _libeep_evt_log(evt_log_inf, 0, "  duration_offset.... %g\n", e->duration_offset);
   _libeep_evt_log(evt_log_inf, 0, "  timestamp.......... %8.8f / %8.8f\n", e->time_stamp.date, e->time_stamp.fraction);
+  _libeep_evt_log(evt_log_inf, 0, "  code............... %i\n", e->code);
+  _libeep_evt_log(evt_log_inf, 0, "  condition.......... %s\n", e->condition);
+  _libeep_evt_log(evt_log_inf, 0, "  videofilename...... %s\n", e->videofilename);
+  _libeep_evt_log(evt_log_inf, 0, "  impedances......... %s\n", e->impedances);
   _libeep_evt_log(evt_log_inf, 0, "}\n");
 }
 /******************************************************************************
@@ -688,8 +689,6 @@ _libeep_evt_read_file(FILE * f, int indent, libeep_evt_t * e) {
   if(fread(&e->header, sizeof(libeep_evt_header_t), 1, f) != 1) {
     return;
   }
-
-  /* libeep_evt_header_print(&e->header); */
 
   clss = _libeep_evt_read_class(f, indent + 1);
   if(clss && clss->tag==-1 && !strcmp("class dcEventsLibrary_c", clss->name)) {

@@ -27,16 +27,13 @@
 
 #include "mex.h"		/* Matlab specific  */
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-  char version_buffer[128];
+#include <v4/eep.h>
 
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   /* Check for proper number of arguments. */
   if (nrhs > 0) { 
     mexErrMsgTxt("No arguments needed.");
   }
 
-  /* need to construct version string here. The build system(CMake/mex) doesn't allow to pass strings to compiler. */
-  sprintf(version_buffer, "%i.%i.%i", LIBEEP_VERSION_MAJOR, LIBEEP_VERSION_MINOR, LIBEEP_VERSION_PATCH);
-
-  plhs[0] = mxCreateString(version_buffer);
+  plhs[0] = mxCreateString(libeep_get_version);
 }

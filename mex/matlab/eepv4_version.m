@@ -1,8 +1,8 @@
-function version = get_eep_version(fn);
+function version = eepv4_version(fn);
 
-% get_eep_version reads the version of libeep
+% eepv4_version reads the version of libeep
 %
-% version = get_eep_version()
+% version = eepv4_version()
 %
 % version ... string containing the version information
 %

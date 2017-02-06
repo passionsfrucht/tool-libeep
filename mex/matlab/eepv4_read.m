@@ -9,7 +9,18 @@ function [data] = eepv4_read(fn);
 %
 % data then contains:
 %
-% data.samples  ... array [nchan x npnt] containing eeg data (uV) 
-% data.triggers ... array [offset, code, duration] trigger info, where each trigger has an offset(in samples), a code and duration(in samples)
+% data.samples          ... array [nchan x npnt] containing eeg data (uV)
+% data.triggers         ... array [offset_in_file, offset_in_segment, seconds_in_file, seconds_in_segment, label, duration, type, code, condition, videofilename, impedances] trigger info, where each the fields are:
+%                             offset_in_file     ... sample offset(starting at 0) of the trigger from the beginning of the file
+%                             offset_in_segment  ... sample offset(starting at 0) of the trigger from the beginning of the segment
+%                             seconds_in_file    ... offset in seconds since beginning of the file
+%                             seconds_in_segment ... offset in seconds since beginning of the segment
+%                             label              ... trigger label
+%                             duration           ... duration in samples, starting at 0
+%                             type               ... evt type, 1=marker, 4=epoch
+%                             condition          ... evt condition, if used
+%                             videofilename      ... evt video filename, if used
+%                             impedances         ... evt impedances, if used
+% data.start_in_seconds ... scalar showing the time in seconds of this segments since start of file
 
 error('could not locate mex file');

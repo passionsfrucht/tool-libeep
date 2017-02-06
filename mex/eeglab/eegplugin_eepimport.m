@@ -74,7 +74,7 @@
 
 function vers = eegplugin_eepimport(fig, trystrs, catchstrs)
 
-    vers = 'eepimport1.10';
+    vers = 'eepimport1.12';
 
     if nargin < 3
         error('eegplugin_eepimport requires 3 arguments');

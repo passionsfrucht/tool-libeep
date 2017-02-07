@@ -115,22 +115,25 @@ if(IS_DIRECTORY $ENV{MATLAB})
   endforeach()
 
 
-  foreach(matlab_target read_eep_avr read_eep_cnt write_eep_avr write_eep_cnt eepv4_version eepv4_read_info eepv4_read)
-    add_custom_command(OUTPUT ${matlab_target}.${MATLAB_EXT}
-                       COMMAND ${MATLAB_BIN}/mex
-                       ARGS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c -I${CMAKE_CURRENT_SOURCE_DIR}/src -L${CMAKE_BINARY_DIR}/debug
-                            ${Eep_sources_abs}
-                            ${MATLAB_MEX_CFLAGS}
-                            -DLIBEEP_VERSION_MAJOR=${LIBEEP_VERSION_MAJOR}
-                            -DLIBEEP_VERSION_MINOR=${LIBEEP_VERSION_MINOR}
-                            -DLIBEEP_VERSION_PATCH=${LIBEEP_VERSION_PATCH}
-                       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c ${Eep_sources}
-                      )
-    # target_link_libraries(${matlab_target}.${MATLAB_EXT} Eep)
-    add_custom_target(${matlab_target} ALL DEPENDS ${matlab_target}.${MATLAB_EXT})
+  foreach(matlab_target read_eep_avr read_eep_cnt read_eep_trg write_eep_avr write_eep_cnt eepv4_version eepv4_read_info eepv4_read)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c)
+      add_custom_command(OUTPUT ${matlab_target}.${MATLAB_EXT}
+                         COMMAND ${MATLAB_BIN}/mex
+                         ARGS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c -I${CMAKE_CURRENT_SOURCE_DIR}/src -L${CMAKE_BINARY_DIR}/debug
+                              ${Eep_sources_abs}
+                              ${MATLAB_MEX_CFLAGS}
+                              -DLIBEEP_VERSION_MAJOR=${LIBEEP_VERSION_MAJOR}
+                              -DLIBEEP_VERSION_MINOR=${LIBEEP_VERSION_MINOR}
+                              -DLIBEEP_VERSION_PATCH=${LIBEEP_VERSION_PATCH}
+                         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c ${Eep_sources}
+                        )
+      add_custom_target(${matlab_target} ALL DEPENDS ${matlab_target}.${MATLAB_EXT})
 
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${matlab_target}.${MATLAB_EXT} DESTINATION share/libeep/matlab)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.m DESTINATION share/libeep/matlab)
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${matlab_target}.${MATLAB_EXT} DESTINATION share/libeep/matlab)
+    endif()
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.m)
+      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.m DESTINATION share/libeep/matlab)
+    endif()
   endforeach()
 elseif()
   message("please set the environment variable MATLAB to a matlab directry to build the MATLAB plugin")

@@ -18,15 +18,16 @@
 %   This plugins consist of the following Matlab files:
 %   pop_loadeep_v4.m        pop_loadeep_avg.m
 %   loadeep.m               loadeep_avg.m
-%   read_eep_cnt.m          read_eep_avr.m
-%   read_eep_cnt.mexglx     read_eep_avr.mexglx
-%   read_eep_cnt.dll        read_eep_avr.dll
+%   eepv4_read              eepv4_read_info
+%   read_eep_avr.m
+%   read_eep_avr.mexglx
+%   read_eep_avr.dll
 %
 % Authors:
 % Maarten-Jan Hoeve, ANT, The Netherlands / www.ant-software.nl, 3 October 2003
 % Maarten van de Velde, ANT, The Netherlands / www.ant-neuro.com, 21 July 2005
 %
-% See also: eeglab(), pop_loadeep_v4(), loadeep(), read_eep_cnt(), pop_loadeep_avg(), loadeep_avg(), read_eep_avr()
+% See also: eeglab(), pop_loadeep_v4(), loadeep(), eepv4_read(), eepv4_read_info(), pop_loadeep_avg(), loadeep_avg(), read_eep_avr()
 
 % Copyright (C) 2005 ANT Software, The Netherlands, eeprobe@ant-neuro.com / info@ant-neuro.com
 %

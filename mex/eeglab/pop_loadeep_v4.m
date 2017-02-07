@@ -8,16 +8,9 @@
 % Graphic interface:
 %
 %   "Time interval in seconds" - [edit box] specify time interval [min max]
-%                                to import portion of data. Command line equivalent
-%                                in loadeep: 'time1' and 'time2'
-%   "Import triggers "         - [checkbox] set this option to import triggers from the
-%                                trigger file (*.trg). Command line equivalent 'triggerfile'.
+%                                to import portion of data.
 % Inputs:
 %   filename                   - file name
-%
-% Optional inputs:
-%   'triggerfile'               -'on' or 'off' (default = 'off')
-%   Same as loadeep() function.
 %
 % Outputs:
 %   [EEG]                       - EEGLAB data structure
@@ -28,7 +21,7 @@
 %
 % Author: Robert Smies, ANT Neuro B.V., Enschede, The Netherlands, 2017-02-06
 %
-% See also: eeglab(), loadeep()
+% See also: eeglab()
 %
 
 %123456789012345678901234567890123456789012345678901234567890123456789012
@@ -61,8 +54,13 @@ command = '';
 filepath = '';
 EEG=[];
 
-if nargin < 1
+% variable arguments to struct
+if ~isempty(varargin)
+	 r = struct(varargin{:});
+else r = [];
+end;
 
+if nargin < 1
 	% ask user
 	[filename, filepath] = uigetfile('*.CNT;*.cnt', 'Choose an EEProbe continuous file -- pop_loadeep_v4()');
     drawnow;
@@ -70,28 +68,21 @@ if nargin < 1
 
 	% popup window parameters
 	% -----------------------
-    uigeom     = { [1 0.5] [1.09 0.13 0.4]};
-    uilist   = { { 'style' 'text' 'string' 'Time interval in s (i.e. [0 100];' } ...
-                 { 'style' 'edit' 'string' '' } {} };
+    uigeom     = { [1 0.5] };
+    uilist   = { { 'style' 'text' 'string' 'Time interval in s (i.e. [0 100];' }  ...
+                 { 'style' 'edit' 'string' '' } };
 
 	result = inputgui(uigeom, uilist, 'pophelp(''pop_loadeep_v4'')', 'Load an EEProbe dataset');
 	if length( result ) == 0 return; end;
 
 	% decode parameters
 	% -----------------
-    options = [];
     if ~isempty(result{1}),
         timer =  eval( [ '[' result{1} ']' ]);
-        options = [ options ', ''time1'', ' num2str(timer(1)) ', ''time2'', ' num2str(timer(2)) ];
-    end;
-else
-	options = vararg2str(varargin);
-end;
 
-% variable arguments to struct
-if ~isempty(varargin)
-	 r = struct(varargin{:});
-else r = [];
+        r.time1 = timer(1);
+        r.time2 = timer(2);
+    end;
 end;
 
 % load datas
@@ -145,17 +136,10 @@ end
 EEG.chanlocs=chanlocs;
 % Create struct for holding triggers
 for i=1:size(r.v4_data.triggers, 2)
-    event(i).type = r.v4_data.triggers(i).label;
-    event(i).latency = 1 + r.v4_data.triggers(i).offset_in_segment;
+    EEG.event(i).type = r.v4_data.triggers(i).label;
+    EEG.event(i).latency = 1 + r.v4_data.triggers(i).offset_in_segment;
 end;
-EEG.event=event;
 
 EEG = eeg_checkset(EEG);
 
-if length(options) > 2
-    command = sprintf('EEG = pop_loadeep_v4(''%s'' %s);',fullFileName, options);
-else
-    command = sprintf('EEG = pop_loadeep_v4(''%s'');',fullFileName);
-end;
 return;
-

@@ -144,6 +144,8 @@ pyeep_get_samples(PyObject* self, PyObject* args) {
   int fro;
   int to;
 
+  Py_ssize_t i;
+
   if(!PyArg_ParseTuple(args, "iii", & handle, & fro, & to)) {
     return NULL;
   }
@@ -158,7 +160,7 @@ pyeep_get_samples(PyObject* self, PyObject* args) {
   if(!python_list) {
     return NULL;
   }
-  for(Py_ssize_t i = 0; i < array_len; i++) {
+  for(i = 0; i < array_len; i++) {
     PyObject * num = PyFloat_FromDouble(libeep_sample_data[i]);
     if (!num) {
         Py_DECREF(python_list);

@@ -6,7 +6,8 @@
 /*****************************************************************************/
 int
 main(int argc, char ** argv) {
-  for(int i=1;i<argc;++i) {
+  int i;
+  for(i=1;i<argc;++i) {
     libeep_evt_event_t * e;
     fprintf(stderr, "--- file: %s ---\n", argv[i]);
     libeep_evt_t * evt = libeep_evt_read(argv[i]);

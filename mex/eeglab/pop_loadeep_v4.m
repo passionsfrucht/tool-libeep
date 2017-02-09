@@ -123,21 +123,25 @@ EEG.srate           = r.v4_info.sample_rate;
 EEG.pnts            = 1 + r.sample2 - r.sample1;
 % Create struct for holding channel labels
 for i=1:r.v4_info.channel_count
-    chanlocs(i).labels=r.v4_info.channels(i).label;
-    chanlocs(i).theta=0;
-    chanlocs(i).radius=0;
-    chanlocs(i).X=0;
-    chanlocs(i).Y=0;
-    chanlocs(i).Z=0;
-    chanlocs(i).sph_theta=0;
-    chanlocs(i).sph_phi=0;
-    chanlocs(i).sph_radius=0;
+  EEG.chanlocs(i).labels=r.v4_info.channels(i).label;
+  EEG.chanlocs(i).theta=0;
+  EEG.chanlocs(i).radius=0;
+  EEG.chanlocs(i).X=0;
+  EEG.chanlocs(i).Y=0;
+  EEG.chanlocs(i).Z=0;
+  EEG.chanlocs(i).sph_theta=0;
+  EEG.chanlocs(i).sph_phi=0;
+  EEG.chanlocs(i).sph_radius=0;
 end
-EEG.chanlocs=chanlocs;
 % Create struct for holding triggers
 for i=1:size(r.v4_data.triggers, 2)
+  EEG.event(i).latency = 1 + r.v4_data.triggers(i).offset_in_segment;
+  if ischar(r.v4_data.triggers(i).condition)
+    EEG.event(i).type = sprintf('%s, %s', r.v4_data.triggers(i).label, r.v4_data.triggers(i).condition);
+  else
     EEG.event(i).type = r.v4_data.triggers(i).label;
-    EEG.event(i).latency = 1 + r.v4_data.triggers(i).offset_in_segment;
+  end;
+  EEG.event(i).duration = r.v4_data.triggers(i).duration;
 end;
 
 EEG = eeg_checkset(EEG);

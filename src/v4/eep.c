@@ -24,6 +24,7 @@ struct _libeep_trigger_extension_mutable {
   int32_t    code;
   uint64_t   duration_in_samples;
   char     * condition;
+  char     * description;
   char     * videofilename;
   char     * impedances;
 };
@@ -320,14 +321,6 @@ _libeep_trg_t_to_processed(const trg_t * external_trg, struct _libeep_entry * ob
   
     obj->processed_trigger_data[i].label = (char *)malloc(strlen(code) + 1);
     strcpy(obj->processed_trigger_data[i].label, code);
-/*
-    obj->processed_trigger_data[i].te.duration_in_samples = 0;
-    obj->processed_trigger_data[i].te.type = 0;
-    obj->processed_trigger_data[i].te.code = 0;
-    obj->processed_trigger_data[i].te.condition = NULL;
-    obj->processed_trigger_data[i].te.videofilename = NULL;
-    obj->processed_trigger_data[i].te.impedances = NULL;
-*/
   }
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -421,6 +414,9 @@ _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * ob
                   if(e->condition) {
                     obj->processed_trigger_data[i].te.condition = strdup(e->condition);
                   }
+                  if(e->description) {
+                    obj->processed_trigger_data[i].te.description = strdup(e->description);
+                  }
                   if(e->videofilename) {
                     obj->processed_trigger_data[i].te.videofilename = strdup(e->videofilename);
                   }
@@ -493,6 +489,7 @@ _libeep_fini_processed_triggers(struct _libeep_entry * obj) {
     for(i=0;i<obj->processed_trigger_count;++i) {
       free(obj->processed_trigger_data[i].label);
       free(obj->processed_trigger_data[i].te.condition);
+      free(obj->processed_trigger_data[i].te.description);
       free(obj->processed_trigger_data[i].te.videofilename);
       free(obj->processed_trigger_data[i].te.impedances);
     }
@@ -1184,6 +1181,7 @@ libeep_get_trigger_with_extensions(cntfile_t handle, int idx, uint64_t *sample, 
     te->code = obj->processed_trigger_data[idx].te.code;
     te->duration_in_samples = obj->processed_trigger_data[idx].te.duration_in_samples;
     te->condition = obj->processed_trigger_data[idx].te.condition;
+    te->description = obj->processed_trigger_data[idx].te.description;
     te->videofilename = obj->processed_trigger_data[idx].te.videofilename;
     te->impedances = obj->processed_trigger_data[idx].te.impedances;
   }

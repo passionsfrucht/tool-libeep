@@ -410,6 +410,7 @@ struct libeep_trigger_extension {
   int32_t      code;
   uint64_t     duration_in_samples;
   const char * condition;
+  const char * description;
   const char * videofilename;
   const char * impedances;
 };

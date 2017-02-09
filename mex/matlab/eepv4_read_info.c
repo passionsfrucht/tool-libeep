@@ -39,8 +39,8 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   const char * field_names[] = { "channel_count", "channels", "sample_count", "sample_rate", "trigger_count", "triggers" };
   const int    channel_field_names_count = 2;
   const char * channel_field_names[] = { "label", "unit" };
-  const int    trigger_field_names_count = 9;
-  const char * trigger_field_names[] = { "offset_in_file", "seconds_in_file", "label", "duration", "type", "code", "condition", "videofilename", "impedances" };
+  const int    trigger_field_names_count = 10;
+  const char * trigger_field_names[] = { "offset_in_file", "seconds_in_file", "label", "duration", "type", "code", "condition", "description", "videofilename", "impedances" };
   int          c;
   int          t;
   const char * trigger_label;
@@ -105,6 +105,9 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
       // copy
       if(trigger_extension.condition) {
         mxSetField(mx_triggers, t, "condition", mxCreateString(trigger_extension.condition));
+      }
+      if(trigger_extension.description) {
+        mxSetField(mx_triggers, t, "description", mxCreateString(trigger_extension.description));
       }
       if(trigger_extension.videofilename) {
         mxSetField(mx_triggers, t, "videofilename", mxCreateString(trigger_extension.videofilename));

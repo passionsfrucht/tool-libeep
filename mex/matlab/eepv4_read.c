@@ -52,8 +52,8 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   const int    dimensions_1_1[] = {1, 1};
   const int    field_names_count = 3;
   const char * field_names[] = { "samples", "triggers", "start_in_seconds" };
-  const int    trigger_field_names_count = 11;
-  const char * trigger_field_names[] = { "offset_in_file", "offset_in_segment", "seconds_in_file", "seconds_in_segment", "label", "duration", "type", "code", "condition", "videofilename", "impedances" };
+  const int    trigger_field_names_count = 12;
+  const char * trigger_field_names[] = { "offset_in_file", "offset_in_segment", "seconds_in_file", "seconds_in_segment", "label", "duration", "type", "code", "condition", "description", "videofilename", "impedances" };
   mxArray    * mx_sample_data;
   double     * mx_sample_data_ptr;
   int          mx_trigger_count;
@@ -123,6 +123,9 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
       // copy
       if(trigger_extension.condition) {
         mxSetField(mx_triggers, mx_trigger_count, "condition", mxCreateString(trigger_extension.condition));
+      }
+      if(trigger_extension.description) {
+        mxSetField(mx_triggers, mx_trigger_count, "description", mxCreateString(trigger_extension.description));
       }
       if(trigger_extension.videofilename) {
         mxSetField(mx_triggers, mx_trigger_count, "videofilename", mxCreateString(trigger_extension.videofilename));

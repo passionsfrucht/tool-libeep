@@ -31,23 +31,23 @@ if(WIN32)
 endif(WIN32)
 
 set(Eep_sources
-  src/libavr/avr.c
-  src/libavr/avrcfg.c
-  src/libcnt/evt.c
-  src/libcnt/cnt.c
-  src/libcnt/cntutils.c
-  src/libcnt/raw3.c
-  src/libcnt/rej.c
-  src/libcnt/riff64.c
-  src/libcnt/riff.c
-  src/libcnt/trg.c
-  src/libeep/eepio.c
-  src/libeep/eepmem.c
-  src/libeep/eepmisc.c
-  src/libeep/eepraw.c
-  src/libeep/val.c
-  src/libeep/var_string.c
-  src/v4/eep.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libavr/avr.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libavr/avrcfg.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/evt.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/cnt.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/cntutils.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/raw3.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/rej.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/riff64.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/riff.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/trg.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libeep/eepio.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libeep/eepmem.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libeep/eepmisc.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libeep/eepraw.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libeep/val.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libeep/var_string.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/v4/eep.c
 )
 add_library(EepObjects OBJECT
   ${Eep_sources}
@@ -97,7 +97,7 @@ if(IS_DIRECTORY $ENV{MATLAB})
     # linux 64
     set(MATLAB_BIN $ENV{MATLAB}/bin/glnxa64)
     set(MATLAB_EXT mexa64)
-    set(MATLAB_MEX_CFLAGS "CFLAGS=-std=c99 -fPIC")
+    set(MATLAB_MEX_CFLAGS "CFLAGS=-std=c99 -fPIC -D_GNU_SOURCE -O3 -v")
   else()
     # fallback, mac 64
     set(MATLAB_BIN $ENV{MATLAB}/bin)
@@ -109,18 +109,12 @@ if(IS_DIRECTORY $ENV{MATLAB})
   message("MATLAB_EXT.......... ${MATLAB_EXT}")
   message("CMAKE_BINARY_DIR.... ${CMAKE_BINARY_DIR}")
 
-  foreach(eep_source_file ${Eep_sources})
-    get_filename_component(eep_source_file_abs ${eep_source_file} ABSOLUTE)
-    set(Eep_sources_abs ${Eep_sources_abs} ${eep_source_file_abs})
-  endforeach()
-
-
   foreach(matlab_target read_eep_avr read_eep_cnt read_eep_trg write_eep_avr write_eep_cnt eepv4_version eepv4_read_info eepv4_read)
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c)
       add_custom_command(OUTPUT ${matlab_target}.${MATLAB_EXT}
                          COMMAND ${MATLAB_BIN}/mex
-                         ARGS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c -I${CMAKE_CURRENT_SOURCE_DIR}/src -L${CMAKE_BINARY_DIR}/debug
-                              ${Eep_sources_abs}
+                         ARGS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c -I${CMAKE_CURRENT_SOURCE_DIR}/src
+                              ${Eep_sources}
                               ${MATLAB_MEX_CFLAGS}
                               -DLIBEEP_VERSION_MAJOR=${LIBEEP_VERSION_MAJOR}
                               -DLIBEEP_VERSION_MINOR=${LIBEEP_VERSION_MINOR}

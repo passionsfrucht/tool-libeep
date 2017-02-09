@@ -67,6 +67,7 @@ struct libeep_evt_event {
   double_date_t       time_stamp;
 
   int32_t             code;
+  char              * description;
   char              * condition;
   char              * videofilename;
   char              * impedances;

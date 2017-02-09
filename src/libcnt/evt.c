@@ -202,9 +202,7 @@ _libeep_evt_read_wstring(FILE * f, int indent) {
 
     // convert
     for(i=0;i<length;++i) {
-      if(cp_array[i].hi == 0) {
-        rv[i] = cp_array[i].lo;
-      }
+      rv[i] = cp_array[i].lo;
     }
 
     // free
@@ -279,6 +277,7 @@ libeep_evt_event_delete(libeep_evt_event_t * e) {
     _libeep_evt_string_delete(e->unused_name);
     _libeep_evt_string_delete(e->unused_user_visible_name);
     _libeep_evt_string_delete(e->condition);
+    _libeep_evt_string_delete(e->description);
     _libeep_evt_string_delete(e->videofilename);
     _libeep_evt_string_delete(e->impedances);
     free(e);
@@ -398,9 +397,13 @@ _libeep_evt_event_process_variant(int indent, libeep_evt_event_t * ev, libeep_ev
   if(!strcmp(descriptor_name, "EventCode")) {
     ev->code = variant->i32;
   } else if(!strcmp(descriptor_name, "Condition")) {
-    ev->condition=strdup(variant->string);
+    if(variant->string) {
+      ev->condition=strdup(variant->string);
+    }
   } else if(!strcmp(descriptor_name, "VideoFileName")) {
-    ev->videofilename=strdup(variant->string);
+    if(variant->string) {
+      ev->videofilename=strdup(variant->string);
+    }
   } else if(!strcmp(descriptor_name, "Impedance")) {
     uint32_t n;
     ev->impedances=(char *)malloc(1);
@@ -412,8 +415,11 @@ _libeep_evt_event_process_variant(int indent, libeep_evt_event_t * ev, libeep_ev
         _libeep_evt_string_append_float(&ev->impedances, "%f", variant->f_array[n]);
       }
     }
+  } else if(!strcmp(descriptor_name, "Name:")) {
+    assert(ev->description == NULL);
+    ev->description=strdup(variant->string);
   } else {
-    _libeep_evt_log(evt_log_dbg, indent, "%s: unhandled descriptor name: %s\n", __FUNCTION__, descriptor_name);
+    _libeep_evt_log(evt_log_err, indent, "%s: unhandled descriptor name: %s\n", __FUNCTION__, descriptor_name);
   }
 }
 /*****************************************************************************/
@@ -534,11 +540,11 @@ void
 _libeep_evt_read_event_marker(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
   int32_t   show_amplitude = 0;
   int8_t    show_duration = 0;
-  char    * description = NULL;
 
   _libeep_evt_read_event(f, indent + 1, e, ev);
   _libeep_evt_read_channel_info(f, indent + 1);
-  description = _libeep_evt_read_string(f, indent + 1);
+  assert(ev->description==NULL);
+  ev->description = _libeep_evt_read_string(f, indent + 1);
   if(e->header.version >= 35) {
     if(e->header.version >= 103) {
       fread(&show_amplitude, sizeof(int32_t), 1, f);
@@ -551,24 +557,18 @@ _libeep_evt_read_event_marker(FILE * f, int indent, libeep_evt_t * e, libeep_evt
   }
   _libeep_evt_log(evt_log_dbg, indent, "%s: show_amplitude: %i\n", __FUNCTION__, show_amplitude);
   _libeep_evt_log(evt_log_dbg, indent, "%s: show_duration: %i\n", __FUNCTION__, show_duration);
-  _libeep_evt_log(evt_log_dbg, indent, "%s: description: %s\n", __FUNCTION__, description);
-
-  _libeep_evt_string_delete(description);
+  _libeep_evt_log(evt_log_dbg, indent, "%s: ev->description: %s\n", __FUNCTION__, ev->description);
 }
 /*****************************************************************************/
 static
 void
 _libeep_evt_read_artefact_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_t * ev) {
-  char * description = NULL;
-
   _libeep_evt_read_event(f, indent, e, ev);
   _libeep_evt_read_channel_info(f, indent + 1);
   if(e->header.version >= 174) {
-    description = _libeep_evt_read_string(f, indent + 1);
-    _libeep_evt_log(evt_log_dbg, indent, "%s: description: %s\n", __FUNCTION__, description);
+    ev->description = _libeep_evt_read_string(f, indent + 1);
+    _libeep_evt_log(evt_log_dbg, indent, "%s: ev->description: %s\n", __FUNCTION__, ev->description);
   }
-
-  _libeep_evt_string_delete(description);
 }
 /*****************************************************************************/
 static
@@ -627,6 +627,7 @@ libeep_evt_event_print(const libeep_evt_event_t * e) {
   _libeep_evt_log(evt_log_inf, 0, "  timestamp.......... %8.8f / %8.8f\n", e->time_stamp.date, e->time_stamp.fraction);
   _libeep_evt_log(evt_log_inf, 0, "  code............... %i\n", e->code);
   _libeep_evt_log(evt_log_inf, 0, "  condition.......... %s\n", e->condition);
+  _libeep_evt_log(evt_log_inf, 0, "  description........ %s\n", e->description);
   _libeep_evt_log(evt_log_inf, 0, "  videofilename...... %s\n", e->videofilename);
   _libeep_evt_log(evt_log_inf, 0, "  impedances......... %s\n", e->impedances);
   _libeep_evt_log(evt_log_inf, 0, "}\n");

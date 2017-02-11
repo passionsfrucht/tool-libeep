@@ -177,6 +177,8 @@ EXPORTS
   libeep_init
   libeep_read
   libeep_read_with_external_triggers
+  libeep_seg_read
+  libeep_seg_delete
   libeep_set_comment
   libeep_set_date_of_birth
   libeep_set_hospital

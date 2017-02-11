@@ -9,6 +9,7 @@
 // libeep
 #include <v4/eep.h>
 #include <cnt/evt.h>
+#include <cnt/seg.h>
 #include <cnt/cnt.h>
 #include <cnt/trg.h>
 #include <eep/eepio.h> // for the definition of eepio_fopen
@@ -340,23 +341,40 @@ _libeep_helper_excel_to_double(double excel, double fraction) {
 /* helper to convert excel date to offset
  */
 static int
-_libeep_helper_date_fraction_to_offset(double rate, double cnt_date, double cnt_fraction, double evt_date, double evt_fraction, uint64_t * offset) {
-  double cnt_double = _libeep_helper_excel_to_double(cnt_date, cnt_fraction);
-  double evt_double = _libeep_helper_excel_to_double(evt_date, evt_fraction);
-  double diff_double = (evt_double - cnt_double);
+_libeep_helper_date_fraction_to_offset(double rate, double start_date, double start_fraction, double check_date, double check_fraction, uint64_t * offset) {
+  double start_double = _libeep_helper_excel_to_double(start_date, start_fraction);
+  double check_double = _libeep_helper_excel_to_double(check_date, check_fraction);
+  double diff_double = (check_double - start_double);
 /*
-  fprintf(stderr, "to offset(%g, %g, %g, %g, %g)\n", rate, cnt_date, cnt_fraction, evt_date, evt_fraction);
-  fprintf(stderr, "  cnt double: %g\n", cnt_double);
-  fprintf(stderr, "  evt double: %g\n", evt_double);
-  fprintf(stderr, "  diff double: %g\n", diff_double);
+  fprintf(stderr, "to offset(%lf, %lf, %lf, %lf, %lf): ", rate, start_date, start_fraction, check_date, check_fraction);
+  fprintf(stderr, "  cnt double: %lf: ", start_double);
+  fprintf(stderr, "  evt double: %lf: ", check_double);
+  fprintf(stderr, "  diff double: %lf: ", diff_double);
   fprintf(stderr, "  offset: %i\n", (int)(rate * diff_double));
 */
-  if(evt_date > 0 && evt_date >= cnt_date && diff_double >= 0) {
-    *offset = rate * diff_double;
-    return 1;
-  }
 
-  return 0;
+  *offset = rate * diff_double;
+
+  return (check_date > 0 && check_date >= start_date && diff_double >= 0);
+}
+/* helper to check dates in segments
+ */
+static int
+_libeep_helper_date_fraction_seg_to_offset(uint64_t sample_count, double rate, double start_date, double start_fraction, double check_date, double check_fraction, const libeep_seg_t * seg, uint64_t * offset) {
+  // TODO
+  if(seg) {
+    int seg_index = seg->count;
+    while(seg_index) {
+      --seg_index;
+
+      sample_count -= seg->array[seg_index].sample_count;
+      if(_libeep_helper_date_fraction_to_offset(rate, seg->array[seg_index].date, seg->array[seg_index].fraction, check_date, check_fraction, offset)) {
+        *offset += sample_count;
+        return 1;
+      }
+    }
+  }
+  return _libeep_helper_date_fraction_to_offset(rate, start_date, start_fraction, check_date, check_fraction, offset);
 }
 ///////////////////////////////////////////////////////////////////////////////
 /* process triggers
@@ -366,10 +384,12 @@ _libeep_helper_date_fraction_to_offset(double rate, double cnt_date, double cnt_
 static void
 _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * obj, int external_triggers) {
   char * external_evt_filename;
+  char * external_seg_filename;
   char * external_trg_filename;
   if(external_triggers) {
     // .evt file
     external_evt_filename = _replace_string_end(filename, "evt");
+    external_seg_filename = _replace_string_end(filename, "seg");
     if(external_evt_filename) {
       // struct tm            cnt_time = {0};
       int                  pass;
@@ -378,7 +398,9 @@ _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * ob
       record_info_t        rec_inf;
       libeep_evt_event_t * e;
       libeep_evt_t       * evt = libeep_evt_read(external_evt_filename);
+      libeep_seg_t       * seg = libeep_seg_read(external_seg_filename);
       free(external_evt_filename);
+      free(external_seg_filename);
 
       // cnt time stamp
       if (eep_has_recording_info(obj->eep)) {
@@ -396,9 +418,8 @@ _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * ob
           e=evt->evt_list_first;
           while(e != NULL) {
             uint64_t offset;
-            if(_libeep_helper_date_fraction_to_offset(1.0 / eep_get_period(obj->eep), cnt_date, cnt_fraction, e->time_stamp.date, e->time_stamp.fraction, & offset)) {
+            if(_libeep_helper_date_fraction_seg_to_offset(eep_get_samplec(obj->eep), 1.0 / eep_get_period(obj->eep), cnt_date, cnt_fraction, e->time_stamp.date, e->time_stamp.fraction, seg, & offset)) {
               if(offset < eep_get_samplec(obj->eep)) {
-                // TODO, add
                 if(pass==0) {
                   obj->processed_trigger_count++;
                 } else {
@@ -436,6 +457,7 @@ _libeep_init_processed_triggers(const char * filename, struct _libeep_entry * ob
           }
         }
         libeep_evt_delete(evt);
+        libeep_seg_delete(seg);
       }
     }
     // return if triggers were found

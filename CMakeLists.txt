@@ -33,13 +33,14 @@ endif(WIN32)
 set(Eep_sources
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libavr/avr.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libavr/avrcfg.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/evt.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/cnt.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/cntutils.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/evt.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/raw3.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/rej.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/riff64.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/riff.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/seg.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libcnt/trg.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libeep/eepio.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/libeep/eepmem.c
@@ -161,6 +162,7 @@ endif(UNIX)
 add_executable(demo_read_avr test/demo_read_avr.c)
 add_executable(demo_read_cnt test/demo_read_cnt.c)
 add_executable(demo_read_evt  test/demo_read_evt.c)
+add_executable(demo_read_seg  test/demo_read_seg.c)
 add_executable(demo_v4_read_cnt test/demo_v4_read_cnt.c)
 add_executable(demo_v4_write_cnt test/demo_v4_write_cnt.c)
 add_executable(demo_write_avr test/demo_write_avr.c)
@@ -169,6 +171,7 @@ add_executable(libeep_info test/libeep_info.c)
 target_link_libraries(demo_read_avr Eep ${MATH})
 target_link_libraries(demo_read_cnt Eep ${MATH})
 target_link_libraries(demo_read_evt Eep ${MATH})
+target_link_libraries(demo_read_seg Eep ${MATH})
 target_link_libraries(demo_v4_read_cnt Eep ${MATH})
 target_link_libraries(demo_v4_write_cnt Eep ${MATH})
 target_link_libraries(demo_write_avr Eep ${MATH})

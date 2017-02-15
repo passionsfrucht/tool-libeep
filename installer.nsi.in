@@ -1,11 +1,11 @@
 Outfile "libeep-installer.exe"
 
-InstallDir "c:\program files (x86)\libeep-3.3.177"
+InstallDir "c:\program files (x86)\libeep-3.3.178"
 
 Section
 
 SetOutPath $INSTDIR
 
-File /r "c:\program files (x86)\libeep-3.3.177\*"
+File /r "c:\program files (x86)\libeep-3.3.178\*"
 
 SectionEnd

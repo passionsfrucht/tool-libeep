@@ -35,8 +35,8 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   char         filename[256];
   cntfile_t    libeep_handle;
   const int    dimensions_1_1[] = {1, 1};
-  const int    field_names_count = 6;
-  const char * field_names[] = { "channel_count", "channels", "sample_count", "sample_rate", "trigger_count", "triggers" };
+  const int    field_names_count = 7;
+  const char * field_names[] = { "version", "channel_count", "channels", "sample_count", "sample_rate", "trigger_count", "triggers" };
   const int    channel_field_names_count = 2;
   const char * channel_field_names[] = { "label", "unit" };
   const int    trigger_field_names_count = 10;
@@ -73,10 +73,14 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
 
   // create return structure
   plhs[0] = mxCreateStructArray(2, dimensions_1_1, field_names_count, field_names);
+
+  // set version
+  mxSetField(plhs[0], 0, field_names[0], mxCreateString(libeep_get_version()));
+
   // channel_count
   mx_channel_count = mxCreateDoubleMatrix(1,1,mxREAL);
   *mxGetPr(mx_channel_count) = (double)libeep_get_channel_count(libeep_handle);
-  mxSetField(plhs[0], 0, field_names[0], mx_channel_count);
+  mxSetField(plhs[0], 0, field_names[1], mx_channel_count);
   // channels
   mx_channels = mxCreateStructMatrix(1, libeep_get_channel_count(libeep_handle), channel_field_names_count, channel_field_names);
   for(c=0;c<libeep_get_channel_count(libeep_handle);++c) {
@@ -84,19 +88,19 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
       mxSetField(mx_channels, c, "label", mxCreateString(libeep_get_channel_label(libeep_handle, c)));
       mxSetField(mx_channels, c, "unit", mxCreateString(libeep_get_channel_unit(libeep_handle, c)));
   }
-  mxSetField(plhs[0], 0, field_names[1], mx_channels);
+  mxSetField(plhs[0], 0, field_names[2], mx_channels);
   // sample_count
   mx_sample_count = mxCreateDoubleMatrix(1,1,mxREAL);
   *mxGetPr(mx_sample_count) = (double)libeep_get_sample_count(libeep_handle);
-  mxSetField(plhs[0], 0, field_names[2], mx_sample_count);
+  mxSetField(plhs[0], 0, field_names[3], mx_sample_count);
   // sample_rate
   mx_sample_rate = mxCreateDoubleMatrix(1,1,mxREAL);
   *mxGetPr(mx_sample_rate) = sample_rate;
-  mxSetField(plhs[0], 0, field_names[3], mx_sample_rate);
+  mxSetField(plhs[0], 0, field_names[4], mx_sample_rate);
   // trigger_count
   mx_trigger_count = mxCreateDoubleMatrix(1,1,mxREAL);
   *mxGetPr(mx_trigger_count) = (double)libeep_get_trigger_count(libeep_handle);
-  mxSetField(plhs[0], 0, field_names[4], mx_trigger_count);
+  mxSetField(plhs[0], 0, field_names[5], mx_trigger_count);
   // triggers
   mx_triggers = mxCreateStructMatrix(1, libeep_get_trigger_count(libeep_handle), trigger_field_names_count, trigger_field_names);
   for(t=0;t<libeep_get_trigger_count(libeep_handle);++t) {
@@ -124,7 +128,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
       mxSetField(mx_triggers, t, "code",            mxCreateDoubleScalar(trigger_extension.code));
     }
   }
-  mxSetField(plhs[0], 0, field_names[5], mx_triggers);
+  mxSetField(plhs[0], 0, field_names[6], mx_triggers);
 
   // close
   libeep_close(libeep_handle);

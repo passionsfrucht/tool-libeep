@@ -50,8 +50,8 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
   float      * libeep_sample_data;
   float      * libeep_sample_data_ptr;
   const int    dimensions_1_1[] = {1, 1};
-  const int    field_names_count = 3;
-  const char * field_names[] = { "samples", "triggers", "start_in_seconds" };
+  const int    field_names_count = 4;
+  const char * field_names[] = { "version", "samples", "triggers", "start_in_seconds" };
   const int    trigger_field_names_count = 12;
   const char * trigger_field_names[] = { "offset_in_file", "offset_in_segment", "seconds_in_file", "seconds_in_segment", "label", "duration", "type", "code", "condition", "description", "videofilename", "impedances" };
   mxArray    * mx_sample_data;
@@ -75,6 +75,9 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
 
   // create return structure
   plhs[0] = mxCreateStructArray(2, dimensions_1_1, field_names_count, field_names);
+
+  // set version
+  mxSetField(plhs[0], 0, field_names[0], mxCreateString(libeep_get_version()));
 
   // init library
   libeep_init();
@@ -104,7 +107,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
     }
   }
   libeep_free_samples(libeep_sample_data);
-  mxSetField(plhs[0], 0, field_names[0], mx_sample_data);
+  mxSetField(plhs[0], 0, field_names[1], mx_sample_data);
 
   // triggers, pass one, count triggers
   trigger_count = 0;
@@ -145,10 +148,10 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[]) {
       ++mx_trigger_count;
     }
   }
-  mxSetField(plhs[0], 0, field_names[1], mx_triggers);
+  mxSetField(plhs[0], 0, field_names[2], mx_triggers);
 
   // segment info
-  mxSetField(plhs[0], 0, field_names[2], mxCreateDoubleScalar((double)(sample1) / sample_rate));
+  mxSetField(plhs[0], 0, field_names[3], mxCreateDoubleScalar((double)(sample1) / sample_rate));
 
   // close
   libeep_close(libeep_handle);

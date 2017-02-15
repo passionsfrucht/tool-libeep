@@ -9,6 +9,7 @@ function [data] = eepv4_read(fn);
 %
 % data then contains:
 %
+% info.version          ... version of the software
 % data.samples          ... array [nchan x npnt] containing eeg data (uV)
 % data.triggers         ... array [offset_in_file, offset_in_segment, seconds_in_file, seconds_in_segment, label, duration, type, code, condition, videofilename, impedances] trigger info, where each the fields are:
 %                             offset_in_file     ... sample offset(starting at 0) of the trigger from the beginning of the file

@@ -7,6 +7,7 @@ function [info] = eepv4_read_info(fn);
 %
 % info then contains:
 %
+% info.version       ... version of the software
 % info.channel_count ... number of channels
 % info.channels      ... array [1 x channel_count] of channel labels
 % info.sample_count  ... number of samples

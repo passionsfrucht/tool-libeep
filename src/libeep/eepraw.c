@@ -361,17 +361,17 @@ int vwrite_f32(FILE *f, float *buf, int n)
 
 int vread_s32(FILE *f, sraw_t *buf, int n)
 {
-  register int j, status;
+  int i;
 
-  status = eepio_fread(buf, 4, n, f);
-  if (status != n)
-    return status;
-  
+  i = eepio_fread(buf, 4, n, f);
+  if (i != n)
+    return i;
+
 #if EEP_BYTE_ORDER == EEP_LITTLE_ENDIAN
   return n;
 #else
-  for (j = n - 1; j >= 0; j--) {
-    buf[j] = SWAP32(buf[j]);
+  for (i=0;i<n;++i) {
+    buf[i] = SWAP32(buf[i]);
   }
   return n;
 #endif

@@ -617,12 +617,12 @@ int trg_group_seek(trg_t *trg, uint64_t sample, trgcode_t  *grpv, int grpc, char
 
 int trg_clear(trg_t *trg, uint64_t sample, const char *code)
 {
-  int *trgc = &(trg->c);
+  uint64_t *trgc = &(trg->c);
   trgentry_t **trgv = &(trg->v);
-  int *trgcmax = &(trg->cmax);
+  uint64_t *trgcmax = &(trg->cmax);
 
   int r = 0;
-  int i = 0;
+  uint64_t i = 0;
 
   while (i < *trgc && (*trgv)[i].sample < sample) i++;
 

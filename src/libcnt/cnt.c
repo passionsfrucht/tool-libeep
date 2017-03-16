@@ -1078,7 +1078,8 @@ int mmap_data_chunk(FILE *f, storage_t *store)
 
 int read_chanseq_chunk(eeg_t *EEG, storage_t *store, uint64_t expected_length)
 {
-  uint64_t chanin, compchan;
+  int chanin;
+  uint64_t compchan;
 
   if(EEG->mode==CNT_RIFF) {
     RET_ON_RIFFERROR(riff_list_open(EEG->f, &store->ch_toplevel, store->fourcc, EEG->cnt), CNTERR_DATA);
@@ -2153,7 +2154,7 @@ uint64_t eep_get_samplec(eeg_t *cnt)
 
 int eep_get_samplec_full(const eeg_t *cnt, uint64_t *samplec)
 {
-	storage_t *store = NULL;
+	const storage_t * store = NULL;
 
 	if ((DATATYPE_UNDEFINED == cnt->current_datachunk) ||
 		(!cnt->store[cnt->current_datachunk].initialized))

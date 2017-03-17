@@ -624,12 +624,12 @@ int gethead_TFH(eeg_t *EEG, chunk_t* chunk, tf_header_t* tf_header)
       else if (strstr(line, "[Components]"))
     {
         fgets(line, 128, f); nread += strlen(line);
-        sscanf(line, "%i", &tf_header->componentc);
+        sscanf(line, "%" PRIu64 "", &tf_header->componentc);
       }
     else if (strstr(line, "[Unit]"))
     {
         fgets(line, 128, f); nread += strlen(line);
-        sscanf(line, "%h16s", tf_header->tf_unit);
+        sscanf(line, "%15s", tf_header->tf_unit);
       }
       else if (strstr(line, "[Basic Component Data]"))
     {
@@ -672,7 +672,7 @@ int gethead_TFH(eeg_t *EEG, chunk_t* chunk, tf_header_t* tf_header)
 /* Converts the Time/frequency header into an ASCII string */
 int writehead_TFH(tf_header_t* tf_header, var_string buf)
 {
-  int comp;
+  uint64_t comp;
   char line[100];
 
   sprintf(line, "[TimeFrequencyType]\n%s\n", tf_header->tf_type);
@@ -710,7 +710,7 @@ int writehead_TFH(tf_header_t* tf_header, var_string buf)
   sprintf(line, "[Samples]\n%" PRIu64 "\n", tf_header->samplec);
   varstr_append(buf, line);
 
-  sprintf(line, "[Components]\n%d\n", tf_header->componentc);
+  sprintf(line, "[Components]\n%" PRIu64 "\n", tf_header->componentc);
   varstr_append(buf, line);
 
   varstr_append(buf, "[Basic Component Data]\n");
@@ -3257,14 +3257,14 @@ char eep_get_patient_sex(eeg_t *cnt) {
 	if (eep_has_recording_info(cnt)) {
 		return cnt->recording_info->m_chSex;
 	}
-	return NULL;
+	return 0;
 }
 
 char eep_get_patient_handedness(eeg_t *cnt) {
 	if (eep_has_recording_info(cnt)) {
 		return cnt->recording_info->m_chHandedness;
 	}
-	return NULL;
+	return 0;
 }
 
 struct tm *eep_get_patient_day_of_birth(eeg_t *cnt) {

@@ -1,4 +1,5 @@
 // system
+#include <inttypes.h>
 #include <stdlib.h>
 // libeep
 #include <eep/eepio.h>
@@ -31,12 +32,12 @@ handle_file(const char *filename) {
    * print some info *
    *******************/
   printf("sampling rate........ %f\n", 1.0 / eep_get_period(_libeep_avr));
-  printf("number of samples.... %i\n", eep_get_samplec(_libeep_avr));
+  printf("number of samples.... %" PRIu64 "\n", eep_get_samplec(_libeep_avr));
   printf("number of channels... %i\n", eep_get_chanc(_libeep_avr));
   printf("history.............. %s\n", eep_get_history(_libeep_avr));
-  printf("pre-stim interval.... %i\n", eep_get_pre_stimulus_interval(_libeep_avr));
-  printf("trials(total)........ %i\n", eep_get_total_trials(_libeep_avr));
-  printf("trials(averaged)..... %i\n", eep_get_averaged_trials(_libeep_avr));
+  printf("pre-stim interval.... %f\n", eep_get_pre_stimulus_interval(_libeep_avr));
+  printf("trials(total)........ %li\n", eep_get_total_trials(_libeep_avr));
+  printf("trials(averaged)..... %li\n", eep_get_averaged_trials(_libeep_avr));
   printf("condition label...... %s\n", eep_get_conditionlabel(_libeep_avr));
   printf("condition color...... %s\n", eep_get_conditioncolor(_libeep_avr));
   /******************

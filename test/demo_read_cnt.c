@@ -1,4 +1,5 @@
 // system
+#include <inttypes.h>
 #include <stdlib.h>
 // libeep
 #include <eep/eepio.h>
@@ -34,7 +35,7 @@ handle_file(const char *filename) {
    * print some info *
    *******************/
   printf("sampling rate........ %f\n", 1.0 / eep_get_period(_libeep_cnt));
-  printf("number of samples.... %i\n", eep_get_samplec(_libeep_cnt));
+  printf("number of samples.... %" PRIu64 "\n", eep_get_samplec(_libeep_cnt));
   printf("number of channels... %i\n", eep_get_chanc(_libeep_cnt));
   printf("history.............. %s\n", eep_get_history(_libeep_cnt));
   /******************
@@ -53,7 +54,7 @@ handle_file(const char *filename) {
   trigger_table = eep_get_trg(_libeep_cnt);
   for(i=0;i<trg_get_c(trigger_table);i++) {
     trg_code=trg_get(trigger_table, i, &trg_offset);
-    printf("  trg(%i): %li %s\n", i, (slen_t)trg_offset, trg_code);
+    printf("  trg(%i): %" PRIu64 " %s\n", i, trg_offset, trg_code);
   }
   /****************
    * print sample *

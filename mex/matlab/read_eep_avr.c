@@ -64,7 +64,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   mxArray *psi;
   mxArray *trialc;
   mxArray *rejtrialc;
-  const int nfields = 14;
+  const int nfields = 15;
   const char *field_names[] = {
     "label",                     /* label */
     "rate",                      /* 1/(period) */
@@ -75,6 +75,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
     "xmax",                      /* xmin + samplec*period */
     "time",                      /*  */
     "data",                      /* data */
+    "variance",                  /* variance */
     "condlab",                   /* condlab */
     "condcol",                   /* condcol */
     "psi",                       /* pre-stimulus interval */
@@ -118,6 +119,8 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   data      = mxCreateDoubleMatrix(eep_get_chanc(hdr),eep_get_samplec(hdr),mxREAL);
   if(has_variance)
     variance  = mxCreateDoubleMatrix(eep_get_chanc(hdr),eep_get_samplec(hdr),mxREAL);
+  else
+    variance  = NULL;
   time      = mxCreateDoubleMatrix(1,eep_get_samplec(hdr),mxREAL);
   label     = mxCreateCellMatrix(eep_get_chanc(hdr),1);
 
@@ -150,22 +153,21 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   plhs[0] = mxCreateStructArray(2, dims, nfields, field_names);
 
   /* fill the struct array with the variables */
-  mxSetField(plhs[0], 0, "rate",      rate     );
-  mxSetField(plhs[0], 0, "npnt",      npnt     );
-  mxSetField(plhs[0], 0, "nchan",     nchan    );
-  mxSetField(plhs[0], 0, "nsweeps",   nsweeps  );
-  mxSetField(plhs[0], 0, "xmin",      xmin     );
-  mxSetField(plhs[0], 0, "xmax",      xmax     );
-  mxSetField(plhs[0], 0, "trialc",    trialc   );
-  mxSetField(plhs[0], 0, "rejtrialc", rejtrialc);
-  mxSetField(plhs[0], 0, "condlab",   condlab  );
-  mxSetField(plhs[0], 0, "condcol",   condcol  );
-  mxSetField(plhs[0], 0, "psi",       psi      );
-  mxSetField(plhs[0], 0, "data",      data     );
-  if(has_variance)
-    mxSetField(plhs[0], 0, "variance",  variance );
-  mxSetField(plhs[0], 0, "time",      time     );
-  mxSetField(plhs[0], 0, "label",     label    );
+  mxSetField(plhs[0], 0, "rate",       rate     );
+  mxSetField(plhs[0], 0, "npnt",       npnt     );
+  mxSetField(plhs[0], 0, "nchan",      nchan    );
+  mxSetField(plhs[0], 0, "nsweeps",    nsweeps  );
+  mxSetField(plhs[0], 0, "xmin",       xmin     );
+  mxSetField(plhs[0], 0, "xmax",       xmax     );
+  mxSetField(plhs[0], 0, "trialc",     trialc   );
+  mxSetField(plhs[0], 0, "rejtrialc",  rejtrialc);
+  mxSetField(plhs[0], 0, "condlab",    condlab  );
+  mxSetField(plhs[0], 0, "condcol",    condcol  );
+  mxSetField(plhs[0], 0, "psi",        psi      );
+  mxSetField(plhs[0], 0, "data",       data     );
+  mxSetField(plhs[0], 0, "variance",   variance );
+  mxSetField(plhs[0], 0, "time",       time     );
+  mxSetField(plhs[0], 0, "label",      label    );
 
   free(dat);
   if(has_variance)

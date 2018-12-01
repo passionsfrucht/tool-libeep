@@ -17,8 +17,8 @@ if(UNIX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-  configure_file(libeep.pc.in ${CMAKE_BINARY_DIR}/libeep.pc)
-  install(FILES ${CMAKE_BINARY_DIR}/libeep.pc DESTINATION lib/pkgconfig)
+  configure_file(libeep.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libeep.pc)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libeep.pc DESTINATION lib/pkgconfig)
 endif()
 if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -53,15 +53,19 @@ set(Eep_sources
 add_library(EepObjects OBJECT
   ${Eep_sources}
 )
+target_include_directories(EepObjects PRIVATE src)
+target_include_directories(EepObjects PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen/include)
+
 add_library(EepStatic STATIC
   $<TARGET_OBJECTS:EepObjects>
 )
+target_include_directories(EepStatic PUBLIC src)
+
 add_library(Eep SHARED
   $<TARGET_OBJECTS:EepObjects>
   ${Eep_def}
 )
-include_directories(src)
-include_directories(${CMAKE_BINARY_DIR}/gen/include)
+target_include_directories(Eep PUBLIC src)
 
 install(TARGETS Eep DESTINATION lib)
 
@@ -108,7 +112,6 @@ if(IS_DIRECTORY $ENV{MATLAB})
   message("Eep................. ${Eep}")
   message("MATLAB_BIN.......... ${MATLAB_BIN}")
   message("MATLAB_EXT.......... ${MATLAB_EXT}")
-  message("CMAKE_BINARY_DIR.... ${CMAKE_BINARY_DIR}")
 
   foreach(matlab_target read_eep_avr read_eep_cnt read_eep_trg write_eep_avr write_eep_cnt eepv4_version eepv4_read_info eepv4_read)
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mex/matlab/${matlab_target}.c)

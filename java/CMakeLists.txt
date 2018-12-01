@@ -6,15 +6,15 @@ if (JNI_FOUND)
   message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
   message (STATUS "Java_INCLUDE_DIRS=${Java_INCLUDE_DIRS}")
   message (STATUS "Java_LIBRARIES=${Java_LIBRARIES}")
-  include_directories(${CMAKE_BINARY_DIR}/java)
-  include_directories(${JNI_INCLUDE_DIRS})
-  add_custom_command(OUTPUT com/antneuro/libeep.class COMMAND javac ARGS -d . ${CMAKE_SOURCE_DIR}/java/libeep.java DEPENDS libeep.java WORKING_DIRECTORY)
-  add_custom_command(OUTPUT libeep-jni.h COMMAND javah ARGS -classpath ${CMAKE_BINARY_DIR}/java -o libeep-jni.h com.antneuro.libeep DEPENDS libeep.java com/antneuro/libeep.class WORKING_DIRECTORY)
+
+  add_jar(libeep SHARED com/antneuro/libeep.java)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libeep.jar DESTINATION lib)
+
+  add_custom_command(OUTPUT libeep-jni.h COMMAND javah ARGS -classpath ${CMAKE_CURRENT_SOURCE_DIR} -o libeep-jni.h com.antneuro.libeep DEPENDS com/antneuro/libeep.java WORKING_DIRECTORY)
 
   add_library(EepJNI SHARED libeep-jni.h libeep-jni.cc)
+  target_include_directories(EepJNI PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+  target_include_directories(EepJNI PRIVATE ${JNI_INCLUDE_DIRS})
   target_link_libraries(EepJNI EepStatic ${JNI_LIBRARIES})
   install(TARGETS EepJNI DESTINATION lib)
-
-  add_jar(libeep SHARED libeep.java)
-  install(FILES ${CMAKE_BINARY_DIR}/java/libeep.jar DESTINATION lib)
 endif()

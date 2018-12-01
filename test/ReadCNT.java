@@ -4,9 +4,9 @@ public class ReadCNT {
   public static void main(String[] args) {
     System.out.printf("libeep version: %s\n", com.antneuro.libeep.get_version());
     for(String filename : args) {
+      System.out.printf("data file: %s\n", filename);
       int handle=com.antneuro.libeep.read_cnt(filename);
       if(handle!=-1) {
-        System.out.printf("data file: %s\n", filename);
         System.out.printf("  zero offset: %s\n", com.antneuro.libeep.get_zero_offset(handle));
         System.out.printf("  trials total: %s\n", com.antneuro.libeep.get_trials_total(handle));
         System.out.printf("  trials averaged: %s\n", com.antneuro.libeep.get_trials_averaged(handle));

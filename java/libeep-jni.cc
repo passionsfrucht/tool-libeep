@@ -59,67 +59,50 @@ JNIEXPORT void JNICALL Java_com_antneuro_libeep_add_1recording_1info(JNIEnv *, j
   libeep_add_recording_info(handle, recording_info_handle);
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jint JNICALL Java_com_antneuro_libeep_writeCnt(JNIEnv *env, jclass, jstring filename, jint rate, jint channel_info_handle, jint rf64) {
+JNIEXPORT jint JNICALL Java_com_antneuro_libeep_write_1cnt(JNIEnv *env, jclass, jstring filename, jint rate, jint channel_info_handle, jint rf64) {
   const char *native_filename = env->GetStringUTFChars(filename, 0);
   jint rv=libeep_write_cnt(native_filename, rate, channel_info_handle, rf64);
   env->ReleaseStringUTFChars(filename, native_filename);
   return rv;
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jint JNICALL
-Java_com_antneuro_libeep_read(JNIEnv *env, jclass, jstring filename) {
+JNIEXPORT jint JNICALL Java_com_antneuro_libeep_read_1cnt (JNIEnv *env, jclass, jstring filename) {
   const char *native_filename = env->GetStringUTFChars(filename, 0);
   jint rv=libeep_read(native_filename);
   env->ReleaseStringUTFChars(filename, native_filename);
   return rv;
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jint JNICALL
-Java_com_antneuro_libeep_read_with_external_triggers(JNIEnv *env, jclass, jstring filename) {
-  const char *native_filename = env->GetStringUTFChars(filename, 0);
-  jint rv=libeep_read_with_external_triggers(native_filename);
-  env->ReleaseStringUTFChars(filename, native_filename);
-  return rv;
-}
-///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT void JNICALL
-Java_com_antneuro_libeep_close(JNIEnv *, jclass, jint handle) {
+JNIEXPORT void JNICALL Java_com_antneuro_libeep_close(JNIEnv *, jclass, jint handle) {
   return libeep_close(handle);
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jint JNICALL
-Java_com_antneuro_libeep_get_1channel_1count(JNIEnv *env, jclass, jint handle) {
+JNIEXPORT jint JNICALL Java_com_antneuro_libeep_get_1channel_1count(JNIEnv *env, jclass, jint handle) {
   return libeep_get_channel_count(handle);
   fprintf(stderr, "%s\n", __PRETTY_FUNCTION__);
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jstring JNICALL
-Java_com_antneuro_libeep_get_1channel_1label(JNIEnv *env, jclass, jint handle, jint channel_id) {
+JNIEXPORT jstring JNICALL Java_com_antneuro_libeep_get_1channel_1label(JNIEnv *env, jclass, jint handle, jint channel_id) {
   return env->NewStringUTF(libeep_get_channel_label(handle, channel_id));
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jstring JNICALL
-Java_com_antneuro_libeep_get_1channel_1unit(JNIEnv *env, jclass, jint handle, jint channel_id) {
+JNIEXPORT jstring JNICALL Java_com_antneuro_libeep_get_1channel_1unit(JNIEnv *env, jclass, jint handle, jint channel_id) {
   return env->NewStringUTF(libeep_get_channel_unit(handle, channel_id));
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jstring JNICALL
-Java_com_antneuro_libeep_get_1channel_1reference(JNIEnv *env, jclass, jint handle, jint channel_id) {
+JNIEXPORT jstring JNICALL Java_com_antneuro_libeep_get_1channel_1reference(JNIEnv *env, jclass, jint handle, jint channel_id) {
   return env->NewStringUTF(libeep_get_channel_reference(handle, channel_id));
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jfloat
-JNICALL Java_com_antneuro_libeep_get_1sample_1frequency(JNIEnv *, jclass, jint handle) {
+JNIEXPORT jfloat JNICALL Java_com_antneuro_libeep_get_1sample_1frequency(JNIEnv *, jclass, jint handle) {
   return libeep_get_sample_frequency(handle);
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jlong
-JNICALL Java_com_antneuro_libeep_get_1sample_1count(JNIEnv *, jclass, jint handle) {
+JNIEXPORT jlong JNICALL Java_com_antneuro_libeep_get_1sample_1count(JNIEnv *, jclass, jint handle) {
   return libeep_get_sample_count(handle);
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jfloatArray JNICALL
-Java_com_antneuro_libeep_get_1samples(JNIEnv *env, jclass, jint handle, jlong from, jlong to) {
+JNIEXPORT jfloatArray JNICALL Java_com_antneuro_libeep_get_1samples(JNIEnv *env, jclass, jint handle, jlong from, jlong to) {
   int n=libeep_get_channel_count(handle);
   jfloatArray result = env->NewFloatArray(n*(to-from));
   if (result == NULL) {
@@ -146,27 +129,22 @@ JNIEXPORT void JNICALL Java_com_antneuro_libeep_add_1samples(JNIEnv *env, jclass
   env->ReleaseFloatArrayElements(data, native_data, 0);
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jlong JNICALL
-Java_com_antneuro_libeep_get_1zero_1offset(JNIEnv *, jclass, jint handle) {
+JNIEXPORT jlong JNICALL Java_com_antneuro_libeep_get_1zero_1offset(JNIEnv *, jclass, jint handle) {
   return libeep_get_zero_offset(handle);
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jstring JNICALL
-Java_com_antneuro_libeep_get_1condition_1label(JNIEnv *env, jclass, jint handle) {
+JNIEXPORT jstring JNICALL Java_com_antneuro_libeep_get_1condition_1label(JNIEnv *env, jclass, jint handle) {
   return env->NewStringUTF(libeep_get_condition_label(handle));
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jstring JNICALL
-Java_com_antneuro_libeep_get_1condition_1color(JNIEnv *env, jclass, jint handle) {
+JNIEXPORT jstring JNICALL Java_com_antneuro_libeep_get_1condition_1color(JNIEnv *env, jclass, jint handle) {
   return env->NewStringUTF(libeep_get_condition_color(handle));
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jlong JNICALL
-Java_com_antneuro_libeep_get_1trials_1total(JNIEnv *, jclass, jint handle) {
+JNIEXPORT jlong JNICALL Java_com_antneuro_libeep_get_1trials_1total(JNIEnv *, jclass, jint handle) {
   return libeep_get_trials_total(handle);
 }
 ///////////////////////////////////////////////////////////////////////////////
-JNIEXPORT jlong JNICALL
-Java_com_antneuro_libeep_get_1trials_1averaged(JNIEnv *, jclass, jint handle) {
+JNIEXPORT jlong JNICALL Java_com_antneuro_libeep_get_1trials_1averaged(JNIEnv *, jclass, jint handle) {
   return libeep_get_trials_averaged(handle);
 }

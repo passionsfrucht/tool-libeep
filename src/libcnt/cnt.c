@@ -2051,6 +2051,19 @@ int eep_write_sraw (eeg_t *cnt, const sraw_t *muxbuf, uint64_t n)
           }
         }
       }
+
+      /* force a call to make_partial_output_consistent after first sample written.
+         otherwise we have to wait until the first full epoch is written, which may
+         take a second. We don't have this second when reading the CNT file in real-
+         time simultaneously */
+      if (cnt->keep_consistent) {
+          uint64_t sc;
+          eep_get_samplec_full(cnt, & sc);
+          if(sc == 1) {
+              // fprintf(stderr, "making consistent, sc=%i\n", (int)sc);
+              return make_partial_output_consistent(cnt, 0 /* No finalize */);
+          }
+      }
       return CNTERR_NONE;
 
     default:

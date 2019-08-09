@@ -1,4 +1,4 @@
-import pyeep
+from . import pyeep
 ###############################################################################
 class cnt_base:
   def __init__(self, handle):

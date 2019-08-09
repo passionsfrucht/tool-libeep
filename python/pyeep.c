@@ -337,11 +337,39 @@ static PyMethodDef methods[] = {
 };
 ///////////////////////////////////////////////////////////////////////////////
 // module initialization
-PyMODINIT_FUNC
-initpyeep(void) {
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "pyeep",
+        NULL,
+        NULL,
+        methods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+#define INITERROR return NULL
+PyMODINIT_FUNC PyInit_pyeep(void) {
+#else
+#define INITERROR return
+PyMODINIT_FUNC initpyeep(void) {
+#endif
   // init libeep
   libeep_init();
 
   // register methods
-  (void)Py_InitModule("pyeep", methods);
+#if PY_MAJOR_VERSION >= 3
+  PyObject *module = PyModule_Create(&moduledef);
+#else
+  PyObject *module = Py_InitModule("pyeep", methods);
+#endif
+
+  if (module == NULL) {
+    INITERROR;
+  }
+
+#if PY_MAJOR_VERSION >= 3
+    return module;
+#endif
 }

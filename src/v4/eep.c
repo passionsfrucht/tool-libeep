@@ -632,7 +632,7 @@ libeep_write_cnt(const char *filename, int rate, chaninfo_t channel_info_handle,
   }
   // switch writing mode
   if(eep_prepare_to_write(obj->eep, DATATYPE_EEG, rate, NULL) != CNTERR_NONE) {
-    fprintf(stderr, "could prepare file!\n");
+    fprintf(stderr, "could not prepare file!\n");
     return -1;
   }
   eep_set_keep_file_consistent(obj->eep, 1);

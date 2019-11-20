@@ -295,18 +295,20 @@ enum vt_e {
   vt_r8 = 5,
   vt_bstr = 8,
   vt_bool = 11,
+  vt_u4 = 19,
   vt_array = 0x2000,
   vt_byref = 0x4000,
 };
 struct libeep_evt_variant {
-  enum vt_e  type;
-  int16_t    i16;
-  int32_t    i32;
-  float      f;
-  float    * f_array;
-  uint32_t   f_array_size;
-  double     d;
-  char     * string;
+  enum vt_e   type;
+  int16_t     i16;
+  int32_t     i32;
+  float       f;
+  uint32_t    u32;
+  float     * f_array;
+  uint32_t    f_array_size;
+  double      d;
+  char      * string;
 };
 typedef struct libeep_evt_variant libeep_evt_variant_t;
 /*****************************************************************************/
@@ -342,6 +344,10 @@ _libeep_evt_read_variant_base(FILE *f, int indent, libeep_evt_event_t * ev, libe
         break;
       case vt_bool:
         TODO_MARKER;
+        break;
+      case vt_u4:
+        fread(&variant->u32, sizeof(uint32_t), 1, f);
+        _libeep_evt_log(evt_log_dbg, indent, "%s: i4: %i\n", __FUNCTION__, variant->i32);
         break;
       case vt_array:
         break;
@@ -385,6 +391,9 @@ _libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_event_t * ev, lib
       TODO_MARKER;
       break;
     case vt_bool:
+      TODO_MARKER;
+      break;
+    case vt_u4:
       TODO_MARKER;
       break;
     case vt_array:

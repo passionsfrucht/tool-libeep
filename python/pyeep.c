@@ -342,7 +342,7 @@ static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         "pyeep",
         NULL,
-        NULL,
+        -1,
         methods,
         NULL,
         NULL,

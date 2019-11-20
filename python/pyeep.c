@@ -220,9 +220,10 @@ pyeep_get_trigger(PyObject* self, PyObject* args) {
 
   uint64_t     sample;
   const char * trigger;
-  trigger = libeep_get_trigger(handle, index, & sample);
+  struct libeep_trigger_extension te;
+  trigger = libeep_get_trigger_with_extensions(handle, index, & sample, &te);
 
-  return Py_BuildValue("si", trigger, sample);
+  return Py_BuildValue("siisss", trigger, sample, te.duration_in_samples, te.condition, te.description, te.impedances);
 }
 ///////////////////////////////////////////////////////////////////////////////
 static

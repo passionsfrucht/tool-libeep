@@ -37,8 +37,9 @@ handle_file(const char *filename) {
   for(i=0;i<triggerc;++i) {
     const char * code;
     uint64_t     offset;
-    code = libeep_get_trigger(handle, i, & offset);
-    printf("trigger(%i, %s, %" PRIu64 ")\n", i, code, offset);
+    struct libeep_trigger_extension te;
+    code = libeep_get_trigger_with_extensions(handle, i, & offset, &te);
+    printf("trigger(%i, %s, %" PRIu64 ") [%" PRIu64 " cond: %s desc: %s: imp: %s]\n", i, code, offset, te.duration_in_samples, te.condition, te.description, te.impedances);
   }
 
   // close

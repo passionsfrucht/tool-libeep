@@ -299,7 +299,7 @@ enum vt_e {
   vt_byref = 0x4000,
 };
 struct libeep_evt_variant {
-  int16_t    type;
+  enum vt_e  type;
   int16_t    i16;
   int32_t    i32;
   float      f;
@@ -316,27 +316,37 @@ _libeep_evt_read_variant_base(FILE *f, int indent, libeep_evt_event_t * ev, libe
   if(fread(&variant->type, sizeof(int16_t), 1, f) == 1) {
     _libeep_evt_log(evt_log_dbg, indent, "%s: type: %i\n", __FUNCTION__, variant->type);
 
-    if (variant->type == vt_empty || variant->type == vt_null) {
-    } else if (variant->type == vt_i2) {
-      fread(&variant->i16, sizeof(int16_t), 1, f);
-      _libeep_evt_log(evt_log_dbg, indent, "%s: i2: %i\n", __FUNCTION__, variant->i16);
-    } else if (variant->type == vt_i4) {
-      fread(&variant->i32, sizeof(int32_t), 1, f);
-      _libeep_evt_log(evt_log_dbg, indent, "%s: i4: %i\n", __FUNCTION__, variant->i32);
-    } else if (variant->type == vt_r4) {
-      fread(&variant->f, sizeof(float), 1, f);
-      _libeep_evt_log(evt_log_dbg, indent, "%s: r4: %i\n", __FUNCTION__, variant->f);
-    } else if (variant->type == vt_r8) {
-      fread(&variant->d, sizeof(double), 1, f);
-      _libeep_evt_log(evt_log_dbg, indent, "%s: r8: %g\n", __FUNCTION__, variant->d);
-    } else if (variant->type == vt_bstr) {
-      variant->string = _libeep_evt_read_wstring(f, indent + 1);
-
-      _libeep_evt_log(evt_log_dbg, indent, "%s: wstring: %ls\n", __FUNCTION__, variant->string);
-
-    } else if (variant->type == vt_bool) {
-      TODO_MARKER;
-    } else {
+    switch(variant->type) {
+      case vt_empty:
+      case vt_null:
+        break;
+      case vt_i2:
+        fread(&variant->i16, sizeof(int16_t), 1, f);
+        _libeep_evt_log(evt_log_dbg, indent, "%s: i2: %i\n", __FUNCTION__, variant->i16);
+        break;
+      case vt_i4:
+        fread(&variant->i32, sizeof(int32_t), 1, f);
+        _libeep_evt_log(evt_log_dbg, indent, "%s: i4: %i\n", __FUNCTION__, variant->i32);
+        break;
+      case vt_r4:
+        fread(&variant->f, sizeof(float), 1, f);
+        _libeep_evt_log(evt_log_dbg, indent, "%s: r4: %i\n", __FUNCTION__, variant->f);
+        break;
+      case vt_r8:
+        fread(&variant->d, sizeof(double), 1, f);
+        _libeep_evt_log(evt_log_dbg, indent, "%s: r8: %g\n", __FUNCTION__, variant->d);
+        break;
+      case vt_bstr:
+        variant->string = _libeep_evt_read_wstring(f, indent + 1);
+        _libeep_evt_log(evt_log_dbg, indent, "%s: wstring: %ls\n", __FUNCTION__, variant->string);
+        break;
+      case vt_bool:
+        TODO_MARKER;
+        break;
+      case vt_array:
+        break;
+      case vt_byref:
+        break;
     }
   }
 }
@@ -351,22 +361,36 @@ _libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_event_t * ev, lib
 
   _libeep_evt_log(evt_log_dbg, indent, "%s: variant.type: %i\n", __FUNCTION__, variant.type);
 
-  if (variant.type == vt_i2) {
-    TODO_MARKER;
-  } else if (variant.type == vt_i4) {
-    TODO_MARKER;
-  } else if (variant.type == vt_r4) {
-    assert(outer_variant->f_array == NULL);
-    fread(&outer_variant->f_array_size, sizeof(uint32_t), 1, f);
-    _libeep_evt_log(evt_log_dbg, indent, "%s: outer_variant->f_array_size: %i\n", __FUNCTION__, outer_variant->f_array_size);
-    outer_variant->f_array=(float *)malloc(sizeof(float) * outer_variant->f_array_size);
-    fread(outer_variant->f_array, sizeof(float) * outer_variant->f_array_size, 1, f);
-  } else if (variant.type == vt_r8) {
-    TODO_MARKER;
-  } else if (variant.type == vt_bool) {
-    TODO_MARKER;
-  } else if (variant.type == vt_bstr) {
-    TODO_MARKER;
+  switch(variant.type) {
+    case vt_empty:
+    case vt_null:
+      break;
+    case vt_i2:
+      TODO_MARKER;
+      break;
+    case vt_i4:
+      TODO_MARKER;
+      break;
+    case vt_r4:
+      assert(outer_variant->f_array == NULL);
+      fread(&outer_variant->f_array_size, sizeof(uint32_t), 1, f);
+      _libeep_evt_log(evt_log_dbg, indent, "%s: outer_variant->f_array_size: %i\n", __FUNCTION__, outer_variant->f_array_size);
+      outer_variant->f_array=(float *)malloc(sizeof(float) * outer_variant->f_array_size);
+      fread(outer_variant->f_array, sizeof(float) * outer_variant->f_array_size, 1, f);
+      break;
+    case vt_r8:
+      TODO_MARKER;
+      break;
+    case vt_bstr:
+      TODO_MARKER;
+      break;
+    case vt_bool:
+      TODO_MARKER;
+      break;
+    case vt_array:
+      break;
+    case vt_byref:
+      break;
   }
 }
 /*****************************************************************************/

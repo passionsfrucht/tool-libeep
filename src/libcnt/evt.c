@@ -43,14 +43,11 @@ static
 void
 _libeep_evt_string_append_string(char ** s1, const char * s2) {
   char   * tmp;
-  size_t   len_s1;
-  size_t   len_s2;
-
-  len_s1=strlen(*s1);
-  len_s2=strlen(s2);
+  size_t   len_s1=*s1 == NULL ? 0 : strlen(*s1);
+  size_t   len_s2=s2 == NULL ? 0 : strlen(s2);
 
   tmp=(char *)malloc(len_s1 + len_s2 + 1);
-  sprintf(tmp, "%s%s", *s1, s2);
+  sprintf(tmp, "%s%s", *s1 == NULL ? "" : *s1, s2 == NULL ? "" : s2);
 
   _libeep_evt_string_delete(*s1);
 
@@ -125,7 +122,7 @@ _libeep_evt_event_list_add_back(libeep_evt_t * l, libeep_evt_event_t *n) {
  *****************************************************************************/
 static
 char *
-_libeep_evt_read_string(FILE * f, int indent) {
+_libeep_evt_read_string(FILE * f) {
   char    * rv = NULL;
   size_t    length = 0;
   uint8_t   byte = 0;
@@ -182,7 +179,7 @@ typedef struct char_pair char_pair_t;
  *****************************************************************************/
 static
 char *
-_libeep_evt_read_wstring(FILE * f, int indent) {
+_libeep_evt_read_wstring(FILE * f) {
   char    * rv;
   int32_t   length;
   int32_t   bytes;
@@ -227,7 +224,7 @@ _libeep_evt_read_class(FILE * f, int indent) {
       case 0:
         break;
       case -1: /* string */
-        rv->name = _libeep_evt_read_string(f, indent + 1);
+        rv->name = _libeep_evt_read_string(f);
         break;
       default: /* unicode */
         break;
@@ -314,7 +311,7 @@ typedef struct libeep_evt_variant libeep_evt_variant_t;
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_variant_base(FILE *f, int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * variant) {
+_libeep_evt_read_variant_base(FILE *f, int indent, libeep_evt_variant_t * variant) {
   if(fread(&variant->type, sizeof(int16_t), 1, f) == 1) {
     _libeep_evt_log(evt_log_dbg, indent, "%s: type: %i\n", __FUNCTION__, variant->type);
 
@@ -339,7 +336,7 @@ _libeep_evt_read_variant_base(FILE *f, int indent, libeep_evt_event_t * ev, libe
         _libeep_evt_log(evt_log_dbg, indent, "%s: r8: %g\n", __FUNCTION__, variant->d);
         break;
       case vt_bstr:
-        variant->string = _libeep_evt_read_wstring(f, indent + 1);
+        variant->string = _libeep_evt_read_wstring(f);
         _libeep_evt_log(evt_log_dbg, indent, "%s: wstring: %ls\n", __FUNCTION__, variant->string);
         break;
       case vt_bool:
@@ -359,11 +356,11 @@ _libeep_evt_read_variant_base(FILE *f, int indent, libeep_evt_event_t * ev, libe
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * outer_variant) {
+_libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_variant_t * outer_variant) {
   libeep_evt_variant_t variant;
   memset(&variant, 0, sizeof(libeep_evt_variant_t));
 
-  _libeep_evt_read_variant_base(f, indent + 1, ev, &variant);
+  _libeep_evt_read_variant_base(f, indent + 1, &variant);
 
   _libeep_evt_log(evt_log_dbg, indent, "%s: variant.type: %i\n", __FUNCTION__, variant.type);
 
@@ -405,8 +402,8 @@ _libeep_evt_read_variant_array(FILE *f, int indent, libeep_evt_event_t * ev, lib
 /*****************************************************************************/
 static
 void
-_libeep_evt_read_variant(FILE *f, int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * variant) {
-  _libeep_evt_read_variant_base(f, indent + 1, ev, variant);
+_libeep_evt_read_variant(FILE *f, int indent, libeep_evt_variant_t * variant) {
+  _libeep_evt_read_variant_base(f, indent + 1, variant);
 
   switch(variant->type) {
     case vt_i2:
@@ -418,7 +415,7 @@ _libeep_evt_read_variant(FILE *f, int indent, libeep_evt_event_t * ev, libeep_ev
       break;
     default:
       if( (variant->type & vt_byref) || (variant->type & vt_array) ) {
-        _libeep_evt_read_variant_array(f, indent + 1, ev, variant);
+        _libeep_evt_read_variant_array(f, indent + 1, variant);
       }
       break;
   }
@@ -426,7 +423,7 @@ _libeep_evt_read_variant(FILE *f, int indent, libeep_evt_event_t * ev, libeep_ev
 /*****************************************************************************/
 static
 void
-_libeep_evt_event_process_variant(int indent, libeep_evt_event_t * ev, libeep_evt_variant_t * variant, const char * descriptor_name, const char * descriptor_unit) {
+_libeep_evt_event_process_variant(libeep_evt_event_t * ev, libeep_evt_variant_t * variant, const char * descriptor_name) {
   if(!strcmp(descriptor_name, "EventCode")) {
     ev->code = variant->i32;
   } else if(!strcmp(descriptor_name, "Condition")) {
@@ -439,8 +436,6 @@ _libeep_evt_event_process_variant(int indent, libeep_evt_event_t * ev, libeep_ev
     }
   } else if(!strcmp(descriptor_name, "Impedance")) {
     uint32_t n;
-    ev->impedances=(char *)malloc(1);
-    ev->impedances[0] = 0;
     for(n=0;n<variant->f_array_size;++n) {
       if(n) {
         _libeep_evt_string_append_float(&ev->impedances, " %f", variant->f_array[n]);
@@ -452,7 +447,35 @@ _libeep_evt_event_process_variant(int indent, libeep_evt_event_t * ev, libeep_ev
     assert(ev->description == NULL);
     ev->description=strdup(variant->string);
   } else {
-    _libeep_evt_log(evt_log_err, indent, "%s: unhandled descriptor name: %s\n", __FUNCTION__, descriptor_name);
+    char tmp[1024];
+    switch(variant->type) {
+      case vt_empty:
+      case vt_null:
+        break;
+      case vt_i2:
+        snprintf(tmp, 1024, " %s=%d", descriptor_name, variant->i16);
+        break;
+      case vt_i4:
+        snprintf(tmp, 1024, " %s=%d", descriptor_name, variant->i32);
+        break;
+      case vt_r4:
+        snprintf(tmp, 1024, " %s=%f", descriptor_name, variant->f);
+        break;
+      case vt_r8:
+        snprintf(tmp, 1024, " %s=%f", descriptor_name, variant->d);
+        break;
+      case vt_u4:
+        snprintf(tmp, 1024, " %s=%u", descriptor_name, variant->u32);
+        break;
+      case vt_bstr:
+        snprintf(tmp, 1024, " %s=%s", descriptor_name, variant->string);
+        break;
+      case vt_array:
+      case vt_byref:
+      case vt_bool:
+      break;
+    }
+    _libeep_evt_string_append_string(&ev->condition, tmp);
   }
 }
 /*****************************************************************************/
@@ -470,15 +493,15 @@ _libeep_evt_read_epoch_descriptors(FILE *f, int indent, libeep_evt_event_t * ev)
 
       memset(&variant, 0, sizeof(libeep_evt_variant_t));
 
-      descriptor_name = _libeep_evt_read_string(f, indent + 1);
+      descriptor_name = _libeep_evt_read_string(f);
       _libeep_evt_log(evt_log_dbg, indent, "%s: descriptor_name: %s\n", __FUNCTION__, descriptor_name);
 
-      _libeep_evt_read_variant(f, indent + 1, ev, &variant);
+      _libeep_evt_read_variant(f, indent + 1, &variant);
 
-      descriptor_unit = _libeep_evt_read_string(f, indent + 1);
+      descriptor_unit = _libeep_evt_read_string(f);
       _libeep_evt_log(evt_log_dbg, indent, "%s: descriptor_unit: %s\n", __FUNCTION__, descriptor_unit);
 
-      _libeep_evt_event_process_variant(indent + 1, ev, &variant, descriptor_name, descriptor_unit);
+      _libeep_evt_event_process_variant(ev, &variant, descriptor_name);
 
       _libeep_evt_string_delete(descriptor_name);
       _libeep_evt_string_delete(descriptor_unit);
@@ -512,9 +535,9 @@ _libeep_evt_read_event(FILE * f, int indent, libeep_evt_t * e, libeep_evt_event_
     ev->guid = _libeep_evt_read_GUID(f, indent + 1);
     clss = _libeep_evt_read_class(f, indent + 1);
     libeep_evt_class_delete(clss);
-    ev->unused_name = _libeep_evt_read_string(f, indent + 1);
+    ev->unused_name = _libeep_evt_read_string(f);
     if(e->header.version >= 78) {
-      ev->unused_user_visible_name = _libeep_evt_read_string(f, indent + 1);
+      ev->unused_user_visible_name = _libeep_evt_read_string(f);
     }
     if(fread(&ev->type, sizeof(int32_t), 1, f) == 1) {
       if(fread(&ev->state, sizeof(int32_t), 1, f) == 1) {
@@ -547,8 +570,8 @@ _libeep_evt_read_channel_info(FILE * f, int indent) {
   char * channel_active;
   char * channel_reference;
 
-  channel_active = _libeep_evt_read_string(f, indent + 1);
-  channel_reference = _libeep_evt_read_string(f, indent + 1);
+  channel_active = _libeep_evt_read_string(f);
+  channel_reference = _libeep_evt_read_string(f);
 
   _libeep_evt_log(evt_log_dbg, indent, "%s: channel_active: %s\n", __FUNCTION__, channel_active);
   _libeep_evt_log(evt_log_dbg, indent, "%s: channel_reference: %s\n", __FUNCTION__, channel_reference);
@@ -577,7 +600,7 @@ _libeep_evt_read_event_marker(FILE * f, int indent, libeep_evt_t * e, libeep_evt
   _libeep_evt_read_event(f, indent + 1, e, ev);
   _libeep_evt_read_channel_info(f, indent + 1);
   assert(ev->description==NULL);
-  ev->description = _libeep_evt_read_string(f, indent + 1);
+  ev->description = _libeep_evt_read_string(f);
   if(e->header.version >= 35) {
     if(e->header.version >= 103) {
       fread(&show_amplitude, sizeof(int32_t), 1, f);
@@ -599,7 +622,7 @@ _libeep_evt_read_artefact_event(FILE * f, int indent, libeep_evt_t * e, libeep_e
   _libeep_evt_read_event(f, indent, e, ev);
   _libeep_evt_read_channel_info(f, indent + 1);
   if(e->header.version >= 174) {
-    ev->description = _libeep_evt_read_string(f, indent + 1);
+    ev->description = _libeep_evt_read_string(f);
     _libeep_evt_log(evt_log_dbg, indent, "%s: ev->description: %s\n", __FUNCTION__, ev->description);
   }
 }
@@ -676,7 +699,7 @@ _libeep_evt_read_library(FILE * f, int indent, libeep_evt_t * e) {
   uint32_t             i;
   libeep_evt_class_t * clss;
 
-  library_name = _libeep_evt_read_string(f, indent + 1);
+  library_name = _libeep_evt_read_string(f);
 
   _libeep_evt_log(evt_log_dbg, indent, "%s: library_name: %s\n", __FUNCTION__, library_name);
 

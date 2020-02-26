@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import oldeep as libeep
+import .oldeep as libeep
 
 import sys
 

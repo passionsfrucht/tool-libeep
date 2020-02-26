@@ -3,3 +3,4 @@
 build/*
 libeep/*
 *.eeg*
+libeep.egg-info/*

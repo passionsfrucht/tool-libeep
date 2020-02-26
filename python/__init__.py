@@ -110,11 +110,12 @@ class cnt_file:
 
         """
         data = []
+        sample_count = self.get_sample_count()
         with self as f:
             steps = to - fro
             if steps == 0:
                 raise IndexError("No samples selected")
-            if steps > self.get_sample_count():
+            if steps > sample_count:
                 raise IndexError("Not enough samples available")
             for step in range(0, steps):
                 sample = pyeep.get_samples(f._handle, fro + step, fro + step + 1)

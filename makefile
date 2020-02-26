@@ -6,14 +6,14 @@ python:
 	mkdir build
 	cmake -S . -B build
 	make -C build
-	mkdir eep
-	cp build/python/v3/pyeep.so eep
-	cp python/__init__.py eep
+	mkdir libeep
+	cp build/python/v3/pyeep.so libeep
+	cp python/__init__.py libeep
 
 
 .ONESHELL:
 clean:
 	git clean -fx
 	rm -rf build
-	rm -rf python/eep
+	rm -rf python/libeep
 	rm -rf python/python

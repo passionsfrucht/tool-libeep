@@ -13,7 +13,7 @@ python:
 
 .ONESHELL:
 clean:
-	git clean -fx
+	git clean -fdx
 	rm -rf build
 	rm -rf python/libeep
 	rm -rf python/python

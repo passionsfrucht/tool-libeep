@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="libeep",
-    version="0.1",
+    version="0.2",
     description="Object-oriented interface to load eego cnt files",
     url="https://github.com/translationalneurosurgery/libeep",
     author="Robert Smies",

@@ -1,3 +1,9 @@
+libeep is python package to load eego datafiles with python.
+
+# Contribution
+
+My tiny contribution stands on the shoulders of the giant Robert Smies, from whom i forked this from https://gitlab.com/smeeze/libeep/. I added instructions and automated the compilation of an installable python package, revised the API for a cleaner object-oriented approach, minimized the risk of locked files and segmentation faults, and expanded the documentation.
+
 # Installation
 
 ## Linux

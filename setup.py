@@ -8,5 +8,5 @@ setup(
     author="Robert Smies",
     packages=["libeep"],
     zip_safe=False,
-    package_data={"libeep": ["*.so"]},
+    package_data={"libeep": ["*"]},
 )

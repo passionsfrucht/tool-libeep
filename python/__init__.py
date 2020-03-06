@@ -142,8 +142,10 @@ class cnt_file:
             (markertype, sample_index, markervalue, Any, Any, Any)
         """
         tc = self.get_trigger_count()
-        if index < 0
-            raise IndexError(f"{index} is smaller zero. Only positive indices are allowed")
+        if index < 0:
+            raise IndexError(
+                f"{index} is smaller zero. Only positive indices are allowed"
+            )
 
         if index > tc or tc == 0:
             raise IndexError(f"{index} larger than trigger count of {tc}")

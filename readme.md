@@ -1,5 +1,7 @@
 libeep is python package to load eego datafiles with python.
 
+Take a look at the most recent release at https://github.com/translationalneurosurgery/libeep/releases and you might be lucky and skip the need to compile the binaries.
+
 # Contribution
 
 My tiny contribution stands on the shoulders of the giant Robert Smies, from whom i forked this from https://gitlab.com/smeeze/libeep/. I added instructions and automated the compilation of an installable python package, revised the API for a cleaner object-oriented approach, minimized the risk of locked files and segmentation faults, and expanded the documentation.
@@ -12,6 +14,7 @@ My tiny contribution stands on the shoulders of the giant Robert Smies, from who
 make clean python
 pip install -e .
 ```
+You will find a file called `pyeep.so` in `build/python/v3`. This is a python extension to load eego files.
 
 ## Windows
 
@@ -20,16 +23,15 @@ from the project root, run in bash
 ```{bash}
 mkdir build
 cmake -S . -B build
-make -C build
+cmake --build . --config Release
 ```
-
-You will find a file called `pyeep.so` in `build/python/v3`. This is a python extension to load eego files.
+You will find a set of files  in `build/python/v3/Release`. This are the python extension files required to load eego files.
 
 Create and install a python package by running
 
 ```{bash}
 mkdir libeep
-cp build/python/v3/pyeep.so libeep
+cp python/v3/Release/* libeep
 cp python/__init__.py libeep
 pip install -e .
 ```

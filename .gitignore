@@ -5,3 +5,4 @@ libeep/*
 *.eeg*
 libeep.egg-info/*
 wheel
+htmlcov/*

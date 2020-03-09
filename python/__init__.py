@@ -4,7 +4,7 @@ from pathlib import Path
 
 ###############################################################################
 class cnt_file:
-    """A cnt-file stored on your harddrive
+    """A cnt-file already  stored on your harddrive
   
     args
     ----
@@ -12,6 +12,9 @@ class cnt_file:
         the path to the filename
    
     """
+
+    def __del__(self):
+        self.close()
 
     def __init__(self, fname: str):
         self._fname = str(Path(fname).expanduser().absolute())
@@ -42,9 +45,7 @@ class cnt_file:
         if self._handle is not None:
             pyeep.close(self._handle)
             self._handle = None
-            # print(f"Closing {self._handle} for {self._fname}")
-        else:
-            raise Exception("No handle available to close a file")
+        # print(f"Closing {self._handle} for {self._fname}")
 
     def get_channel_count(self) -> int:
         "get the number of channels stored in the file"
@@ -155,44 +156,43 @@ class cnt_file:
 
 
 ###############################################################################
-class cnt_out:
-    def __del__(self):
-        if self._handle != -1:
-            pyeep.close(self._handle)
-
-    def __init__(self, fname: str, channel_count: int):
-        if not fname.endswith(".cnt"):
+class cnt_out(cnt_file):
+    def __init__(self, fname: str, rate: int, channels: List[str], rf64=0):
+        """A cnt-file for storing data on your harddrive
+  
+        args
+        ----
+        fname:str
+            the path to the filename
+        rate:
+            sampling rate in Herz
+        channels:
+            list of tuples, where tuples contains three strings:
+              channel label, channel reference and unit, i,e,:
+              ['Cz', 'ref', 'uV')]
+        rf64:
+            if 0, create default 32-bit cnt data. otherwise 64 bit(for larger tan 2GB files)
+        """
+        fname = Path(fname).expanduser().absolute()
+        if not fname.suffix == ".cnt":
             raise Exception("unsupported extension")
-        self._handle = pyeep.read(fname)
+        if fname.exists():
+            fname.unlink()
+        fname.touch()
+
+        self._fname = str(fname)
+        channels_handle = pyeep.create_channel_info()
+        for c in channels:
+            pyeep.add_channel(channels_handle, c[0], c[1], c[2])
+        self._handle = pyeep.write_cnt(self._fname, rate, channels_handle, rf64)
         if self._handle == -1:
             raise Exception("not a valid libeep handle")
 
-        self._channel_count = channel_count
+        self._channel_count = len(channels)
 
     def add_samples(self, samples):
         return pyeep.add_samples(self._handle, samples, self._channel_count)
 
+    def add_trigger(self, sample: int, marker: str):
+        return pyeep.add_trigger(self._handle, sample, marker)
 
-###############################################################################
-def write_cnt(filename, rate, channels, rf64=0):
-    """
-  create an object for writing a .cnt file.
-
-  rate -- sampling rate in Herz
-  channels -- list of tuples, where tuples contains three strings:
-              channel label, channel reference and unit, i,e,:
-              ['Cz', 'ref', 'uV')]
-  rf64 -- if 0, create default 32-bit cnt data. otherwise 64 bit(for larger tan 2GB files)
-  """
-    if not filename.endswith(".cnt"):
-        raise Exception("unsupported extension")
-
-    channels_handle = pyeep.create_channel_info()
-    for c in channels:
-        pyeep.add_channel(channels_handle, c[0], c[1], c[2])
-
-    rv = cnt_out(pyeep.write_cnt(filename, rate, channels_handle, rf64), len(channels))
-
-    pyeep.close_channel_info(channels_handle)
-
-    return rv

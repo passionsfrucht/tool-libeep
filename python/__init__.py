@@ -196,3 +196,23 @@ class cnt_out(cnt_file):
     def add_trigger(self, sample: int, marker: str):
         return pyeep.add_trigger(self._handle, sample, marker)
 
+
+def peek():
+    import sys
+    from collections import Counter
+
+    filename = sys.argv[1]
+    print(f"Peeking into {filename}:")
+    with cnt_file(filename) as f:
+        channels = []
+        for c in range(f.get_channel_count()):
+            channels.append(f.get_channel_info(c)[0])
+        print("Channels:", channels)
+        events = []
+        for t in range(f.get_trigger_count()):
+            events.append(f.get_trigger(t)[0])
+        print("Unique event names:", Counter(events), "total is ", len(events))
+        print("Sampling Rate:", f.get_sample_frequency())
+        duration = f.get_sample_count() / f.get_sample_frequency()
+        print(f"Duration: {duration:10.2f}s")
+

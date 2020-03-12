@@ -7,6 +7,7 @@ setup(
     url="https://github.com/translationalneurosurgery/libeep",
     author="Robert Smies",
     packages=["libeep"],
+    entry_points={"console_scripts": ["eep-peek=libeep.__init__:peek",],},
     zip_safe=False,
     package_data={"libeep": ["*"]},
 )

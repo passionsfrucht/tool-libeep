@@ -6,3 +6,5 @@ libeep/*
 libeep.egg-info/*
 wheel
 htmlcov/*
+.coverage
+dist/*

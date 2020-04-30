@@ -10,14 +10,16 @@ My tiny contribution stands on the shoulders of the giant Robert Smies, from who
 
 ## Linux
 
-You might need a recent cmake (tested with cmake 3.17.1) (see also [Kitwares instructions](https://apt.kitware.com/) and the `build-essential`, so maybe run first
+You might need a recent cmake (tested with cmake 3.17.1) and the `build-essential`, so maybe run first
 ```
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
 sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
 sudo apt-get update
 sudo apt-get install cmake
 sudo apt-get install build-essential
-```
+```  
+See also [Kitwares instructions](https://apt.kitware.com/) for installation of cmake. 
+Afterwards this should do the trick:
 ```
 make clean python
 pip install -e .

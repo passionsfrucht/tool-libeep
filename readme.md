@@ -28,21 +28,22 @@ You will find a file called `pyeep.so` in `build/python/v3`. This is a python ex
 
 ## Windows
 
-from the project root, run in bash
+In Windows you need Visual Studio with C++ support and CMake installed. Then, from the project root, run in the Developer Command Prompt
 
 ```{bash}
 mkdir build
 cmake -S . -B build
+cd build
 cmake --build . --config Release
 ```
 You will find a set of files  in `build/python/v3/Release`. This are the python extension files required to load eego files.
 
-Create and install a python package by running
+Create and install the python package by running from the project root
 
 ```{bash}
 mkdir libeep
-cp python/v3/Release/* libeep
-cp python/__init__.py libeep
+copy build\python\v3\Release\* libeep
+copy python\__init__.py libeep
 pip install -e .
 ```
 

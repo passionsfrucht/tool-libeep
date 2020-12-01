@@ -8,7 +8,7 @@ My tiny contribution stands on the shoulders of the giant Robert Smies, from who
 
 # Installation
 
-## Linux
+## Linux / Ubuntu
 
 You might need a recent cmake (tested with cmake 3.17.1) and the `build-essential`, so maybe run first
 ```
@@ -25,6 +25,14 @@ make clean python
 pip install -e .
 ```
 You will find a file called `pyeep.so` in `build/python/v3`. This is a python extension to load eego files.
+
+## Linux / Arch
+
+You need cmake, e.g. from the snap store (https://snapcraft.io/install/cmake/arch) and base-devel. Afterwards this should do the trick:
+```
+make clean python
+pip install -e .
+```
 
 ## Windows
 

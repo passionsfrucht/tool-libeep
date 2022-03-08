@@ -19,6 +19,7 @@ sudo apt-get install cmake
 sudo apt-get install build-essential
 ```  
 See also [Kitwares instructions](https://apt.kitware.com/) for installation of cmake. 
+You might also need wheels for Python, so run e.g. `pip install wheels`.
 Afterwards this should do the trick:
 ```
 make clean python
@@ -36,7 +37,7 @@ pip install -e .
 
 ## Windows
 
-In Windows you need Visual Studio with C++ support and CMake installed. Then, from the project root, run in the Developer Command Prompt
+In Windows you need Visual Studio with C++ support and CMake installed. You might also need wheels for Python, so run e.g. `pip install wheels`.  Then, from the project root, run in the Developer Command Prompt
 
 ```{bash}
 mkdir build

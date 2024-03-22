@@ -142,8 +142,8 @@ endif()
 ##########
 # python #
 ##########
-add_subdirectory(python/v2)
-add_subdirectory(python/v3)
+add_subdirectory(python/libeep/v2)
+add_subdirectory(python/libeep/v3)
 
 if(UNIX)
   find_library(Math m)

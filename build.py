@@ -12,5 +12,11 @@ def build(setup_kwargs: Any) -> None:
 
     # copy the resulting files to the python package
     libeep_dir = Path("./python/libeep")
-    for library_file in (build_dir /  "python/libeep/v3/").glob("pyeep*"):
-        library_file.replace(libeep_dir / library_file.name)
+    python_result_dir = build_dir /  "python/libeep/v3/"
+    # May contain weird windows directories. But the build on windows results in the files ending up
+    # in a 'Releases' folder.
+    potential_eep_files = python_result_dir.glob("**/pyeep*")
+    files_with_right_suffix = [file for file in potential_eep_files if file.suffix in [".pyd", ".so"]]
+    assert files_with_right_suffix, "Could not find the correct build result"
+    for file in files_with_right_suffix:
+        file.replace(libeep_dir / file.name)

@@ -21,3 +21,6 @@ setup.py
 
 # Compilation results
 python/libeep/pyeep.so
+
+# pycharm etc settings - disabled for now
+.idea/

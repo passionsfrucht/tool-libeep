@@ -30,3 +30,7 @@ jobs:
       - name: Build with poetry
         run: |
           poetry build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.python-version }}-${{ matrix.os }}
+          path: dist/*.whl

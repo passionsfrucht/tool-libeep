@@ -27,7 +27,6 @@ jobs:
         uses: abatilo/actions-poetry@v2
         with:
           poetry-version: ${{ matrix.poetry-version }}
-      - name: check if pip -e works
+      - name: Build with poetry
         run: |
-          poetry install
-          poetry run pip install -e .
+          poetry build

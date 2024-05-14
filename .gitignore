@@ -8,4 +8,19 @@ wheel
 htmlcov/*
 .coverage
 dist/*
-.vscode/*
+
+# Ignore lock file, it is meant to be an library
+poetry.lock
+
+# All tmp and build is meant to be ignored
+*tmp*/
+*build*/
+
+# setup.py is created by poetry
+setup.py
+
+# Compilation results
+python/libeep/pyeep.so
+
+# pycharm etc settings - disabled for now
+.idea/

@@ -74,13 +74,14 @@ install(TARGETS Eep DESTINATION lib)
 install(FILES src/v4/eep.h DESTINATION include/libeep-${LIBEEP_VERSION}/v4)
 
 ########
-# java #
+# java
+# - Disabled for now due to broken windows compilation
 ########
-if(NOT EXISTS $ENV{JAVA_HOME})
-  message("please set the environment variable JAVA_HOME to build the JNI package")
-else()
-  add_subdirectory(java)
-endif()
+# if(NOT EXISTS $ENV{JAVA_HOME})
+#   message("please set the environment variable JAVA_HOME to build the JNI package")
+# else()
+#   add_subdirectory(java)
+# endif()
 
 ##########
 # matlab #
@@ -142,8 +143,8 @@ endif()
 ##########
 # python #
 ##########
-add_subdirectory(python/v2)
-add_subdirectory(python/v3)
+add_subdirectory(python/libeep/v2)
+add_subdirectory(python/libeep/v3)
 
 if(UNIX)
   find_library(Math m)

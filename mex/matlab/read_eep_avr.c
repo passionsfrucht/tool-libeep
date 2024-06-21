@@ -172,7 +172,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   free(dat);
   if(has_variance)
     free(var);
- 
+
   /* close the data file */
   eep_free(hdr);
   eepio_fclose(fp);

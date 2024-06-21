@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import libeep
 import numpy as np
-from pathlib import Path
 import pytest
 
 
@@ -30,10 +31,10 @@ def test_channels(tmp_cnt):
     c = libeep.cnt_file(fname)
     assert c.get_channel_count() == channel_count
     for i in range(c.get_channel_count()):
-        l, r, u = c.get_channel_info(i)
-        assert l == f"Ch{i+1}"
-        assert r == "None"
-        assert u == "uV"
+        channel_label, channel_reference, channel_unit = c.get_channel_info(i)
+        assert channel_label == f"Ch{i+1}"
+        assert channel_reference == "None"
+        assert channel_unit == "uV"
 
 
 def test_sampling_rate(tmp_cnt):

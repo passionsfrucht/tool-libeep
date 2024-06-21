@@ -50,20 +50,20 @@ typedef struct {
 
   unsigned short trialc;                 /* total number of trials */
   unsigned short rejtrialc;              /* number of rejected trials */
-  int64_t        sample0;                /* index (with respect to trigger) of first sample */  
+  int64_t        sample0;                /* index (with respect to trigger) of first sample */
   uint64_t       samplec;                /* number of samples */
   float          period;                 /* sampling intervall in seconds */
 
   float          mtrialc;                /* mean of trial numbers for grand_av */
                                          /* not stored, initialized to trialc - rejtrialc during load */
-  
+
   unsigned short chanc;                  /* number of channels */
   avrchan_t      *chanv;                 /* channel info table */
-  
+
   unsigned short histc;                  /* number of entries in history */
   char          **histv;                 /* history table */
   size_t         hist_size;              /* history length in bytes */
-  
+
   short          header_size;
   short          channel_header_size;
 } avr_t;
@@ -99,7 +99,7 @@ void show_avr_history( avr_t *avr, int linelen );
 int avrnew   (avr_t *avr, FILE *f, const char *registry, const char *cmdline);
 
 /*
-  duplicate avr structure, 
+  duplicate avr structure,
   retain / discard avr-history according to last parameter
 */
 void avrcopy (avr_t *src, avr_t *dst, short retain_history);
@@ -134,7 +134,7 @@ short avr_eep_get_chan_index(avr_t *avr, char *lab, short try_first);
   chanc   = 0 requests all channels in the original order
   samplec = 0 requests all sample points
   in every case, v must point to sufficient space or to NULL
-  
+
   return: v (if v is NULL on entry, it points to the newly allocated space)
 */
 float **avr_load(avr_t *avr, FILE *f, float **v,
@@ -153,7 +153,7 @@ void avr_save(avr_t *avr, FILE *f, float **v, int band);
   return: 0 on success, 1 on read error
 */
 
-int avr_read_slice(avr_t *avr, FILE *Avr, uint64_t start, uint64_t length, 
+int avr_read_slice(avr_t *avr, FILE *Avr, uint64_t start, uint64_t length,
                     chanlab_t *chanv, short chanc, float *slice);
 
 /*

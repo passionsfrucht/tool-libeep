@@ -5,9 +5,9 @@ name: Python package
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [$default-branch]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   ci:
@@ -23,18 +23,18 @@ jobs:
         - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Run image
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: ${{ matrix.poetry-version }}
-      - name: Build with poetry
-        run: |
-          poetry build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheel-${{ matrix.python-version }}-${{ matrix.os }}
-          path: dist/*.whl
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Run image
+      uses: abatilo/actions-poetry@v2
+      with:
+        poetry-version: ${{ matrix.poetry-version }}
+    - name: Build with poetry
+      run: |
+        poetry build
+    - uses: actions/upload-artifact@v4
+      with:
+        name: wheel-${{ matrix.python-version }}-${{ matrix.os }}
+        path: dist/*.whl

@@ -1,16 +1,18 @@
-from libeep import pyeep
-from typing import List, Union, Tuple, Any
 from pathlib import Path
+from typing import Any
+
+from libeep import pyeep
+
 
 ###############################################################################
 class cnt_file:
-    """A cnt-file already  stored on your harddrive
-  
+    """A cnt file, ready to be used for reading
+
     args
     ----
     fname:str
         the path to the filename
-   
+
     """
 
     def __del__(self):
@@ -34,7 +36,7 @@ class cnt_file:
         handle = pyeep.read(self._fname)
         if handle == -1:
             self._handle = None
-            raise Exception(f"Received an invalid libeep file handle")
+            raise Exception("Received an invalid libeep file handle")
         else:
             self._handle = handle
             # print(f"Opening {self._fname} as {self._handle}")
@@ -53,7 +55,7 @@ class cnt_file:
             channel_count = pyeep.get_channel_count(f._handle)
         return channel_count
 
-    def get_channel_info(self, index: int) -> Tuple[str, str, str]:
+    def get_channel_info(self, index: int) -> tuple[str, str, str]:
         """get information about a specific channel
 
         args
@@ -88,9 +90,9 @@ class cnt_file:
             sample_count = pyeep.get_sample_count(f._handle)
         return sample_count
 
-    def get_samples(self, fro: int, to: int) -> List[List[float]]:
-        """load a range of samples from the file 
-        
+    def get_samples(self, fro: int, to: int) -> list[list[float]]:
+        """load a range of samples from the file
+
         args
         ----
         fro:int
@@ -129,7 +131,7 @@ class cnt_file:
             trigger_count = pyeep.get_trigger_count(f._handle)
         return trigger_count
 
-    def get_trigger(self, index: int) -> Tuple[str, int, int, Any, Any, Any]:
+    def get_trigger(self, index: int) -> tuple[str, int, int, Any, Any, Any]:
         """get information for a specific trigger
 
         args
@@ -157,9 +159,9 @@ class cnt_file:
 
 ###############################################################################
 class cnt_out(cnt_file):
-    def __init__(self, fname: str, rate: int, channels: List[str], rf64=0):
+    def __init__(self, fname: str, rate: int, channels: list[str], rf64=0):
         """A cnt-file for storing data on your harddrive
-  
+
         args
         ----
         fname:str

@@ -47,45 +47,45 @@ char RCS_avrcfg_c[] = "$RCSfile: avrcfg.c,v $ $Revision: 2415 $";
 /* general dos eep color definitions */
 char eepcolortbl[EEPCOLORC + 1][11] = { "",
   "BLUE", "GREEN", "CYAN", "RED",  "MAGENTA", "YELLOW", "WHITE", "BLACK",
-  "BLUE", "STEEL", "SKY",  "CYAN", "MINT",    "SEA",    "LEAVES","GREEN", 
-  "OLIVE","SIENNA","LIGHTGREEN","YELLOW","OCHRE", "APRICOT", "ORANGE", "RED", 
+  "BLUE", "STEEL", "SKY",  "CYAN", "MINT",    "SEA",    "LEAVES","GREEN",
+  "OLIVE","SIENNA","LIGHTGREEN","YELLOW","OCHRE", "APRICOT", "ORANGE", "RED",
   "CRIMSON","ROSE", "PINK", "MAGENTA", "PURPLE", "LILAC", "AUBERGINE", "PLUM",
   "UV"
 };
 
 
-char *get_x_colorstring(const char *avrcolor) 
+char *get_x_colorstring(const char *avrcolor)
 {
   /* EEP 2.0 colors patched for bright bg and converted to X names */
   static char eepxcolortbl[EEPCOLORC + 1][20] = { "rgb:0000/0000/0000",
-    "rgb:0000/0000/ffff", 
-    "rgb:0000/ffff/0000", 
-    "rgb:0000/ffff/ffff", 
-    "rgb:ffff/0000/0000", 
-    "rgb:ffff/0000/ffff", 
-    "rgb:da00/a500/2000", 
-    "rgb:7fff/7fff/7fff", 
-    "rgb:0000/0000/0000",
-    "rgb:0000/0000/ffff", 
-    "rgb:0000/0000/8b00", 
-    "rgb:6c00/a600/cd00", 
+    "rgb:0000/0000/ffff",
+    "rgb:0000/ffff/0000",
     "rgb:0000/ffff/ffff",
-    "rgb:0000/ff00/7f00", 
-    "rgb:8f00/bc00/8f00", 
+    "rgb:ffff/0000/0000",
+    "rgb:ffff/0000/ffff",
+    "rgb:da00/a500/2000",
+    "rgb:7fff/7fff/7fff",
+    "rgb:0000/0000/0000",
+    "rgb:0000/0000/ffff",
+    "rgb:0000/0000/8b00",
+    "rgb:6c00/a600/cd00",
+    "rgb:0000/ffff/ffff",
+    "rgb:0000/ff00/7f00",
+    "rgb:8f00/bc00/8f00",
     "rgb:8b00/8600/4e00",
-    "rgb:0000/ffff/0000", 
+    "rgb:0000/ffff/0000",
     "rgb:bc00/ee00/6800",
     "rgb:a000/5200/2d00",
     "rgb:4300/cd00/8000",
-    "rgb:da00/a500/2000", 
-    "rgb:ff00/8200/4700", 
-    "rgb:cd00/ad00/0000", 
+    "rgb:da00/a500/2000",
+    "rgb:ff00/8200/4700",
+    "rgb:cd00/ad00/0000",
     "rgb:ff00/8c00/0000",
-    "rgb:ffff/0000/0000", 
+    "rgb:ffff/0000/0000",
     "rgb:cd00/6600/1d00",
-    "rgb:9900/3200/cc00", 
-    "rgb:ff00/1400/9300", 
-    "rgb:ffff/0000/ffff", 
+    "rgb:9900/3200/cc00",
+    "rgb:ff00/1400/9300",
+    "rgb:ffff/0000/ffff",
     "rgb:a000/2000/f000",
     "rgb:8a00/2b00/e200",
     "rgb:6600/cd00/aa00",
@@ -98,7 +98,7 @@ char *get_x_colorstring(const char *avrcolor)
 
   /* few conversions are needed to get the color from avr ...*/
   if( avrcolor ) {
-    colnr = strchr(avrcolor, ':'); 
+    colnr = strchr(avrcolor, ':');
   }
   if( colnr ) {
     colnr++;
@@ -112,18 +112,18 @@ char *get_x_colorstring(const char *avrcolor)
 int cfg_get_eepcolor( char colorstr[11])
 {
   int i, ret;
-  
+
   i = 0;
   while ((colorstr[i] = toupper(colorstr[i]))) i++;
-  
+
   ret = -1;
   for (i = 1; i <= EEPCOLORC; i++)
     if (!strcmp(eepcolortbl[i], colorstr)) ret = i + 8;
-  
+
   if (ret == 16) ret = 15;
   if (ret > 16) ret--;
   if (ret > 40) ret = 40;
-  
+
   return ret;
 }
 
@@ -133,7 +133,7 @@ char *cfg_put_eepcolorstr(int color, char *colorstr)
     strcpy(colorstr, eepcolortbl[color - 7]);
   else
     strcpy(colorstr, eepcolortbl[color - 8]);
-  
+
   return colorstr;
 }
 
@@ -144,17 +144,17 @@ char *cfg_put_eepcolorstr(int color, char *colorstr)
   get an 2-dot separated interval given in integer msec values:
   -300 .. 1500
   +300..+1200
-  
+
   samples of interval limits BOTH included !!!
 */
 
 int cfg_get_msecint(const char *line, swin_t *win, eeg_t *src)
 {
-  
+
   int t1, t2, i;
   int r = 1;
   float period = eep_get_period(src);
-  
+
   i = sscanf(line, "%d..%d", &t1, &t2);
   if (i == 2 && t2 > t1) {
     win->start =   FRND(t1 / 1000.0 / period);
@@ -188,7 +188,7 @@ enum avrmodes {                           /* order of next three matters! */
   AVRWIN,
   AVRBASE,
   AVRBSLREJ,
-  AVRREJ,  
+  AVRREJ,
   AVRERROR
 };
 #define avrmodesc AVRERROR
@@ -201,11 +201,11 @@ avrfunc_t avrfunc[] = {                /* a parse function for each mode */
   &avrwin,
   &avrbase,
   &avrbslrej,
-  &avrrej  
-};  
+  &avrrej
+};
 
 char *avrkeyword[] = {                 /* a keyword which enters its mode */
-  ";;;",                                  
+  ";;;",
   "COND",
   ";;;",
   "CHAN",
@@ -213,33 +213,33 @@ char *avrkeyword[] = {                 /* a keyword which enters its mode */
   "BASELINE",
   "BSLREJ",
   "REJECT"
-  
+
 };
 
-/* 
+/*
   every parser functions know the cfg syntax
   and the members it have to set up
 */
 
-int avrkey(char *line, int mode, AverageParameters *p)  
+int avrkey(char *line, int mode, AverageParameters *p)
 {
   int i;
 
-  for (i = 0; i < avrmodesc; i++) {    
-    if (strstr(line, avrkeyword[i])) {	    
+  for (i = 0; i < avrmodesc; i++) {
+    if (strstr(line, avrkeyword[i])) {
       if (i == AVRBSLREJ) {
-        if (!strstr(line, "OFF")) 
-		p->isbslrejection = 1;	         
-        	
+        if (!strstr(line, "OFF"))
+		p->isbslrejection = 1;
+
       }
       else if(i == AVRREJ) {
-	if (!strstr(line, "OFF")) 
-		p->isrejection = 1;     	 
-        
+	if (!strstr(line, "OFF"))
+		p->isrejection = 1;
+
       }
-      
+
       return i;
-    }  
+    }
   }
   return AVRERROR;
 }
@@ -251,12 +251,12 @@ int avrcond(char *line, int mode, AverageParameters *p)
   char *nc, *oc, c;
   avrcondition_t *pc;
   asciiline_t  linebak;
-  
+
   /* cond section has variable length - look for end */
-  
+
   strcpy(linebak, line);
   cfg_line_norm(linebak);
-  
+
   if (((keymode = avrkey(linebak, mode, p)) != AVRERROR))
     return keymode;
 
@@ -269,14 +269,14 @@ int avrcond(char *line, int mode, AverageParameters *p)
 
   /* new code assignment */
   if ((nc = strchr(line, '='))) {
-    
+
     /* check for valid new code and save*/
     if (nc == 0 || nc[1] == '\0')         /* '=' is first or last char - error */
       return AVRERROR;
     nc++;
     strncpy(pc->code, nc, TRG_CODE_LENGTH);
     pc->code[TRG_CODE_LENGTH] = '\0';
-    
+
     /* count old codes */
     i = 0;
     occ = 0;
@@ -288,7 +288,7 @@ int avrcond(char *line, int mode, AverageParameters *p)
       }
       i++;
     } while (c != '=');
-    
+
     /* create table of old codes */
     pc->codetbl = (trgcode_t *)
       v_calloc(occ, sizeof(trgcode_t), "codetbl");
@@ -324,20 +324,20 @@ int avrcondlab(char *line, int mode, AverageParameters *p)
   int color;
   avrcondition_t *pc;
   asciiline_t linebak;
-  
+
   pc = &(p->condtbl[p->condc]);
   strcpy(linebak, line);
 
   l = strlen(linebak);
-  for (i = 0; i < l; i++) { 
+  for (i = 0; i < l; i++) {
     if (linebak[i] == '(') {
       linebak[i]= '\0';
       colorstr = &linebak[i+1];
       if (colorstr[0] == '\0')
         return AVRERROR;
-      
+
     }
-    if (linebak[i] == ')') 
+    if (linebak[i] == ')')
       linebak[i] = '\0';
   }
   if (colorstr == NULL || strlen(colorstr) == 0)
@@ -358,7 +358,7 @@ int avrchan(char *line, int mode, AverageParameters *p, eeg_t *e)
 {
   int chan;
   int chanc = eep_get_chanc(e);
-  
+
   /* valid channel label ? - note it in table*/
   for (chan = 0; chan < chanc; chan++) {
     if (!strcasecmp(eep_get_chan_label(e, chan), line)) {
@@ -371,7 +371,7 @@ int avrchan(char *line, int mode, AverageParameters *p, eeg_t *e)
       }
     }
   }
-  
+
   /* no label - maybe key ? */
   return avrkey(line, mode, p);
 }
@@ -403,13 +403,13 @@ int avrbase(char *line, int mode, AverageParameters *p, eeg_t *e)
 }
 
 int avrrej(char *line, int mode, AverageParameters *p, eeg_t *e)
-{ 
+{
   if (!strcmp(line, "STANDARD") || !strcmp(line, "STD")) {
     p->rejection.start = p->window.start;
     p->rejection.length = p->window.length;
     return AVRKEY;
   }
-  if (!cfg_get_msecint(line, &p->rejection, e)) {  
+  if (!cfg_get_msecint(line, &p->rejection, e)) {
     return AVRKEY;
   }
   else {
@@ -425,7 +425,7 @@ int avrbslrej(char *line, int mode, AverageParameters *p, eeg_t *e)
     p->bslrejection.length = p->baseline.length;
     return AVRKEY;
   }
-  if (!cfg_get_msecint(line, &p->bslrejection, e)) {	  	  	  
+  if (!cfg_get_msecint(line, &p->bslrejection, e)) {
     return AVRKEY;
   }
   else {
@@ -441,80 +441,80 @@ int avrrefdisp(char *line, AverageParameters *p)
 {
   short val;
   char *valstr = strchr(line, ':');
-  
+
   if (!valstr || !*(valstr+1))
     return AVRERROR;
-  
+
   if (!sscanf(valstr + 1, "%hd", &val))
     return AVRERROR;
-  
+
   if (val == 0)
     return AVRERROR;
-  
+
   p->refdisp = val;
   return AVRKEY;
 }
-  
+
 int avrreftrg(char *line, AverageParameters *p)
 {
   int i;
   size_t eaten;
   char *valstr = strchr(line, ':');
-  
-  
+
+
   if (p->refdisp == 0)
     return AVRERROR;
-  
+
   if (!valstr || !*(valstr+1))
     return AVRERROR;
-  else valstr++;  /* skip ':' */ 
+  else valstr++;  /* skip ':' */
 
   if (p->condc <= 0)
     return AVRERROR;
   p->reftrgv = (trgcode_t *) v_malloc(p->condc * sizeof(trgcode_t), "reftrg");
-  
+
   valstr += strspn(valstr," \t"); /* skip any leading spaces or tabs */
   i = -1;
-  while (*valstr != '\n' && *valstr != '\0' && *valstr != ';' 
+  while (*valstr != '\n' && *valstr != '\0' && *valstr != ';'
         && i < p->condc) {
-    if (*valstr==',') 
-      return AVRERROR;        /* reject leading or multiple comma */         
-    eaten = strcspn(valstr, ", \t\n"); 
-    if (eaten == 0) 
-      return AVRERROR;       
+    if (*valstr==',')
+      return AVRERROR;        /* reject leading or multiple comma */
+    eaten = strcspn(valstr, ", \t\n");
+    if (eaten == 0)
+      return AVRERROR;
     p->reftrgv[++i][0] = '\0';
-    strncpy(p->reftrgv[i],valstr,eaten);   
+    strncpy(p->reftrgv[i],valstr,eaten);
     p->reftrgv[i][eaten]='\0';
   /*  for test only
     printf("i: %d, reftrg: %-8s (eaten: %d)\n", i, p->reftrgv[i],eaten);
-  */  
+  */
     valstr += eaten;
     valstr += strspn(valstr, " \t");  /* skip spaces and tabs */
-    if (*valstr == ',') 
+    if (*valstr == ',')
       valstr += 1 + strspn(valstr + 1, " \t"); /* skip a single comma and the following spaces or tabs */
   }
-  if (i == 0) {   
+  if (i == 0) {
     for (i = 1; i < p->condc; i++)
-      strcpy(p->reftrgv[i],p->reftrgv[0]);  
+      strcpy(p->reftrgv[i],p->reftrgv[0]);
   }
   if (i == -1) return AVRERROR;
-  
+
   return AVRKEY;
 }
 
 
-/* initialize avr configuraion with safe values, 
+/* initialize avr configuraion with safe values,
    alloc memory for the channel table, abort program if allocation failes */
-void InitAverageParameters( eeg_t *EEG_p, AverageParameters *p ) {	
-  	
+void InitAverageParameters( eeg_t *EEG_p, AverageParameters *p ) {
+
   p->condc = 0;
   p->condtbl = NULL;
   p->chanc = 0;
-  p->chantbl = (short *) 
-    v_calloc(eep_get_chanc(EEG_p), sizeof(short *), "chantbl"); 
-  /* if v_calloc failes, eeperror will be called automatically 
-     the program will be aborted 
-     -> no pointer check needed here */   
+  p->chantbl = (short *)
+    v_calloc(eep_get_chanc(EEG_p), sizeof(short *), "chantbl");
+  /* if v_calloc failes, eeperror will be called automatically
+     the program will be aborted
+     -> no pointer check needed here */
   p->iswindow = 0;
   p->window.start = 0; p->window.length = 0;
   p->isbaseline = 0;
@@ -523,10 +523,10 @@ void InitAverageParameters( eeg_t *EEG_p, AverageParameters *p ) {
   p->rejection.start = 0; p->rejection.length = 0;
   p->isbslrejection = 0;
   p->bslrejection.start = 0; p->bslrejection.length = 0;
-  
+
   p->refdisp = 0;
   p->reftrgv = NULL;
-  
+
 }
 
 
@@ -537,11 +537,11 @@ int ReadAverageParameters(FILE *Cfg, eeg_t *EEG_p, AverageParameters *p)
   int linenr = 0;
   int mode = AVRKEY;
   asciiline_t line, linebak, debug;
-  
+
   /* init config items with defaults */
   InitAverageParameters(EEG_p, p);
 
-  
+
   /* scan cfg file */
   do {
     if (mode == AVRERROR) {
@@ -553,7 +553,7 @@ int ReadAverageParameters(FILE *Cfg, eeg_t *EEG_p, AverageParameters *p)
       asciiread(Cfg, line);
       linenr++;
       if (!feof(Cfg)) {
-        
+
         /* there are elements we have to handle in a totally different way :-( */
         c = 0;
         while(line[c]) {
@@ -599,17 +599,17 @@ int ReadAverageParameters(FILE *Cfg, eeg_t *EEG_p, AverageParameters *p)
       p->chantbl[i] = i;
   }
 
-  
+
   if( !p->isbaseline && p->isbslrejection ) {
-	  eepstatus("baseline window required for bsl rejection mode!\n"); 
+	  eepstatus("baseline window required for bsl rejection mode!\n");
           return linenr;
-  }	   
-  
+  }
+
   return 0;
 }
 
 int check_reject_window_settings(AverageParameters p)
-{  
+{
    slen_t wstart = p.window.start;
    slen_t wstop  = p.window.start + p.window.length;
    slen_t rstart = p.rejection.start;
@@ -617,21 +617,21 @@ int check_reject_window_settings(AverageParameters p)
    int status = 0;
 
    if(!p.isbaseline) {
-     /* check settings for averaging trial rejection search */  
-     if ( (rstart > wstart) || (rstop < wstop) ) {     
+     /* check settings for averaging trial rejection search */
+     if ( (rstart > wstart) || (rstop < wstop) ) {
          eeplog("####Warning: averaging window exceeds rejection window!\n");
-	 status = 1;       
-      }         
+	 status = 1;
+      }
       return status;
-    } 
+    }
     else {
-     
+
       slen_t bstart =  p.isbaseline ? p.baseline.start : 0;
       slen_t bstop  =  p.isbaseline ? p.baseline.start + p.baseline.length : 0;
       slen_t brstart = p.isbslrejection ? p.bslrejection.start : 0;
       slen_t brstop  = p.isbslrejection ? p.bslrejection.start + p.bslrejection.length : 0;
-           
-     if (p.refdisp == 0) { /* without reference displacement */               
+
+     if (p.refdisp == 0) { /* without reference displacement */
        /* do rejection windows overlap? */
        if ( rstart < brstop )
          rstart = (rstart > brstart ? brstart : rstart);
@@ -644,7 +644,7 @@ int check_reject_window_settings(AverageParameters p)
 	   eeplog("####Warning: averaging window exceeds rejection window!\n");
 	   status = 1;
 	}
-       /* check settings for baseline rejection search */	     	   
+       /* check settings for baseline rejection search */
        if ( ( (brstart > bstart) || (brstop < bstop) )
          && ( (rstart > bstart)  || (rstop < bstop)  )
           ) {
@@ -652,386 +652,386 @@ int check_reject_window_settings(AverageParameters p)
             status = 1;
 	}
 	return status;
-      } 
-      else { /* with reference displacement */ 
+      }
+      else { /* with reference displacement */
         /* check settings for avr-window rejection search */
 	if (!p.isrejection ) {
 	  eeplog("####Warning: no rejection check in averaging window!\n");
-	  status = 1; 
+	  status = 1;
 	 }
 	 else if ( (rstart > wstart) || (rstop < wstop) ) {
 	   eeplog("####Warning: averaging window exceeds rejection window!\n");
-	   status = 1; 
-	  } 
-	/* check settings for baseline rejection search */          
+	   status = 1;
+	  }
+	/* check settings for baseline rejection search */
 	if ( !p.isbslrejection ) {
 	  eeplog("####Warning: no baseline rejection check!\n");
 	  status = 1;
 	  return status;
-	 } 
-        if ( (brstart > bstart) || (brstop < bstop) ) {    		  
-	  eeplog("####Warning: baseline  window exceeds bsl rejection window!\n"); 
-	  status = 1; 
+	 }
+        if ( (brstart > bstart) || (brstop < bstop) ) {
+	  eeplog("####Warning: baseline  window exceeds bsl rejection window!\n");
+	  status = 1;
 	 }
         return status;
-      }	   
+      }
     }
-        
- }   	    
+
+ }
 
 
 char *strGetConditionTriggers( AverageParameters *cfg, short condI ) {
 	avrcondition_t avrCond = (*cfg).condtbl[condI];
-	char *condTriggers = v_strnew(avrCond.codetbl[0],1); 
+	char *condTriggers = v_strnew(avrCond.codetbl[0],1);
 	int i;
-	
-	for(i=1; i < avrCond.codec; i++) 
+
+	for(i=1; i < avrCond.codec; i++)
 	 condTriggers = v_strcat(strcat(condTriggers, " "), avrCond.codetbl[i],1);
-	
+
 	return condTriggers;
-}	
-     
- 
+}
+
+
 char *strGetReferenceTrigger( AverageParameters *cfg, short condI ) {
 	if( (*cfg).reftrgv ) {
-	    char *refTriggers = ((*cfg).refdisp) > 0 ? 
+	    char *refTriggers = ((*cfg).refdisp) > 0 ?
 		v_strnew("(next) ", TRG_CODE_LENGTH) : v_strnew("(previous) ", TRG_CODE_LENGTH);
-			      
+
 	    strcat(refTriggers, (*cfg).reftrgv[condI]);
-	    
+
 	    return refTriggers;
-         }  	
-	 
+         }
+
 	 if( (*cfg).refdisp ) {
 	    char *refTriggers = v_strnew("", 10);
-	    
-	    sprintf(refTriggers, "(%+d)", (*cfg).refdisp); 
-	    
+
+	    sprintf(refTriggers, "(%+d)", (*cfg).refdisp);
+
 	    return refTriggers;
           }
-	 
-	  /* reference undisplaced refTriggers = condTriggers 
+
+	  /* reference undisplaced refTriggers = condTriggers
 	     maybe we should return condTriggers here ??? */
 	 return NULL;
-	    	 
+
 }
 
 char *strGetAllReferenceTriggers( AverageParameters *cfg ) {
      if( (*cfg).reftrgv ) {
-	    int condI; 
-	    char *refTriggers = ((*cfg).refdisp) > 0 ? 
+	    int condI;
+	    char *refTriggers = ((*cfg).refdisp) > 0 ?
 		v_strnew("(next)", 1) : v_strnew("(previous)", 1);
-	    
-	    for(condI=0; condI < (*cfg).condc; condI++) {		      
-	      refTriggers = 
+
+	    for(condI=0; condI < (*cfg).condc; condI++) {
+	      refTriggers =
 	        v_strcat(strcat(refTriggers," "), (*cfg).reftrgv[condI],1);
              }
-	     
+
 	    return refTriggers;
-         }  	
-	 
+         }
+
 	 if( (*cfg).refdisp ) {
 	    char *refTriggers = v_strnew("", 10);
-	    
-	    sprintf(refTriggers, "(%+d)", (*cfg).refdisp); 
-	    
+
+	    sprintf(refTriggers, "(%+d)", (*cfg).refdisp);
+
 	    return refTriggers;
           }
-	 
-	  /* reference undisplaced refTriggers = condTriggers 
+
+	  /* reference undisplaced refTriggers = condTriggers
 	     maybe we should return condTriggers here ??? */
 	 return NULL;
-	    	 
+
 }
 
-	
+
 
 char *strGetAverageWindow( eeg_t *eeg, AverageParameters *cfg ) {
 	double period = eep_get_period(eeg) * 1000;
 	char *avrWindow = v_strnew("",80);
-	
+
 	sprintf(avrWindow, "%g..%g", (*cfg).window.start * period,
 	      ((*cfg).window.start + (*cfg).window.length - 1) *period );
 	return avrWindow;
 }
 
 char *strGetBaselineWindow( eeg_t *eeg, AverageParameters *cfg ) {
-    if( (*cfg).isbaseline && ((*cfg).baseline.length > 0) ) {	
-	
+    if( (*cfg).isbaseline && ((*cfg).baseline.length > 0) ) {
+
 	double period = eep_get_period(eeg) * 1000;
 	char *bslWindow = v_strnew("",80);
-	
+
 	sprintf(bslWindow, "%g..%g", (*cfg).baseline.start * period,
 	      ((*cfg).baseline.start + (*cfg).baseline.length - 1) *period );
 	return bslWindow;
     }
-    
-    return NULL;	
+
+    return NULL;
 }
-	 			
+
 char *strGetRejectionWindow( eeg_t *eeg, AverageParameters *cfg ) {
-     if( (*cfg).isrejection && ((*cfg).rejection.length > 0)) {	
+     if( (*cfg).isrejection && ((*cfg).rejection.length > 0)) {
 	double period = eep_get_period(eeg) * 1000;
 	char *rejWindow = v_strnew("",80);
-	
+
 	sprintf(rejWindow, "%g..%g", (*cfg).rejection.start * period,
 	      ((*cfg).rejection.start + (*cfg).rejection.length - 1) *period );
 	return rejWindow;
       }
-      
-      return NULL;	
+
+      return NULL;
 }
 
 char *strGetBslRejectionWindow( eeg_t *eeg, AverageParameters *cfg ) {
-     if( (*cfg).isbaseline && (*cfg).isbslrejection && ((*cfg).bslrejection.length > 0) ) {	
+     if( (*cfg).isbaseline && (*cfg).isbslrejection && ((*cfg).bslrejection.length > 0) ) {
 	double period = eep_get_period(eeg) * 1000;
 	char *bslrejWindow = v_strnew("",80);
-	
+
 	sprintf(bslrejWindow, "%g..%g", (*cfg).bslrejection.start * period,
 	      ((*cfg).bslrejection.start + (*cfg).bslrejection.length - 1) *period );
 	return bslrejWindow;
       }
-      
-      return NULL;	
-}				
+
+      return NULL;
+}
 
 void ShowAverageParameters(AverageParameters p, eeg_t *src, short mode)
-{  
-  int i, j; 
+{
+  int i, j;
   int chan;
   char *codestr;
-  int color;   
-  char colorstr[11]; 
-  char code[sizeof(trgcode_t)]; 
-  avrcondition_t *pc; 
+  int color;
+  char colorstr[11];
+  char code[sizeof(trgcode_t)];
+  avrcondition_t *pc;
   char refstr[] = "\n    relative to bsl reference trigger";
   char *tmp;
   char messbuf[2048];
-                     
+
   short ignore_rejection = mode & 0x000f;
   short ignore_avrwindow = mode & 0x00f0;
-  
-  if (!p.refdisp) 
-    refstr[0] = '\0';     
-                                    
+
+  if (!p.refdisp)
+    refstr[0] = '\0';
+
   if (!p.condc)
     eeperror("no conditions specified!\n");
-  if (!p.chanc) 
-    eeperror("no channels specified!\n"); 
-  if (!ignore_avrwindow && !p.iswindow) 
-    eeperror("averaging window required!\n"); 
-  /*                                         
-  if (!p.isbaseline) 
+  if (!p.chanc)
+    eeperror("no channels specified!\n");
+  if (!ignore_avrwindow && !p.iswindow)
+    eeperror("averaging window required!\n");
+  /*
+  if (!p.isbaseline)
     eeperror("baseline window required!\n");
-  */                                       
-                                                                                 
+  */
+
   eeplog("trial definitions:\n");
-  eeplog(" conditions:\n"); 
-  for (i = 0; i < p.condc; i++) {   
+  eeplog(" conditions:\n");
+  for (i = 0; i < p.condc; i++) {
     pc = &(p.condtbl)[i];
-    codestr = (char *) 
-      v_malloc( pc->codec * sizeof(trgcode_t) + 1, "codestr");  
-    strcpy(codestr, ""); 
-    for (j = 0; j < pc->codec; j++) {   
-      sprintf(code, "%s ", pc->codetbl[j]); 
-      strcat(codestr, code); 
-    }                       
+    codestr = (char *)
+      v_malloc( pc->codec * sizeof(trgcode_t) + 1, "codestr");
+    strcpy(codestr, "");
+    for (j = 0; j < pc->codec; j++) {
+      sprintf(code, "%s ", pc->codetbl[j]);
+      strcat(codestr, code);
+    }
     sscanf(pc->col + 6, "%d", &color);
     sprintf(messbuf, "  %-10s %s= %2s   (%s)\n",
-      pc->lab, 
-      codestr, 
+      pc->lab,
+      codestr,
       pc->code,
-      cfg_put_eepcolorstr(color, colorstr)); 
+      cfg_put_eepcolorstr(color, colorstr));
     eeplog(messbuf);
-    v_free(codestr); 
-  } 
-                
-  eeplog(" channels:\n  ");  
-  if (p.chanc == eep_get_chanc(src)) { 
+    v_free(codestr);
+  }
+
+  eeplog(" channels:\n  ");
+  if (p.chanc == eep_get_chanc(src)) {
     sprintf(messbuf, "all channels (%d)\n", p.chanc);
     eeplog(messbuf);
   }
-  else {  
-    for (i = 0; i < p.chanc; i++) {  
-      chan = p.chantbl[i];  
-      sprintf(messbuf, "%s ", eep_get_chan_label(src, chan));  
-      eeplog(messbuf); 
-    } 
-    eeplog("\n");  
+  else {
+    for (i = 0; i < p.chanc; i++) {
+      chan = p.chantbl[i];
+      sprintf(messbuf, "%s ", eep_get_chan_label(src, chan));
+      eeplog(messbuf);
+    }
+    eeplog("\n");
   }
-  
+
   eeplog(" windows:\n");
   if(!ignore_avrwindow) {
     sprintf(messbuf, "  averaging window:  (ms) %s\n",
           tmp = strGetAverageWindow( src, &p ) );
-    v_free(tmp);		      
-    eeplog(messbuf);  
-   }  
-                    
+    v_free(tmp);
+    eeplog(messbuf);
+   }
+
   if (p.isbaseline) {
     sprintf(messbuf, "  baseline window:   (ms) %s\n",
 	tmp=strGetBaselineWindow( src, &p ) );
-    v_free(tmp);	          
-    eeplog(messbuf); 
+    v_free(tmp);
+    eeplog(messbuf);
     if (p.refdisp) {
-      if (!p.reftrgv) {  
-        sprintf(messbuf, "    relative to trigger %+d\n", p.refdisp); 
+      if (!p.reftrgv) {
+        sprintf(messbuf, "    relative to trigger %+d\n", p.refdisp);
         eeplog(messbuf);
-      } 
-      else {          
-	eeplog("    relative to (one code for each condition)\n      "); 
-	eeplog(tmp=strGetAllReferenceTriggers( &p )); 
-	v_free(tmp);	
-        eeplog("\n");  
       }
-    }  
-  }
-  else {
-    eeplog("  no baseline calculation\n");
-  }
-  
-  if ((p.isrejection || p.isbslrejection) && !ignore_rejection) { 
-    if(p.rejection.length > 0) {
-      eeplog("  rejection window:  (ms) %s\n",
-	 tmp=strGetRejectionWindow( src, &p ) );
-      v_free(tmp);	            
-     }   
-    if(p.isbaseline && p.isbslrejection) {
-      eeplog("  bsl reject window: (ms) %s %s\n",
-	 tmp=strGetBslRejectionWindow( src, &p ), refstr );
-      v_free(tmp);	               
-     }
-    if(!ignore_avrwindow) { 	
-      if (check_reject_window_settings(p)) 
-        eeplog("####Check settings in the configuration file!\n"); 
-    }     
-  }
-  else {
-   if( !ignore_rejection )	  
-    eeplog("####Warning:  no rejection check!\n");  
-  } 
-} 
-			  
-#ifdef OLDSHOW 
-void ShowAverageParameters(AverageParameters p, eeg_t *src)
-{  
-  int i, j; 
-  int chan;
-  char *codestr;
-  int color;   
-  char colorstr[11]; 
-  char code[4]; 
-  avrcondition_t *pc; 
-  char refstr[] = "(relative to bsl reference trigger)";
-                     
-  float period = eep_get_period(src);
-  
-  if (!p.refdisp) 
-    refstr[0] = '\0';     
-                                    
-  if (!p.condc)
-    eeperror("no conditions specified!\n");
-  if (!p.chanc) 
-    eeperror("no channels specified!\n"); 
-  if (!p.iswindow) 
-    eeperror("averaging window required!\n"); 
-  /*                                         
-  if (!p.isbaseline) 
-    eeperror("baseline window required!\n");
-  */                                       
-                                                                                 
-  eeplog("average parameters:\n");
-  eeplog(" conditions:\n"); 
-  for (i = 0; i < p.condc; i++) {   
-    pc = &(p.condtbl)[i];
-    codestr = (char *) 
-      v_malloc( pc->codec * sizeof(trgcode_t) + 1, "codestr");  
-    strcpy(codestr, ""); 
-    for (j = 0; j < pc->codec; j++) {   
-      sprintf(code, "%s ", pc->codetbl[j]); 
-      strcat(codestr, code); 
-    }                       
-    sscanf(pc->col + 6, "%d", &color);
-    sprintf(messbuf, "  %-10s %s= %2s   (%s)\n",
-      pc->lab, 
-      codestr, 
-      pc->code,
-      cfg_put_eepcolorstr(color, colorstr)); 
-    eeplog(messbuf);
-    v_free(codestr); 
-  } 
-                
-  eeplog(" channels:\n  ");  
-  if (p.chanc == eep_get_chanc(src)) { 
-    sprintf(messbuf, "all channels (%d)\n", p.chanc);
-    eeplog(messbuf);
-  }
-  else {  
-    for (i = 0; i < p.chanc; i++) {  
-      chan = p.chantbl[i];  
-      sprintf(messbuf, "%s ", eep_get_chan_label(src, chan));  
-      eeplog(messbuf); 
-    } 
-    eeplog("\n");  
-  }
-  
-  eeplog(" windows:\n");
-  sprintf(messbuf, "  averaging window:  (ms) %.0f..%.0f\n",
-    p.window.start * period * 1000.0,
-    (p.window.start + p.window.length - 1) * period * 1000.0  
-  );
-  eeplog(messbuf);  
-                    
-  if (p.isbaseline) {
-    sprintf(messbuf, "  baseline window:   (ms) %.0f..%.0f\n",
-      p.baseline.start * period * 1000.0,
-      (p.baseline.start + p.baseline.length - 1) * period * 1000.0 
-    ); 
-    eeplog(messbuf); 
-    if (p.refdisp) {
-      if (!p.reftrgv) {  
-        sprintf(messbuf, "    relative to trigger %+d\n", p.refdisp); 
-        eeplog(messbuf);
-      } 
-      else {  
-        if (p.refdisp > 0) {  
-          eeplog("    relative to next (one code for each condition)\n      ");
-        } 
-        else { 
-          eeplog("    relative to previous (one code for each condition)\n      "); 
-        }
-        for (i = 0; i < p.condc; i++) { 
-          sprintf(messbuf, "%s ", p.reftrgv[i]); 
-          eeplog(messbuf);
-        }
-        eeplog("\n");  
+      else {
+	eeplog("    relative to (one code for each condition)\n      ");
+	eeplog(tmp=strGetAllReferenceTriggers( &p ));
+	v_free(tmp);
+        eeplog("\n");
       }
     }
   }
   else {
     eeplog("  no baseline calculation\n");
   }
-  
-  if (p.isrejection) { 
+
+  if ((p.isrejection || p.isbslrejection) && !ignore_rejection) {
+    if(p.rejection.length > 0) {
+      eeplog("  rejection window:  (ms) %s\n",
+	 tmp=strGetRejectionWindow( src, &p ) );
+      v_free(tmp);
+     }
+    if(p.isbaseline && p.isbslrejection) {
+      eeplog("  bsl reject window: (ms) %s %s\n",
+	 tmp=strGetBslRejectionWindow( src, &p ), refstr );
+      v_free(tmp);
+     }
+    if(!ignore_avrwindow) {
+      if (check_reject_window_settings(p))
+        eeplog("####Check settings in the configuration file!\n");
+    }
+  }
+  else {
+   if( !ignore_rejection )
+    eeplog("####Warning:  no rejection check!\n");
+  }
+}
+
+#ifdef OLDSHOW
+void ShowAverageParameters(AverageParameters p, eeg_t *src)
+{
+  int i, j;
+  int chan;
+  char *codestr;
+  int color;
+  char colorstr[11];
+  char code[4];
+  avrcondition_t *pc;
+  char refstr[] = "(relative to bsl reference trigger)";
+
+  float period = eep_get_period(src);
+
+  if (!p.refdisp)
+    refstr[0] = '\0';
+
+  if (!p.condc)
+    eeperror("no conditions specified!\n");
+  if (!p.chanc)
+    eeperror("no channels specified!\n");
+  if (!p.iswindow)
+    eeperror("averaging window required!\n");
+  /*
+  if (!p.isbaseline)
+    eeperror("baseline window required!\n");
+  */
+
+  eeplog("average parameters:\n");
+  eeplog(" conditions:\n");
+  for (i = 0; i < p.condc; i++) {
+    pc = &(p.condtbl)[i];
+    codestr = (char *)
+      v_malloc( pc->codec * sizeof(trgcode_t) + 1, "codestr");
+    strcpy(codestr, "");
+    for (j = 0; j < pc->codec; j++) {
+      sprintf(code, "%s ", pc->codetbl[j]);
+      strcat(codestr, code);
+    }
+    sscanf(pc->col + 6, "%d", &color);
+    sprintf(messbuf, "  %-10s %s= %2s   (%s)\n",
+      pc->lab,
+      codestr,
+      pc->code,
+      cfg_put_eepcolorstr(color, colorstr));
+    eeplog(messbuf);
+    v_free(codestr);
+  }
+
+  eeplog(" channels:\n  ");
+  if (p.chanc == eep_get_chanc(src)) {
+    sprintf(messbuf, "all channels (%d)\n", p.chanc);
+    eeplog(messbuf);
+  }
+  else {
+    for (i = 0; i < p.chanc; i++) {
+      chan = p.chantbl[i];
+      sprintf(messbuf, "%s ", eep_get_chan_label(src, chan));
+      eeplog(messbuf);
+    }
+    eeplog("\n");
+  }
+
+  eeplog(" windows:\n");
+  sprintf(messbuf, "  averaging window:  (ms) %.0f..%.0f\n",
+    p.window.start * period * 1000.0,
+    (p.window.start + p.window.length - 1) * period * 1000.0
+  );
+  eeplog(messbuf);
+
+  if (p.isbaseline) {
+    sprintf(messbuf, "  baseline window:   (ms) %.0f..%.0f\n",
+      p.baseline.start * period * 1000.0,
+      (p.baseline.start + p.baseline.length - 1) * period * 1000.0
+    );
+    eeplog(messbuf);
+    if (p.refdisp) {
+      if (!p.reftrgv) {
+        sprintf(messbuf, "    relative to trigger %+d\n", p.refdisp);
+        eeplog(messbuf);
+      }
+      else {
+        if (p.refdisp > 0) {
+          eeplog("    relative to next (one code for each condition)\n      ");
+        }
+        else {
+          eeplog("    relative to previous (one code for each condition)\n      ");
+        }
+        for (i = 0; i < p.condc; i++) {
+          sprintf(messbuf, "%s ", p.reftrgv[i]);
+          eeplog(messbuf);
+        }
+        eeplog("\n");
+      }
+    }
+  }
+  else {
+    eeplog("  no baseline calculation\n");
+  }
+
+  if (p.isrejection) {
     if(p.rejection.length > 0) {
       eeplog("  rejection window:  (ms) %.0f..%.0f\n",
-      p.rejection.start * period * 1000.0, 
-      (p.rejection.start + p.rejection.length - 1) * period * 1000.0); 
-     } 
+      p.rejection.start * period * 1000.0,
+      (p.rejection.start + p.rejection.length - 1) * period * 1000.0);
+     }
     if(p.isbaseline && p.isbslrejection) {
       eeplog("  bsl reject window: (ms) %.0f..%.0f %s\n",
          p.bslrejection.start * period * 1000.0,
 	 (p.bslrejection.start + p.bslrejection.length - 1) * period * 1000.0,
 	 refstr);
-     }	
+     }
     if (check_reject_window_settings(p)) {
-      eeplog("####Check settings in the configuration file!\n"); 
-    }     
+      eeplog("####Check settings in the configuration file!\n");
+    }
   }
   else {
-    eeplog("####Warning:  no rejection check!\n");  
-  } 
-} 
+    eeplog("####Warning:  no rejection check!\n");
+  }
+}
 #endif
 
 
@@ -1039,7 +1039,7 @@ void FreeAverageParameters(AverageParameters *p)
 {
   int i;
   avrcondition_t *pc;
-  
+
   for (i = 0; i < p->condc; i++) {
     pc = &p->condtbl[i];
     v_free(pc->codetbl);

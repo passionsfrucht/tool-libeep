@@ -319,7 +319,7 @@ _libeep_trg_t_to_processed(const trg_t * external_trg, struct _libeep_entry * ob
   for(i=0;i<obj->processed_trigger_count;++i) {
     char *code;
     code=trg_get(external_trg, i, &obj->processed_trigger_data[i].sample);
-  
+
     obj->processed_trigger_data[i].label = (char *)malloc(strlen(code) + 1);
     strcpy(obj->processed_trigger_data[i].label, code);
   }

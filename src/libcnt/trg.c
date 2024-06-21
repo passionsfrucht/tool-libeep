@@ -643,4 +643,3 @@ int trg_clear(trg_t *trg, uint64_t sample, const char *code)
 
   return r;
 }
-

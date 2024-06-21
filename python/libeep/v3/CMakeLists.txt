@@ -1,5 +1,5 @@
 find_package(Python3 COMPONENTS Development)
-if(Python3_FOUND) 
+if(Python3_FOUND)
   message("python 3 include.... ${Python3_INCLUDE_DIRS}")
   message("python 3 libs....... ${Python3_LIBRARIES}")
   add_library(pyeep3 MODULE ../pyeep.c)

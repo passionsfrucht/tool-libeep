@@ -10,8 +10,8 @@ function [rej] = read_eep_rej(fn);
 % An EEProbe rejection file is formatted like
 %   0.0000-0.3640
 %   2.4373-3.5471
-%   ... 
-% where rejection begin and end are given in seconds. This function 
+%   ...
+% where rejection begin and end are given in seconds. This function
 % converts the latency in miliseconds.
 %
 % Author: Robert Oostenveld, Aalborg University, Denmark, 11 March 2003
@@ -56,7 +56,7 @@ rej = [];
 
 fid = fopen(fn, 'rb');
 if fid<0
-   return 
+   return
 end
 while ~feof(fid)
   tmp = fscanf(fid, '%f-%f', 2);
@@ -68,4 +68,4 @@ end
 % convert to ms
 rej = 1000*rej;
 
-fclose(fid);  
+fclose(fid);

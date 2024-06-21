@@ -1045,4 +1045,3 @@ val_rc_t val_apply(val_t *val, const char *name, int depth, val_cb_t cb, void *c
     /* just pass-through to internal API-extended variant */
     return val_apply_internal(val, name, 0, depth, cb, ctx);
 }
-

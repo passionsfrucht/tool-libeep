@@ -105,4 +105,3 @@ function vers = eegplugin_eepimport(fig, trystrs, catchstrs)
 %   future export
 %   uimenu( submenu, 'label', 'To EEProbe CNT file format' , 'callback', expcnt );
 %   uimenu( submenu, 'label', 'To EEProbe AVR file format' , 'callback', expavr );
-

@@ -82,4 +82,3 @@ val_rc_t val_vget    (val_t *, const char *, va_list);
 val_rc_t val_apply   (val_t *, const char *, int, val_cb_t, void *);
 
 #endif /* __VAL_H__ */
-

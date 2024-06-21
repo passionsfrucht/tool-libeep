@@ -78,8 +78,8 @@ int eepstderr(const char *fmt, ...)
   return n;
 }
 
-/* 
-  configure output and keep track of output state 
+/*
+  configure output and keep track of output state
 */
 int     EEPBarOn = 0;
 slen_t  EEPBarTotal;
@@ -93,11 +93,11 @@ char    messorigin[MESSORIGIN_MAX] = "libeep: ";
 void eeplog(const char *fmt, ...)
 {
   va_list va;
-  
+
   if(!eepio_getverbose()) {
     return;
   }
-    
+
   va_start(va, fmt);
   vprintf(fmt, va);
   va_end(va);
@@ -154,7 +154,7 @@ void sysstatus(const char *fmt, ...)
   if(errno) {
     fputs(messorigin, stderr);
     perror("errno");
-   }  
+   }
 }
 
 void eeperror(const char *fmt, ...)
@@ -190,7 +190,7 @@ void syserror(const char *fmt, ...)
     if(errno) {
       fputs(messorigin, stderr);
       perror("");
-     } 
+     }
   }
 
   arv_fclear();
@@ -251,7 +251,7 @@ void eepio_setmessorigin(const char *mname) {
 void init_eep_bar(slen_t total)
 {
   char line[50];
-  
+
   EEPBarCurrent = 0;
   EEPBarTotal = total;
   if(eepio_getbar()) {
@@ -265,7 +265,7 @@ void show_eep_bar(slen_t current)
 {
   slen_t i;
   slen_t newval, old;
-  
+
   old = EEPBarCurrent * 73 / EEPBarTotal;
   newval = current * 73 / EEPBarTotal;
   EEPBarCurrent = current;
@@ -284,8 +284,8 @@ void free_eep_bar(void)
   }
 }
 
-/* 
-  the eepmess.h *open funcs register files for "auto remove" here 
+/*
+  the eepmess.h *open funcs register files for "auto remove" here
   the *error functions above must be able to cleanup
 */
 int    ar_filec    = 0;
@@ -300,7 +300,7 @@ void arv_fclear(void) {
 void arv_fclear(void)
 {
   int i;
-  
+
   for (i = 0; i < ar_filec; i++) {
     if (fflush(ar_file[i])) {
       sysstatus("cannot flush file \"%s\"!\n", ar_filename[i]);
@@ -339,7 +339,7 @@ char *cfg_line_norm(char *line)
   if ((tmp = (char *) strchr(buf, CFG_SEP)))
     *tmp='\0';                                    /* cut comment if exists */
   while ((c = buf[i++]))
-    if (!isspace(c)) 
+    if (!isspace(c))
       line[j++] = toupper(c);                     /* copy valid characters */
   line[j]='\0';
   free(buf);
@@ -360,7 +360,7 @@ char *cfg_line_norm_cs(char *line)
   if ((tmp = (char *) strchr(buf, CFG_SEP)))
     *tmp='\0';                                    /* cut comment if exists */
   while ((c = buf[i++]))
-    if (!isspace(c)) 
+    if (!isspace(c))
       line[j++] = c;                              /* copy valid characters */
   line[j]='\0';
   free(buf);
@@ -426,7 +426,7 @@ void eep_print_wrap(FILE* out, const char* text, int len)
     {;}
     else if(*text == '\t')
     {
-      count += 8; 
+      count += 8;
       fputc('\t', out);
     }
     else
@@ -455,7 +455,7 @@ __int64 eep_byteswap_8(__int64 arg) {
   out[5]=in[2];
   out[6]=in[1];
   out[7]=in[0];
-  
+
   // printf("%s converted 0x%x to 0x%x\n", __FUNCTION__, arg, result);
   return result;
 }
@@ -473,7 +473,7 @@ long eep_byteswap_4(long arg) {
   out[1]=in[2];
   out[2]=in[1];
   out[3]=in[0];
-  
+
   // printf("%s converted 0x%08x to 0x%08x\n", __FUNCTION__, arg, result);
   return result;
 }
@@ -489,7 +489,7 @@ short eep_byteswap_2(short arg) {
   out=(char *) &result;
   out[0]=in[1];
   out[1]=in[0];
-  
+
   // printf("%s converted 0x%04x to 0x%04x\n", __FUNCTION__, arg, result);
   return result;
 }
@@ -511,7 +511,7 @@ double eep_byteswap_8_double(double arg) {
   out[5]=in[2];
   out[6]=in[1];
   out[7]=in[0];
-  
+
   // printf("%s converted 0x%x to 0x%x\n", __FUNCTION__, arg, result);
   return result;
 }

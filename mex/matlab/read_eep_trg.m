@@ -22,7 +22,7 @@ function [trg] = read_eep_trg(fn);
 %   21.098   2775662   8
 %   ...
 % where the first column is the trigger latency in seconds, the second
-% column is the byte offset in the file and the third column is the triggercode. 
+% column is the byte offset in the file and the third column is the triggercode.
 % The triggercode can be numeric or a string. The first line of the file contains the
 % sample duration.
 %
@@ -84,4 +84,4 @@ while ~feof(fid)
   end
 end
 
-fclose(fid);  
+fclose(fid);

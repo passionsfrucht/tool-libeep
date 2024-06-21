@@ -12,9 +12,9 @@ function [eeg] = read_eep_cnt(fn);
 % eeg.rate     ... sampling rate
 % eeg.npnt     ... number of sample in data segment
 % eeg.nchan    ... number of channels
-% eeg.nsample  
+% eeg.nsample
 % eeg.time     ... array [1 x npnt] of time points (ms)
-% eeg.data     ... array [nchan x npnt] containing eeg data (uV) 
+% eeg.data     ... array [nchan x npnt] containing eeg data (uV)
 % eeg.trigger  ... array [n, 4] containing trigger information
 %
 % Author: Robert Oostenveld, Aalborg University, Denmark, 11 March 2003

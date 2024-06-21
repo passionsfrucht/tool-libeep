@@ -42,13 +42,13 @@ int eep_read_float_channel(eeg_t *cnt, eep_datatype_e type, const char* name,  f
     return CNTERR_DATA;
 
   RET_ON_CNTERROR(eep_seek(cnt, type, start, 0));
-  
+
   for(count = 0; count < length; count++)
   {
     RET_ON_CNTERROR(eep_read_float(cnt, type, data, 1));
     buffer[count] = data[index];
   }
- 
+
   free(data);
 
   return CNTERR_NONE;
@@ -70,7 +70,7 @@ int eep_save_data_matrix_channels(eeg_t *avr, eep_datatype_e type, float **v, in
 
     eep_write_float(avr, buffer, 1);
   }
-  
+
   free(buffer);
   return CNTERR_NONE;
 }
@@ -87,7 +87,7 @@ int eep_read_sraw_channel(eeg_t *cnt, eep_datatype_e type, const char* name,  sr
   index = eep_get_chan_index(cnt, name);
   if(index == -1)
     return CNTERR_DATA;
- 
+
   RET_ON_CNTERROR(eep_seek(cnt, type, start, 0));
 
   for(count = 0; count < length; count++)
@@ -120,5 +120,3 @@ void eep_copy_standard_avr_settings(eeg_t* dst, eeg_t* source)
   eep_set_conditioncolor(dst, eep_get_conditioncolor(source));
   eep_set_pre_stimulus_interval(dst, eep_get_pre_stimulus_interval(source));
 }
-
-

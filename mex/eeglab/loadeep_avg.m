@@ -57,7 +57,7 @@ function r=loadeep_avg(file)
 if nargin < 1
 	help loadeep;
 	return;
-end;	
+end;
 
 % defaults
 if ~any(file=='.'), file=[file '.avr']; end
@@ -81,7 +81,7 @@ for i=1:r.nchannels
     chanlocs(i).Z=0;
     chanlocs(i).sph_theta=0;
     chanlocs(i).sph_phi=0;
-    chanlocs(i).sph_radius=0;    
+    chanlocs(i).sph_radius=0;
 end
 r.chanlocs=chanlocs;
 
@@ -89,7 +89,7 @@ r.nsmpl=eeg.npnt;
 r.time=eeg.time;
 r.dat=eeg.data;
 r.nsweeps=eeg.nsweeps;     %number of trials averaged
-r.xmin=eeg.xmin; 
+r.xmin=eeg.xmin;
 r.xmax=eeg.xmax;
 r.variance=eeg.variance;   % variance (nchan x npnt)
 r.condlab=eeg.condlab;     % string with condition label

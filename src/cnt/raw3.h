@@ -45,7 +45,7 @@ typedef struct {
 typedef struct {
   short chanc;       /* channel sequence */
   short *chanv;
-  
+
   raw3res_t rc[RAW3_METHODC];    /* some working buffers */
   sraw_t    *last;
   sraw_t    *cur;
@@ -88,16 +88,16 @@ int compepoch_mux(raw3_t *raw3, sraw_t *in, int length, char *out);
 /*
   the same job backwards
   return: number of bytes used from input buffer
-*/ 
+*/
 
 int decompepoch_mux(raw3_t *raw3, char *in, int length, sraw_t *out);
 
 /*
-  find and return a good channel sequence for prediction by neighbor 
+  find and return a good channel sequence for prediction by neighbor
   buf contains the multiplexed raw data to predict from and is unchanged
   chanv space (chanc elements) has to be supplied by caller
 */
-void compchanv_mux(sraw_t *buf, int length, 
+void compchanv_mux(sraw_t *buf, int length,
                     short chanc, short *chanv);
 
 #endif

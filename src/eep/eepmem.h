@@ -37,7 +37,7 @@ void *v_realloc(void *ptr, size_t size, const char *mtypefrag);
 
 #define v_new(type) (type *) v_malloc(sizeof(type), "v_new")
 
-#define v_free(ptr)   if((ptr) != NULL) { free(ptr); (ptr) = NULL; } 
+#define v_free(ptr)   if((ptr) != NULL) { free(ptr); (ptr) = NULL; }
 
 
 #define v_extend(ptr, num, type, extnum) \
@@ -54,7 +54,7 @@ char *v_strcat(char *s1, const char *s2, int extlen);
 /**
  * Function to copy and reorder memory.
  * Use this function for an array which you want in another order.
- * 
+ *
  * when wanting to move an array (with ints) of size 4 to size 3: [0,1,2,3] -> [3,2,1]
  * use reorder_memory(target, source, sizeof(int), [3,2,1], 3)
  *
@@ -66,7 +66,7 @@ char *v_strcat(char *s1, const char *s2, int extlen);
  */
 void reorder_memory(void* target, void* source, size_t memsize, int* reorderv, int reorderc);
 void reorder_memory_back(void* target, void* source, size_t memsize, int* reorderv, int reorderc);
-  
+
 
 
 /*

@@ -32,7 +32,7 @@ handle_file(const char *filename) {
   }
 
   // triggers
-  triggerc = libeep_get_trigger_count(handle); 
+  triggerc = libeep_get_trigger_count(handle);
   printf("triggers: %i\n", triggerc);
   for(i=0;i<triggerc;++i) {
     const char * code;

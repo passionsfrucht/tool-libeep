@@ -195,7 +195,7 @@ EXPORTS
   libeep_set_start_date_and_fraction
   libeep_set_start_time
   libeep_set_technician
-  libeep_set_test_name 
+  libeep_set_test_name
   libeep_set_test_serial
   libeep_write_cnt
   raw3_free

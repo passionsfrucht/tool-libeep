@@ -1,5 +1,5 @@
 find_package(Python2 COMPONENTS Development)
-if(Python2_FOUND) 
+if(Python2_FOUND)
   message("python 2 include.... ${Python2_INCLUDE_DIRS}")
   message("python 2 libs....... ${Python2_LIBRARIES}")
   add_library(pyeep2 MODULE ../pyeep.c)

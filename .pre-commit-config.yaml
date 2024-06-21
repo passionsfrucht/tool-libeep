@@ -64,8 +64,8 @@ repos:
   rev: v0.4.10
   hooks:
     # Run the linter.
-    - id: ruff
-      args: [ --fix ]
+  - id: ruff
+    args: [--fix]
 
 # Remove the output of cells, they do not belong into the repo
 - repo: https://github.com/kynan/nbstripout

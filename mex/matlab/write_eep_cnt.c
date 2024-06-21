@@ -140,7 +140,7 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
   if(mx_triggers != NULL) {
     size_t trigger_i;
     size_t trigger_count = mxGetN(mx_triggers);
-  
+
     for(trigger_i=0;trigger_i<trigger_count;++trigger_i) {
       trg_set(
         eep_get_trg(cnt),

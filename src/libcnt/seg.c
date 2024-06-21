@@ -12,7 +12,7 @@ libeep_seg_t * libeep_seg_read(const char * filename) {
   libeep_seg_t * rv;
   FILE         * f;
   char           line_buffer[1024];
-  uint32_t       segment_index;           
+  uint32_t       segment_index;
 
   rv = NULL;
   segment_index = 0;

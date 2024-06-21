@@ -3,11 +3,19 @@
         "abatilo",
         "autofix",
         "commandline",
+        "devel",
+        "eego",
+        "fname",
+        "Kitwares",
         "libeep",
         "markdownlint",
+        "matplotlib",
         "nbstripout",
         "pyeep",
+        "pyplot",
         "pyupgrade",
+        "Smies",
+        "tstamp",
         "typer"
     ]
 }

@@ -53,11 +53,11 @@ void *v_realloc(void *ptr, size_t size, const char *mtypefrag) {
 void *v_calloc(size_t nmemb, size_t size, const char *mtypefrag)
 {
   void *p;
-  
+
   if ( nmemb == 0 ) return NULL;
   p = (void *) calloc(nmemb, size);
-  if (p == NULL) 
-    eeperror("libeep: failed to callocate %s memory (%ld bytes)!\n", 
+  if (p == NULL)
+    eeperror("libeep: failed to callocate %s memory (%ld bytes)!\n",
             mtypefrag, (unsigned long) size * nmemb);
   return p;
 }
@@ -65,11 +65,11 @@ void *v_calloc(size_t nmemb, size_t size, const char *mtypefrag)
 void *v_malloc(size_t size, const char *mtypefrag)
 {
   void *p;
-  
+
   if(size == 0) return NULL;
   p = (void *) malloc(size);
-  if (p == NULL) 
-    eeperror("libeep: failed to mallocate %s memory (%ld bytes)!\n", 
+  if (p == NULL)
+    eeperror("libeep: failed to mallocate %s memory (%ld bytes)!\n",
             mtypefrag, (unsigned long) size);
   return p;
 }
@@ -77,16 +77,16 @@ void *v_malloc(size_t size, const char *mtypefrag)
 void *v_realloc(void *ptr, size_t size, const char *mtypefrag)
 {
   void *p = NULL;
-  
+
   if (ptr == NULL && size != 0) {
     p = (void *) malloc(size);
   }
-  if (ptr != NULL) { 
+  if (ptr != NULL) {
     p = (void *) realloc((char *) ptr, size);
   }
-  
-  if (p == NULL && size != 0) 
-    eeperror("libeep: failed to reallocate %s memory (%ld bytes)!\n", 
+
+  if (p == NULL && size != 0)
+    eeperror("libeep: failed to reallocate %s memory (%ld bytes)!\n",
             mtypefrag, (unsigned long) size);
 
   if (size == 0) p = NULL;
@@ -98,10 +98,10 @@ void *v_realloc(void *ptr, size_t size, const char *mtypefrag)
 char *v_strnew(const char *s, int extlen)
 {
   char *p;
-  
+
   p = (char *) malloc(strlen(s) + extlen + 1);
-  if (p == NULL) 
-    eeperror("libeep: failed to strnew %ld bytes!\n", 
+  if (p == NULL)
+    eeperror("libeep: failed to strnew %ld bytes!\n",
             (unsigned long) (strlen(s) + extlen + 1));
   strcpy(p, s);
   return p;
@@ -110,8 +110,8 @@ char *v_strnew(const char *s, int extlen)
 char *v_strcat(char *s1, const char *s2, int extlen)
 {
   s1 = (char *) realloc(s1, strlen(s1) + strlen(s2) + extlen + 1);
-  if (s1 == NULL) 
-    eeperror("libeep: failed to strcat %ld bytes!\n", 
+  if (s1 == NULL)
+    eeperror("libeep: failed to strcat %ld bytes!\n",
             (unsigned long) (strlen(s1) + strlen(s2) + extlen + 1));
   strcat(s1, s2);
   return s1;
@@ -156,20 +156,20 @@ float **v_malloc_s2d(int i1, int i2)
 void v_free_s2d(float **v, int i1)
 {
   int i;
-  
-  if( v == NULL ) return; 
-  
+
+  if( v == NULL ) return;
+
   for (i = i1 - 1; i >= 0; i--)
     v_free(v[i]);
   v_free(v);
-} 
+}
 
 float ***v_malloc_s3d(int i1, int i2, int i3)
 {
   int i;
-  
+
   float ***v = (float ***) v_malloc(i1 * sizeof(float **), "s3d");
-  
+
   for (i = 0; i < i1; i++)
     v[i] = v_malloc_s2d(i2, i3);
 
@@ -179,9 +179,9 @@ float ***v_malloc_s3d(int i1, int i2, int i3)
 void v_free_s3d(float ***v, int i1, int i2)
 {
   int i;
-  
+
   if( v == NULL ) return;
-  
+
   for (i = i1 - 1; i >= 0; i--)
     v_free_s2d(v[i], i2);
   v_free(v);
@@ -199,14 +199,14 @@ double **v_malloc_d2d(int d1, int d2)
     for (j = 0; j < d2; j++)
       m[i][j] = 0.0;
   }
-  
+
   return m;
 }
 
 void v_free_d2d(double **m, int d1)
 {
   int    i;
-  
+
   if( m == NULL ) return;
 
   for (i = 0; i < d1; i++) {
@@ -221,7 +221,7 @@ double ***v_malloc_d3d(int d1, int d2, int d3)
   double ***m = (double ***) v_malloc(d1 * sizeof(double **), "d3d");
   for (i = 0; i < d1; i++)
     m[i] = v_malloc_d2d(d2, d3);
-  
+
   return m;
 }
 
@@ -230,7 +230,7 @@ void v_free_d3d(double ***m, int d1, int d2)
   int    i;
 
   if( m == NULL ) return;
-  
+
   for (i = 0; i < d1; i++)
     v_free_d2d(m[i], d2);
   v_free(m);

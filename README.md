@@ -1,5 +1,7 @@
 # Libeep
 
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/passionsfrucht/tool-libeep/main.svg)](https://results.pre-commit.ci/latest/github/passionsfrucht/tool-libeep/main)
+
 libeep is python package to load eego data files with python.
 
 Take a look at the most recent release at

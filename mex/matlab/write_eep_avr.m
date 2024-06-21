@@ -8,14 +8,14 @@ function [eeg] = write_eep_avr(fn);
 % eeg.rate      ... sampling rate
 % eeg.npnt      ... number of sample in data segment
 % eeg.nchan     ... number of channels
-% eeg.nsample  
+% eeg.nsample
 % eeg.trialc    ... total number of trials
 % eeg.nsweeps   ... averaged number of trials
 % eeg.condlab   ... condition label
 % eeg.condcol   ... condition color
 % eeg.psi       ... pre-stimulus interval(in seconds)
 % eeg.time      ... array [1 x npnt] of time points (ms)
-% eeg.data      ... array [nchan x npnt] containing eeg data (uV) 
+% eeg.data      ... array [nchan x npnt] containing eeg data (uV)
 %
 % Author: Robert Smies, A.N.T. Neuro
 %

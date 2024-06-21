@@ -1,5 +1,5 @@
 from . import pyeep
-from typing import List
+
 
 ###############################################################################
 class cnt_base:
@@ -16,10 +16,10 @@ class cnt_base:
 ###############################################################################
 class cnt_in(cnt_base):
     """A cnt-file stored on your harddrive
-  
-  create a new instance with :func:`~.read_cnt`.
-  
-  """
+
+    create a new instance with :func:`~.read_cnt`.
+
+    """
 
     def __init__(self, handle):
         cnt_base.__init__(self, handle)
@@ -40,9 +40,9 @@ class cnt_in(cnt_base):
     def get_sample_count(self):
         return pyeep.get_sample_count(self._handle)
 
-    def get_samples(self, fro: int, to: int) -> List[List[float]]:
-        """load a range of samples from the file 
-        
+    def get_samples(self, fro: int, to: int) -> list[list[float]]:
+        """load a range of samples from the file
+
         args
         ----
         fro:int
@@ -100,14 +100,14 @@ def read_cnt(filename: str) -> cnt_in:
 ###############################################################################
 def write_cnt(filename, rate, channels, rf64=0):
     """
-  create an object for writing a .cnt file.
+    create an object for writing a .cnt file.
 
-  rate -- sampling rate in Herz
-  channels -- list of tuples, where tuples contains three strings:
-              channel label, channel reference and unit, i,e,:
-              ['Cz', 'ref', 'uV')]
-  rf64 -- if 0, create default 32-bit cnt data. otherwise 64 bit(for larger tan 2GB files)
-  """
+    rate -- sampling rate in Herz
+    channels -- list of tuples, where tuples contains three strings:
+                channel label, channel reference and unit, i,e,:
+                ['Cz', 'ref', 'uV')]
+    rf64 -- if 0, create default 32-bit cnt data. otherwise 64 bit(for larger tan 2GB files)
+    """
     if not filename.endswith(".cnt"):
         raise Exception("unsupported extension")
 

@@ -70,4 +70,3 @@ sample2 = sample2 /1000 * samplerate + 1;
 % read data from file
 eeg = read_eep_cnt([filename '.cnt'],sample1,sample2);
 t = trg.time;
-

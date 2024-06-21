@@ -1,4 +1,4 @@
-% pop_loadeep_avg() - Load an EEProbe average file (*.avr). 
+% pop_loadeep_avg() - Load an EEProbe average file (*.avr).
 %                     (pop out window if no arguments)
 %
 % Usage:
@@ -7,12 +7,12 @@
 %
 % Inputs:
 %   filename                   - file name
-% 
+%
 % Outputs:
 %   [EEG]                       - EEGLAB data structure
 %
 % Note:
-% This script is based on pop_loadcnt.m to make it compatible and easy to use in 
+% This script is based on pop_loadcnt.m to make it compatible and easy to use in
 % EEGLab.
 %
 % Author: Maarten-Jan Hoeve, ANT Software, Enschede, The Netherlands, 8 October 2003
@@ -60,15 +60,15 @@
 % Advanced Neuro Technology (ANT) BV, The Netherlands, www.ant-neuro.com / info@ant-neuro.com
 %
 
-function [EEG, command]=pop_loadeep_avg(filename); 
+function [EEG, command]=pop_loadeep_avg(filename);
 
 command = '';
 EEG=[];
 
-if nargin < 1 
+if nargin < 1
 
 	% ask user
-	[filename, filepath] = uigetfile('*.AVR;*.avr', 'Choose an EEProbe average file -- pop_loadeep_avg()'); 
+	[filename, filepath] = uigetfile('*.AVR;*.avr', 'Choose an EEProbe average file -- pop_loadeep_avg()');
     drawnow;
 	if filename == 0 return; end;
 end;
@@ -80,14 +80,14 @@ if exist('filepath')
 	fullFileName = sprintf('%s%s', filepath, filename);
 else
 	fullFileName = filename;
-end;	
+end;
 
 r = loadeep_avg(fullFileName);
 
 EEG.data            = r.dat;
 EEG.comments        = [ 'Original file: ' fullfile(filename, filepath) ];
 EEG.setname 		= 'Averaged ANT EEP file';
-EEG.nbchan          = r.nchannels; 
+EEG.nbchan          = r.nchannels;
 %EEG.xmin            = (r.xmin-1)/r.rate;
 %EEG.xmax           = (r.xmax-1)/r.rate;
 EEG.srate           = r.rate;
@@ -95,6 +95,6 @@ EEG.pnts            = r.nsmpl;
 EEG.chanlocs        = r.chanlocs;
 EEG = eeg_checkset(EEG);
 
-command = sprintf('EEG = pop_loadeep_avg(''%s'');',fullFileName); 
+command = sprintf('EEG = pop_loadeep_avg(''%s'');',fullFileName);
 
 return;

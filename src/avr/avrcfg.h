@@ -63,19 +63,19 @@ typedef struct {
   avrcondition_t  *condtbl;
   short  chanc;
   short  *chantbl;
-  
+
   int       iswindow;
   swin_t    window;
-  
+
   int       isbaseline;
   swin_t    baseline;
   short     refdisp;
   trgcode_t     *reftrgv;
-  
-  int       isrejection;  
+
+  int       isrejection;
   swin_t    rejection;
   int       isbslrejection;
-  swin_t    bslrejection;  /* added for use in case of reference displacement 
+  swin_t    bslrejection;  /* added for use in case of reference displacement
                               - MG  07/03/2000  */
 } AverageParameters;
 
@@ -83,15 +83,15 @@ int ReadAverageParameters(FILE *Cfg, eeg_t *EEG_p, AverageParameters *p);
 void FreeAverageParameters(AverageParameters *p);
 
 /* mode: AVR_IGNORE_(NOTHING|REJECTION|AVRWINDOW) */
-void ShowAverageParameters(AverageParameters p, eeg_t *src, short mode);   
+void ShowAverageParameters(AverageParameters p, eeg_t *src, short mode);
 int check_reject_window_settings(AverageParameters p);
 
-/* retrieve information strings from the AverageParameters struct 
-   (strGet.. functions) */ 
+/* retrieve information strings from the AverageParameters struct
+   (strGet.. functions) */
 /* get whitespace-separated list of condition triggers */
 char *strGetConditionTriggers( AverageParameters *cfg, short condI );
 
-/* get reference trigger, 
+/* get reference trigger,
    return NULL if no baseline used or undisplaced reference */
 char *strGetReferenceTrigger( AverageParameters *cfg, short condI );
 char *strGetAllReferenceTriggers( AverageParameters *cfg );

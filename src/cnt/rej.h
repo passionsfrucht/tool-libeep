@@ -46,7 +46,7 @@ typedef struct {
 rej_t *rej_init(void);
 void   rej_free(rej_t *rej);
 
-/* 
+/*
   init rejection table by fetching .rej file
   return: table or NULL on error
 */

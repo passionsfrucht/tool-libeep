@@ -45,7 +45,7 @@
 #define EEP20_TRGVAL   0x00ff
 #define EEP20_TRGMASK  0x0cff /* to detect all flags used as triggers */
 
-/* 
+/*
   a EEP 3.x trigger is a sample number connected with a 8 character code
   codes are stored case-sensitive, but evaluated case-insensitive
 */
@@ -99,7 +99,7 @@ trg_t *trg_file_read_unchecked(FILE *f, double *period, short *chanc);
   insert / delete trigger in table
   set avoids identical triggers but allows multiple triggers in one sample
   code is evaluated case insensitive and stored case sensitive
-  
+
   return: number of cleared/set triggers
 */
 int trg_set  (trg_t *trg, uint64_t sample, const char *code);
@@ -112,7 +112,7 @@ int trg_set_cls(trg_t *trg, uint64_t sample, const char *code, const char cls);
 
 /*
   converts the EEP20 flag word (16 bit) to trigger table entrys
-  caller should test the flag contents (EEP20_TRGMASK) and avoid 
+  caller should test the flag contents (EEP20_TRGMASK) and avoid
   calls without effect
   return: number of added trigger entrys
 */
@@ -136,13 +136,13 @@ char *trg_get_cls  (trg_t *trg, int i, uint64_t *sample, char *cls);
 int trg_group_match(char *code, trgcode_t *grpv, short grpc);
 int trg_discont_epoch(trg_t *trg, uint64_t start, uint64_t length);
 
-/* 
+/*
   look for next(direction 1) or previous(direction 0) trigger <code> in table
-  return: trigger index or -1 if not found 
+  return: trigger index or -1 if not found
 */
-int  trg_seek(trg_t *trg, uint64_t sample, 
+int  trg_seek(trg_t *trg, uint64_t sample,
                   const char *code, char direction);
-int  trg_group_seek(trg_t *trg, uint64_t sample, 
+int  trg_group_seek(trg_t *trg, uint64_t sample,
                        trgcode_t *grpv, int grpc, char direction);
 
 

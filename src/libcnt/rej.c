@@ -45,7 +45,7 @@ int rej_line_write(FILE *Rej, double period, uint64_t first, uint64_t last)
 {
    asciiline_t line;
    asciiline_t col2;
-   
+
    sprintf(line, "%.6f-", first * period);
    sprintf(col2, "%.6f\n", last * period);
    strcat(line, col2);
@@ -59,7 +59,7 @@ int rej_line_parse(char *rejline, double period, uint64_t *first, uint64_t *last
   double t1, t2;
   int i;
   char *c;
-  
+
   i = sscanf(rejline, "%lf", &t1);
   if (!i)
     return 1;
@@ -70,12 +70,12 @@ int rej_line_parse(char *rejline, double period, uint64_t *first, uint64_t *last
   i = sscanf(c, "%lf", &t2);
   if (!i)
     return 3;
-  
+
   *first = (uint64_t) (t1 / period + 0.5);
   *last = (uint64_t) (t2 / period + 0.5);
   if (*first > *last || *last < 0)
     return 4;
-    
+
   return 0;
 }
 
@@ -92,7 +92,7 @@ char *rej_line_norm(char *line)
   if ((tmp = (char *) strchr(buf, ';')))
     *tmp='\0';                                    /* cut comment if exists */
   while ((c = buf[i++]))
-    if (!isspace(c)) 
+    if (!isspace(c))
       line[j++] = toupper(c);                     /* copy valid characters */
   line[j]='\0';
   free(buf);
@@ -105,12 +105,12 @@ int rej_line_read(FILE *Rej, double period, uint64_t *first, uint64_t *last)
   char *c;
   asciiline_t rejline;
   int r = REJ_OK;
-  
+
   do {
     c = asciiread(Rej, rejline);
     rej_line_norm(rejline);
   } while (!feof(Rej) && c != NULL && rejline[0] == '\0');
-  
+
   if (!feof(Rej)) {
     if (c == NULL)
       r = REJ_ERR;
@@ -148,9 +148,9 @@ rej_t *rej_file_read(FILE *f, double period)
   rej_t  *rej = rej_init();
   uint64_t first, last;
   int    status;
-  
+
   rewind(f);
-  
+
   while (!feof(f)) {
     status = rej_line_read(f, period, &first, &last);
     if (status == REJ_ERR) {
@@ -173,10 +173,10 @@ rej_t *rej_file_read(FILE *f, double period)
 int rej_file_write(rej_t *rej, FILE *f, double period)
 {
   int i;
-  
+
   rewind(f);
   for (i = 0; i < rej->c; i++) {
-    if (rej_line_write(f, period, 
+    if (rej_line_write(f, period,
         rej->v[i].start, rej->v[i].start + rej->v[i].length - 1))
     {
       return 1;
@@ -204,16 +204,16 @@ void rej_set(rej_t *rej, uint64_t start, uint64_t length)
     overlaps++;
   }
 
-  while ( i + overlaps < *rejc 
+  while ( i + overlaps < *rejc
          && start + length >= (*rejv)[i + overlaps].start)
   {
     overlaps++;
   }
 
   if (overlaps) {
-    effstart = MIN((*rejv)[i].start, 
+    effstart = MIN((*rejv)[i].start,
                   start);
-    efflength = MAX((*rejv)[i + overlaps - 1].start + (*rejv)[i + overlaps - 1].length, 
+    efflength = MAX((*rejv)[i + overlaps - 1].start + (*rejv)[i + overlaps - 1].length,
                       start + length)
                 - effstart;
   }
@@ -221,22 +221,22 @@ void rej_set(rej_t *rej, uint64_t start, uint64_t length)
     effstart = start;
     efflength = length;
   }
-    
+
   /* nothing touched - insert a new rejection in table*/
   if (overlaps == 0) {
     *rejv = (rejentry_t *)
       v_realloc(*rejv, (size_t) (*rejc + 1) * sizeof(rejentry_t), "rejv");
-    memmove(&(*rejv)[i + 1], &(*rejv)[i], 
+    memmove(&(*rejv)[i + 1], &(*rejv)[i],
             (size_t) (*rejc - i) * sizeof(rejentry_t));
     (*rejc)++;
   }
-  
+
   /* exact one touched - nothing needed in table, change size only */
-  
+
   /* many touched - merge them to one */
   if (overlaps > 1) {
     if (*rejc - i - overlaps + 1 > 0) {
-      memmove(&(*rejv)[i], &(*rejv)[i + overlaps - 1], 
+      memmove(&(*rejv)[i], &(*rejv)[i + overlaps - 1],
               (size_t) (*rejc - i - overlaps + 1) * sizeof(rejentry_t));
     }
     *rejv = (rejentry_t *)
@@ -265,22 +265,22 @@ int is_rejected(rej_t *rej, uint64_t sample)
   static int i = 0;
   int rejc =   rej->c;
   rejentry_t *rejv = rej->v;
-  
+
   /* have to rewind the static counter ? */
-  if (i >= rejc) 
+  if (i >= rejc)
     i=0;   /* added M.G.*/
-  
+
   while (i > 0 && i < rejc && rejv[i].start > sample)
     i--;
-  
+
   /* locate first rejection which ends after interesting sample */
   while (i < rejc && rejv[i].start + rejv[i].length - 1 < sample)
     i++;
-  
+
   /* found any ? - check whether it covers the sample */
   if (i < rejc && rejv[i].start <= sample)
     r = 1;
-  
+
   return r;
 }
 
@@ -290,15 +290,15 @@ int is_rejected_epoch(rej_t *rej, uint64_t sample, uint64_t length)
   int i = 0;
   int rejc =   rej->c;
   rejentry_t *rejv = rej->v;
-  
+
   /* locate first rejection which ends after first interesting sample */
-  while (i < rejc && rejv[i].start + rejv[i].length - 1 < sample) 
+  while (i < rejc && rejv[i].start + rejv[i].length - 1 < sample)
     i++;
-  
+
   /* found any ? - check whether it touches the epoch */
   if (i < rejc && rejv[i].start < sample + length)
     r = 1;
-  
+
   return r;
 }
 
@@ -307,15 +307,15 @@ int rej_seek(rej_t *rej, uint64_t start, char direction)
 {
   int rejc = rej->c;
   rejentry_t *rejv = rej->v;
-  
+
   int i = 0;
   int lasti = -1;
-  
+
   while (i < rejc && rejv[i].start <= start) {
     if (rejv[i].start < start) lasti = i;
     i++;
   };
-  
+
   if (direction)
     return i < rejc ? i : -1;
   else
@@ -331,26 +331,26 @@ void rej_clear(rej_t *rej, uint64_t start, uint64_t length)
   int i = 0;
   int del = 0;
   uint64_t tmp;
-  
+
   /* ignore until deletion starts */
   while (i < *rejc && (*rejv)[i].start + (*rejv)[i].length < start) i++;
-  
+
   if (i < *rejc) {
-  
+
     /* split rejection ? */
-    if (   (*rejv)[i].start < start 
+    if (   (*rejv)[i].start < start
         && (*rejv)[i].start + (*rejv)[i].length > start + length)
     {
       *rejv = (rejentry_t *)
         v_realloc(*rejv, (size_t) (*rejc + 1) * sizeof(rejentry_t), "rejv");
       memmove(&(*rejv)[i + 1], &(*rejv)[i], (size_t) (*rejc - i) * sizeof(rejentry_t));
       (*rejv)[i + 1].start = start + length;
-      (*rejv)[i + 1].length =   (*rejv)[i].start + (*rejv)[i].length 
+      (*rejv)[i + 1].length =   (*rejv)[i].start + (*rejv)[i].length
                                 - (start + length);
       (*rejv)[i].length = start - (*rejv)[i].start;
       (*rejc)++;
     }
-    
+
     else {
 
       /* delete latter part of rejection ? */
@@ -363,7 +363,7 @@ void rej_clear(rej_t *rej, uint64_t start, uint64_t length)
 
       /* delete complete rejections ? */
       while (   ((i + del) < *rejc)
-             && ((*rejv)[i + del].start 
+             && ((*rejv)[i + del].start
                 >= start)
              && ((*rejv)[i + del].start + (*rejv)[i + del].length
                 <= start + length))
@@ -377,7 +377,7 @@ void rej_clear(rej_t *rej, uint64_t start, uint64_t length)
           v_realloc(*rejv, (size_t) (*rejc - del) * sizeof(rejentry_t), "rejv");
         (*rejc) -= del;
       }
-      
+
       /* delete front part of next rejection left ? */
       if (i < *rejc) {
         if ((*rejv)[i].start < start + length) {
@@ -389,4 +389,3 @@ void rej_clear(rej_t *rej, uint64_t start, uint64_t length)
     }
   }
 }
-

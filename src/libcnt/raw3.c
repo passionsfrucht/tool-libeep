@@ -385,8 +385,8 @@ int dehuffman16(unsigned char *in, int n, int *method, sraw_t *out)
          fprintf(stderr,"\nlibeep: critical compression method encountered "
                      "(method %d, 16 bit)\n", *method);
        }
-      raw3_set_ERR_FLAG_16(1); 	 		
-    } 		
+      raw3_set_ERR_FLAG_16(1);
+    }
     nbit_1 = nbit - 1;
     nexcbit = (in[1] >> 4) & 0x0f;
     /* using 4-bit coding nexcbit=16 is coded as zero */
@@ -493,10 +493,10 @@ int dehuffman16(unsigned char *in, int n, int *method, sraw_t *out)
   }
   /* RAW3_COPY mode */
   else {
-    if( CheckVerbose ) {	
+    if( CheckVerbose ) {
          fprintf(stderr,"\nlibeep: critical compression method encountered "
-                   "(method 0 RAW3_COPY)\n");	
-     }	
+                   "(method 0 RAW3_COPY)\n");
+     }
     raw3_set_ERR_FLAG_0(0);
     nin = 1;
     for (nout = 0; nout < n; nout++) {
@@ -719,7 +719,7 @@ int compchan(raw3_t *raw3, sraw_t *last, sraw_t *cur, int n, char *out)
 
 	case 1:
           rc->method = RAW3_TIME2;
-          res[0] = cur[0];	
+          res[0] = cur[0];
           hst[bitc(res[1] = restime[1])]++;
           for (sample = 2; sample < n; sample++)
             hst[bitc(res[sample] = restime[sample] - restime[sample - 1])]++;

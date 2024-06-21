@@ -24,7 +24,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>          *
  *                                                                              *
  *******************************************************************************/
- 
+
 #ifndef EEPMISC_H
 #define EEPMISC_H
 #define RCS_EEPMISC_H "$RCSfile: eepmisc.h,v $ $Revision: 2415 $"

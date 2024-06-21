@@ -272,11 +272,11 @@ int vread_s16(FILE *f, sraw_t *buf, int n)
 {
   register int j, status;
   register unsigned char *tmp = (unsigned char *) buf;
-  
+
   status = eepio_fread(tmp, 2, n, f);
   if (status != n)
     return status;
-  
+
   for (j = n - 1; j >= 0; j--) {
     buf[j] = ((int) tmp[2*j + 1] << 8) | tmp[2*j];
     if (buf[j] & 0x8000)
@@ -284,7 +284,7 @@ int vread_s16(FILE *f, sraw_t *buf, int n)
   }
   return n;
 }
-  
+
 int vwrite_s16(FILE *f, sraw_t *buf, int n)
 {
 
@@ -299,10 +299,10 @@ int vwrite_s16(FILE *f, sraw_t *buf, int n)
   nr = eepio_fwrite(tmp, 2, n, f);
 
   /* reestablish original byte order */
-  for (j = 0; j < n; j++) {                                                     
-    tmp[2*j] = (unsigned char) (buf[j]);                                       
-    tmp[2*j+1] = (unsigned char) (buf[j] >> 8);                                
-  }  
+  for (j = 0; j < n; j++) {
+    tmp[2*j] = (unsigned char) (buf[j]);
+    tmp[2*j+1] = (unsigned char) (buf[j] >> 8);
+  }
 
   return nr;
 }
@@ -314,7 +314,7 @@ int vread_f32(FILE *f, float *buf, int n)
 #if EEP_FLOAT_ORDER == EEP_LITTLE_ENDIAN
   return eepio_fread(tmp, 4, n, f);
 #else
-  
+
   int status = eepio_fread(tmp, 4, n, f);
   register int j;
   register char *w,c;
@@ -329,7 +329,7 @@ int vread_f32(FILE *f, float *buf, int n)
   return status;
 #endif
 }
-  
+
 int vwrite_f32(FILE *f, float *buf, int n)
 {
   register char *tmp = (char *) buf;
@@ -353,7 +353,7 @@ int vwrite_f32(FILE *f, float *buf, int n)
     c = w[1]; w[1] = w[2]; w[2] = c;
   }
 
-  return nr; 
+  return nr;
 #endif
 
   return eepio_fwrite(tmp, 4, n, f);
@@ -376,4 +376,3 @@ int vread_s32(FILE *f, sraw_t *buf, int n)
   return n;
 #endif
 }
-

@@ -80,7 +80,7 @@ int riff64_fetch(FILE *f, chunk64_t *chunk, fourcc_t *listid, chunk64_t parent, 
   fclose
 
 
-NOTE: It seems riff_new and other functions do not longer position themselves at the 
+NOTE: It seems riff_new and other functions do not longer position themselves at the
       end of the file. Before calling riff_new the filepointer should point to the end
       of the file with "fseek(f, 0, SEEK_END)", or it may possible overwrite previous
       chunks. I am not sure why this is done, but there probably is some reason. -- jwiskerke

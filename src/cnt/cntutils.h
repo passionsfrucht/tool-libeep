@@ -29,7 +29,7 @@
 
 #include <cnt/cnt.h>
 
-/* 
+/*
  Fill the buffer with data from one channel
  @param cnt the cnt/avr file from which we want data.
  @param type the datatype to get from the cnt/avr file.
@@ -41,9 +41,9 @@
 int eep_read_float_channel(eeg_t *cnt, eep_datatype_e type, const char* name,  float* buffer, slen_t start, int length);
 int eep_read_sraw_channel(eeg_t *cnt, eep_datatype_e type, const char* name,  sraw_t* buffer, slen_t start, int length);
 
-/* 
- Set and get the sample0. 
- Mostly for use in old avr methods. Once there was a sample0 in the avr structure. 
+/*
+ Set and get the sample0.
+ Mostly for use in old avr methods. Once there was a sample0 in the avr structure.
  Sample0 is a negative number which identifies the first sample in the pre_stimulus part.
 */
 slen_t eep_get_sample0(eeg_t* avr);
@@ -59,12 +59,12 @@ void eep_set_sample0(eeg_t* avr, slen_t sample0);
  @param samplec the number of samples.
  */
 int eep_save_data_matrix_channels(eeg_t *avr, eep_datatype_e type, float **v, int samplec);
-  
+
 
 /*
  * In many cases you want to use the settings of an old avr file for a new created one.
  * This will set the trials/conditionlabel/conditioncolor/prestimulus_interval.
  */
 void eep_copy_standard_avr_settings(eeg_t* dst, eeg_t* source);
-  
+
 #endif /* CNTUTILS_H */

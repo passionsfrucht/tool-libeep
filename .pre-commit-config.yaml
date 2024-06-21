@@ -1,0 +1,97 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+exclude: |
+  (?x)(
+  ^path/to/exclude |
+  ^an/other/path/to/exclude
+  ).*$
+repos:
+- repo: https://github.com/psf/black
+  rev: 24.4.2
+  hooks:
+  - id: black
+    minimum_pre_commit_version: 2.9.0
+    types_or:
+    - "spec"
+    - "python"
+
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.13.0
+  hooks:
+  - id: pretty-format-yaml
+    args:
+    - --autofix
+    - --indent
+    - '2'
+    - --preserve-quotes
+    # This is a workaround for the issue that the formatter does not respect the quotes
+    # And otherwise ansible-lint would complain about it
+    exclude: ^ansible/vars/dev-keys.vars.yml$
+
+- repo: https://github.com/asottile/pyupgrade
+  rev: v3.16.0
+  hooks:
+  - id: pyupgrade
+    args:
+    # typer needs the "old-school" annotations ("Optional[type]" instead of "type | None")
+    # c.f. https://github.com/tiangolo/typer/issues/348
+    # newer python versions would change it: https://github.com/asottile/pyupgrade#pep-604-typing-rewrites
+    - --py310-plus
+
+- repo: https://github.com/asottile/reorder_python_imports
+  rev: v3.13.0
+  hooks:
+  - id: reorder-python-imports
+    args:
+    - "--py310-plus"
+
+- repo: https://github.com/python-jsonschema/check-jsonschema
+  rev: 0.28.5
+  hooks:
+  - id: check-gitlab-ci
+
+- repo: https://github.com/igorshubovych/markdownlint-cli
+  rev: v0.41.0
+  hooks:
+  - id: markdownlint
+    args:
+    - --fix
+    - --config
+    - .markdownlint.yaml
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.4.10
+  hooks:
+    # Run the linter.
+    - id: ruff
+      args: [ --fix ]
+
+# Remove the output of cells, they do not belong into the repo
+- repo: https://github.com/kynan/nbstripout
+  rev: 0.7.1
+  hooks:
+  - id: nbstripout
+
+# Move the more basal fixers to the end due some hooks above introduce encoding errors.
+# This fixes everything in one go.
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.6.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-yaml
+  - id: check-toml
+  # the linter has a problem with jsonc...
+  - id: check-json
+    exclude: ".vscode"
+  - id: check-case-conflict
+  - id: check-added-large-files
+  - id: fix-byte-order-marker
+  # poetry on windows replaces them with crlf from commandline
+  - id: mixed-line-ending
+    # just accept the preferences of vscode
+    args:
+    - --fix=lf
+  - id: check-docstring-first
+  - id: check-vcs-permalinks

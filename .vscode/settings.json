@@ -1,7 +1,13 @@
 {
     "cSpell.words": [
         "abatilo",
+        "autofix",
+        "commandline",
         "libeep",
-        "pyeep"
+        "markdownlint",
+        "nbstripout",
+        "pyeep",
+        "pyupgrade",
+        "typer"
     ]
 }

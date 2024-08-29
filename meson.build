@@ -57,13 +57,15 @@ EepStatic = static_library('EepStatic', eep_c,
                            include_directories: eep_h,
                            dependencies: m_dep,
                            c_args: flags,
-                           install: true)
+                           install: false)
 
 Eep = shared_library('Eep', eep_c,
                      include_directories: eep_h,
                      dependencies: m_dep,
                      c_args: flags,
-                     vs_module_defs: eep_def,
+                     ## TODO: Check in windows how this def file is used, if something similar is needed on other OS',
+                     ## TODO: and if it is not needed, remove it from the shared_library call conditionally or introduce something like 'None' for the def file.
+                     #vs_module_defs: eep_def,
                      install: true)
 
 executable('demo_read_avr', 'test/demo_read_avr.c', include_directories: eep_h, link_with: EepStatic)
@@ -82,4 +84,4 @@ pkg.generate(Eep,
              description: 'A.N.T. erp package',
              libraries: m_dep)
 
-subdir('python')
+subdir('python/libeep')

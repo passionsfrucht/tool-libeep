@@ -24,9 +24,11 @@ repos:
     - --indent
     - '2'
     - --preserve-quotes
-    # This is a workaround for the issue that the formatter does not respect the quotes
-    # And otherwise ansible-lint would complain about it
-    exclude: ^ansible/vars/dev-keys.vars.yml$
+
+- repo: https://github.com/renovatebot/pre-commit-hooks
+  rev: 38.57.1
+  hooks:
+  - id: renovate-config-validator
 
 - repo: https://github.com/asottile/pyupgrade
   rev: v3.16.0
@@ -44,11 +46,6 @@ repos:
   - id: reorder-python-imports
     args:
     - "--py310-plus"
-
-- repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.28.5
-  hooks:
-  - id: check-gitlab-ci
 
 - repo: https://github.com/igorshubovych/markdownlint-cli
   rev: v0.41.0

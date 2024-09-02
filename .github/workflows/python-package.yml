@@ -41,3 +41,7 @@ jobs:
       with:
         name: wheel-${{ matrix.python-version }}-${{ matrix.os }}
         path: dist/*.whl
+    - name: First check install current version locally
+      run: python3 -m pip install .[test]
+    - name: Run tests
+      run: python3 -m pytest .

@@ -53,13 +53,13 @@ endif
 # the meson docs actually recommend to create the library as
 # eep = library('eep', eep_c, ...)
 # instead of specifying static/shared and leave this decision to the client
-EepStatic = static_library('EepStatic', eep_c,
+eep_static = static_library('eep_static', eep_c,
                            include_directories: eep_h,
                            dependencies: m_dep,
                            c_args: flags,
                            install: false)
 
-Eep = shared_library('Eep', eep_c,
+eep = shared_library('eep', eep_c,
                      include_directories: eep_h,
                      dependencies: m_dep,
                      c_args: flags,
@@ -68,17 +68,17 @@ Eep = shared_library('Eep', eep_c,
                      #vs_module_defs: eep_def,
                      install: true)
 
-executable('demo_read_avr', 'test/demo_read_avr.c', include_directories: eep_h, link_with: EepStatic)
-executable('demo_read_cnt', 'test/demo_read_cnt.c', include_directories: eep_h, link_with: EepStatic)
-executable('demo_read_evt', 'test/demo_read_evt.c', include_directories: eep_h, link_with: EepStatic)
-executable('demo_v4_read_cnt', 'test/demo_v4_read_cnt.c', include_directories: eep_h, link_with: EepStatic)
-executable('demo_v4_write_cnt', 'test/demo_v4_write_cnt.c', include_directories: eep_h, link_with: EepStatic)
-executable('demo_write_avr', 'test/demo_write_avr.c', include_directories: eep_h, link_with: EepStatic, dependencies: m_dep)
-executable('demo_write_cnt', 'test/demo_write_cnt.c', include_directories: eep_h, link_with: EepStatic, dependencies: m_dep)
-executable('libeep_info', 'test/libeep_info.c', include_directories: eep_h, link_with: EepStatic)
+executable('demo_read_avr', 'test/demo_read_avr.c', include_directories: eep_h, link_with: eep_static)
+executable('demo_read_cnt', 'test/demo_read_cnt.c', include_directories: eep_h, link_with: eep_static)
+executable('demo_read_evt', 'test/demo_read_evt.c', include_directories: eep_h, link_with: eep_static)
+executable('demo_v4_read_cnt', 'test/demo_v4_read_cnt.c', include_directories: eep_h, link_with: eep_static)
+executable('demo_v4_write_cnt', 'test/demo_v4_write_cnt.c', include_directories: eep_h, link_with: eep_static)
+executable('demo_write_avr', 'test/demo_write_avr.c', include_directories: eep_h, link_with: eep_static, dependencies: m_dep)
+executable('demo_write_cnt', 'test/demo_write_cnt.c', include_directories: eep_h, link_with: eep_static, dependencies: m_dep)
+executable('libeep_info', 'test/libeep_info.c', include_directories: eep_h, link_with: eep_static)
 
 pkg = import('pkgconfig')
-pkg.generate(Eep,
+pkg.generate(eep,
              name: 'libeep',
              url: 'https://gitlab.com/smeeze/libeep/',
              description: 'A.N.T. erp package',

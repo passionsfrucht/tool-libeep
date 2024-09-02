@@ -4,7 +4,7 @@ python = pymod.find_installation(required: false, pure: false)
 if python.found()
     python.extension_module('pyeep', 'pyeep.c',
                             include_directories: eep_h,
-                            link_with: EepStatic,
+                            link_with: eep_static,
                             dependencies: python.dependency(),
                             subdir: 'libeep',
                             install: true)

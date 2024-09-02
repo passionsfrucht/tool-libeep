@@ -14,6 +14,11 @@ test = [
   "pytest-cov[all]"
 ]
 
+[tool.meson-python.args]
+# USE MSVC on windows, some assumptions in the code re: windows are not
+# working with GCC.
+setup = ['--vsenv']
+
 [build-system]
 build-backend = 'mesonpy'
 requires = ['meson-python']

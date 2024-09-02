@@ -38,17 +38,14 @@ if host_machine.system() == 'windows'
              '-DWIN32_LEAN_AND_MEAN',
              '-DWIN32' #tested for in eepio.c but not defined when using ninja on windows
              ]
-    eep_def = 'windows/Eep.def'
     m_dep = ''
 else
     flags = [eep_version, '-Wall', '-Wextra', '-Werror=switch']
-    eep_def = ''
 
     # linking with the math library
     cc = meson.get_compiler('c')
     m_dep = cc.find_library('m', required: true)
 endif
-
 
 # the meson docs actually recommend to create the library as
 # eep = library('eep', eep_c, ...)
@@ -59,15 +56,6 @@ eep_static = static_library('eep_static', eep_c,
                            c_args: flags,
                            install: false)
 
-eep = shared_library('eep', eep_c,
-                     include_directories: eep_h,
-                     dependencies: m_dep,
-                     c_args: flags,
-                     ## TODO: Check in windows how this def file is used, if something similar is needed on other OS',
-                     ## TODO: and if it is not needed, remove it from the shared_library call conditionally or introduce something like 'None' for the def file.
-                     #vs_module_defs: eep_def,
-                     install: true)
-
 executable('demo_read_avr', 'test/demo_read_avr.c', include_directories: eep_h, link_with: eep_static)
 executable('demo_read_cnt', 'test/demo_read_cnt.c', include_directories: eep_h, link_with: eep_static)
 executable('demo_read_evt', 'test/demo_read_evt.c', include_directories: eep_h, link_with: eep_static)
@@ -76,12 +64,5 @@ executable('demo_v4_write_cnt', 'test/demo_v4_write_cnt.c', include_directories:
 executable('demo_write_avr', 'test/demo_write_avr.c', include_directories: eep_h, link_with: eep_static, dependencies: m_dep)
 executable('demo_write_cnt', 'test/demo_write_cnt.c', include_directories: eep_h, link_with: eep_static, dependencies: m_dep)
 executable('libeep_info', 'test/libeep_info.c', include_directories: eep_h, link_with: eep_static)
-
-pkg = import('pkgconfig')
-pkg.generate(eep,
-             name: 'libeep',
-             url: 'https://gitlab.com/smeeze/libeep/',
-             description: 'A.N.T. erp package',
-             libraries: m_dep)
 
 subdir('python/libeep')

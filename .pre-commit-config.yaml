@@ -6,15 +6,6 @@ exclude: |
   ^an/other/path/to/exclude
   ).*$
 repos:
-- repo: https://github.com/psf/black
-  rev: 24.8.0
-  hooks:
-  - id: black
-    minimum_pre_commit_version: 2.9.0
-    types_or:
-    - "spec"
-    - "python"
-
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
   rev: v2.14.0
   hooks:
@@ -63,6 +54,7 @@ repos:
     # Run the linter.
   - id: ruff
     args: [--fix]
+  - id: ruff-format
 
 # Remove the output of cells, they do not belong into the repo
 - repo: https://github.com/kynan/nbstripout
@@ -75,6 +67,13 @@ repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.6.0
   hooks:
+  - id: check-ast
+  - id: check-builtin-literals
+  - id: check-docstring-first
+  - id: check-merge-conflict
+  - id: check-yaml
+  - id: check-toml
+  - id: debug-statements
   - id: trailing-whitespace
   - id: end-of-file-fixer
   - id: check-yaml

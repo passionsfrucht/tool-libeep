@@ -1,25 +1,24 @@
-[tool.poetry]
-name = "tool-libeep"
+[project]
+name = "libeep"
 version = "0.1.0"
 description = ""
-authors = ["Steffen Heimes <sheimes@ant-neuro.com>"]
+authors = [{ name = "Steffen Heimes", email = "sheimes@ant-neuro.com" },
+           { name = "Robert Smies", email = "rsmies@ant-neuro.com" },
+           { name = "Velko Christoph", email = "vhristov@ant-neuro.com" }]
+
 readme = "README.md"
 
-packages = [
-    { include = "libeep", from = "python" },
+[project.optional-dependencies]
+test = [
+  "pytest",
+  "pytest-cov[all]"
 ]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-
-[tool.poetry.build]
-script = "build.py"
-generate-setup-file = true
-
-[tool.poetry.group.test.dependencies]
-pytest = "^8.1.1"
+[tool.meson-python.args]
+# USE MSVC on windows, some assumptions in the code re: windows are not
+# working with GCC.
+setup = ['--vsenv']
 
 [build-system]
-# 1.5.2 required for https://github.com/python-poetry/poetry/issues/7505
-requires = ['setuptools>=65.4.1', 'wheel', 'cmake>=3.29.2' , "poetry-core>=1.5.2"]
-build-backend = "poetry.core.masonry.api"
+build-backend = 'mesonpy'
+requires = ['meson-python']

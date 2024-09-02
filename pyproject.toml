@@ -12,7 +12,7 @@ readme = "README.md"
 test = [
   "pytest>=8.3.2",
   "pytest-cov>=5.0.0",
-  "numpy>=2.1.0",
+  "numpy>=2.0.0",
 ]
 
 [tool.meson-python.args]

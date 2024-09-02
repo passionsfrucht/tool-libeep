@@ -41,7 +41,34 @@ jobs:
       with:
         name: wheel-${{ matrix.python-version }}-${{ matrix.os }}
         path: dist/*.whl
-    - name: First check install current version locally
-      run: python3 -m pip install .[test]
+  test_wheel:
+    needs: build_wheels
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        os:
+        - ubuntu-22.04
+        - macos-14 # arm64
+        - macos-12 # x86_64
+        - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: wheel-${{ matrix.python-version }}-${{ matrix.os }}
+    - name: List current working directory
+      run: ls -R
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Glob match
+      uses: tj-actions/glob@v22
+      id: glob
+      with:
+        files: "*.whl"
+    - name: Install the wheel
+      run: python3 -m pip install --user ${{ steps.glob.outputs.paths }}[test]
+    - uses: actions/checkout@v4
     - name: Run tests
       run: python3 -m pytest .

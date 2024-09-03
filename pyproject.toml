@@ -7,6 +7,8 @@ authors = [{ name = "Steffen Heimes", email = "sheimes@ant-neuro.com" },
            { name = "Velko Christoph", email = "vhristov@ant-neuro.com" }]
 
 readme = "README.md"
+# Older versions are out of support starting from 2024-10 or earlier.
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
 test = [
@@ -19,6 +21,22 @@ test = [
 # USE MSVC on windows, some assumptions in the code re: windows are not
 # working with GCC.
 setup = ['--vsenv']
+
+[tool.cibuildwheel]
+skip = [
+  "*-win32", # Don't bother (for now) with the win32 build, mesonpy was complaining it found the right python.
+]
+
+test-extras = ["test"]
+# {project} is replaced with the project root directory, aka "." running locally.
+test-command = "pytest {project}"
+test-skip = [
+  "*_i686", # No precompiled numpy there sometimes, and the build is slow. And tend to fail.
+]
+
+[tool.pytest.ini_options]
+testpaths = "pytests"
+addopts = "--cov=libeep -r a -v"
 
 [build-system]
 build-backend = 'mesonpy'

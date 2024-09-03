@@ -1,11 +1,11 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python package
+name: Python package generation, the manual way, without cibuildwheel. Just testing a small subset now, cibuildwheel takes care of other platforms.
 
 on:
   push:
-    branches: [$default-branch]
+    branches: ["main"]
   pull_request:
     branches: ["main"]
   pull_request_target:
@@ -13,16 +13,13 @@ on:
     - closed
 
 jobs:
-  build_wheels:
+  build_wheels_without_cibuildwheel:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.12"]
         os:
         - ubuntu-22.04
-        - macos-14 # arm64
-        - macos-12 # x86_64
-        - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -42,16 +39,13 @@ jobs:
         name: wheel-${{ matrix.python-version }}-${{ matrix.os }}
         path: dist/*.whl
   test_wheel:
-    needs: build_wheels
+    needs: build_wheels_without_cibuildwheel
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.12"]
         os:
         - ubuntu-22.04
-        - macos-14 # arm64
-        - macos-12 # x86_64
-        - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/download-artifact@v4

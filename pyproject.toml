@@ -26,6 +26,14 @@ setup = ['--vsenv']
 # Don't bother (for now) with the win32 build, mesonpy was complaining it found the right python.
 skip = "*-win32"
 
+test-extras = ["test"]
+# {project} is replaced with the project root directory, aka "." running locally.
+test-command = "pytest {project}"
+
+[tool.pytest.ini_options]
+testpaths = "pytests"
+addopts = "--cov=libeep -r a -v"
+
 [build-system]
 build-backend = 'mesonpy'
 requires = ['meson-python']

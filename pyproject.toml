@@ -7,8 +7,8 @@ authors = [{ name = "Steffen Heimes", email = "sheimes@ant-neuro.com" },
            { name = "Velko Christoph", email = "vhristov@ant-neuro.com" }]
 
 readme = "README.md"
-# limiting factor: meson-python is not available for python 3.6
-requires-python = ">=3.7"
+# Older versions are out of support starting from 2024-10 or earlier.
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
 test = [
@@ -21,6 +21,10 @@ test = [
 # USE MSVC on windows, some assumptions in the code re: windows are not
 # working with GCC.
 setup = ['--vsenv']
+
+[tool.cibuildwheel]
+# Don't bother (for now) with the win32 build, mesonpy was complaining it found the right python.
+skip = "*-win32"
 
 [build-system]
 build-backend = 'mesonpy'

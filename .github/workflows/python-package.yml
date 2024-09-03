@@ -13,7 +13,7 @@ on:
     - closed
 
 jobs:
-  build_wheels:
+  build_wheels_without_cibuildwheel:
     strategy:
       fail-fast: false
       matrix:
@@ -42,7 +42,7 @@ jobs:
         name: wheel-${{ matrix.python-version }}-${{ matrix.os }}
         path: dist/*.whl
   test_wheel:
-    needs: build_wheels
+    needs: build_wheels_without_cibuildwheel
     strategy:
       fail-fast: false
       matrix:

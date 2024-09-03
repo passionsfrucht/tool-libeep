@@ -14,10 +14,12 @@
         "markdownlint",
         "matplotlib",
         "nbstripout",
+        "pipx",
         "pyeep",
         "pypa",
         "pyplot",
         "pyupgrade",
+        "sdist",
         "Smies",
         "tstamp",
         "typer"

@@ -23,12 +23,16 @@ test = [
 setup = ['--vsenv']
 
 [tool.cibuildwheel]
-# Don't bother (for now) with the win32 build, mesonpy was complaining it found the right python.
-skip = "*-win32"
+skip = [
+  "*-win32", # Don't bother (for now) with the win32 build, mesonpy was complaining it found the right python.
+]
 
 test-extras = ["test"]
 # {project} is replaced with the project root directory, aka "." running locally.
 test-command = "pytest {project}"
+test-skip = [
+  "*_i686", # No precompiled numpy there sometimes, and the build is slow. And tend to fail.
+]
 
 [tool.pytest.ini_options]
 testpaths = "pytests"

@@ -3,6 +3,8 @@
         "abatilo",
         "autofix",
         "automerge",
+        "cibuildwheel",
+        "CIBW",
         "commandline",
         "devel",
         "eego",

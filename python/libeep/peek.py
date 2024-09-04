@@ -1,11 +1,11 @@
-from .cnt_file import cnt_file
+from .cnt_reader import CntReader
 
 
 def peek(filename):
     from collections import Counter
 
     print(f"Peeking into {filename}:")
-    with cnt_file(filename) as f:
+    with CntReader(filename) as f:
         channels = []
         for c in range(f.get_channel_count()):
             channels.append(f.get_channel_info(c)[0])

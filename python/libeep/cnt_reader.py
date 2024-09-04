@@ -5,7 +5,7 @@ from typing import Any
 from libeep import pyeep
 
 
-class cnt_file:
+class CntReader:
     """A cnt file, ready to be used for reading
 
     args

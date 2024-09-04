@@ -13,7 +13,7 @@ def tmp_cnt(tmp_path):
     rate = 1023
     channel_count = 8
     channels = [(f"Ch{i}", "None", "uV") for i in range(1, channel_count + 1, 1)]
-    c = libeep.cnt_out(fname, rate, channels)
+    c = libeep.CntWriter(fname, rate, channels)
     samples = np.repeat(np.arange(0, 100), 8).flatten().tolist()
     c.add_samples(samples)
     c.add_trigger(5, "hello")
@@ -28,7 +28,7 @@ def test_creation(tmp_cnt):
 
 def test_channels(tmp_cnt):
     fname, rate, channel_count = tmp_cnt
-    c = libeep.cnt_file(fname)
+    c = libeep.CntReader(fname)
     assert c.get_channel_count() == channel_count
     for i in range(c.get_channel_count()):
         channel_label, channel_reference, channel_unit = c.get_channel_info(i)
@@ -39,14 +39,14 @@ def test_channels(tmp_cnt):
 
 def test_sampling_rate(tmp_cnt):
     fname, rate, channel_count = tmp_cnt
-    c = libeep.cnt_file(fname)
+    c = libeep.CntReader(fname)
 
     assert c.get_sample_frequency() == rate
 
 
 def test_add_samples(tmp_cnt):
     fname, rate, channel_count = tmp_cnt
-    c = libeep.cnt_file(fname)
+    c = libeep.CntReader(fname)
     data = c.get_samples(0, c.get_sample_count())
     assert all([x == 0.0 for x in data[0]])
     assert all([x == 99.0 for x in data[-1]])
@@ -54,7 +54,7 @@ def test_add_samples(tmp_cnt):
 
 def test_add_trigger(tmp_cnt):
     fname, rate, channel_count = tmp_cnt
-    c = libeep.cnt_file(fname)
+    c = libeep.CntReader(fname)
     assert c.get_trigger_count() == 1
     for i in range(c.get_trigger_count()):
         m, s, *_ = c.get_trigger(i)

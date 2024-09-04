@@ -91,7 +91,7 @@ import libeep
 import matplotlib.pyplot as plt
 
 fname = "example.cnt"
-cnt = libeep.cnt_file(fname)
+cnt = libeep.CntReader(fname)
 print(f"Within the file {fname} are")
 print(f"{cnt.get_channel_count()} channels and ")
 print(f"{cnt.get_sample_count()} samples and")

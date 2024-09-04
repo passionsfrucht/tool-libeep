@@ -3,10 +3,10 @@ from pathlib import Path
 
 from libeep import pyeep
 
-from .cnt_file import cnt_file
+from .cnt_reader import CntReader
 
 
-class cnt_out(cnt_file):
+class CntWriter(CntReader):
     def __init__(self, fname: str, rate: int, channels: list[str], rf64=0):
         """A cnt-file for storing data on your harddrive
 

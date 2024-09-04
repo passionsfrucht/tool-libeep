@@ -1,13 +1,13 @@
 __all__ = [
     "pyeep",
-    "cnt_file",
-    "cnt_out",
+    "CntReader",
+    "CntWriter",
     "peek",
 ]
 
 from . import pyeep
-from .cnt_file import cnt_file
-from .cnt_out import cnt_out
+from .cnt_reader import CntReader
+from .cnt_writer import CntWriter
 from .peek import peek
 
 

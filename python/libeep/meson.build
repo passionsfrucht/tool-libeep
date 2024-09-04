@@ -8,5 +8,5 @@ if python.found()
                             dependencies: python.dependency(),
                             subdir: 'libeep',
                             install: true)
-    python.install_sources(['__init__.py', 'oldeep.py', 'demo_read_cnt.py', 'demo_write_cnt.py'], subdir: 'libeep')
+    python.install_sources(['__init__.py', 'oldeep.py', 'demo_read_cnt.py', 'demo_write_cnt.py', 'cnt_file.py', 'cnt_out.py', 'peek.py',], subdir: 'libeep')
 endif

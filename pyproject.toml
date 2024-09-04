@@ -38,6 +38,16 @@ test-skip = [
 testpaths = "pytests"
 addopts = "--cov=libeep -r a -v"
 
+[tool.ruff]
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["N"]
+fixable = ["ALL"]
+
+[tool.ruff.format]
+line-ending = "lf"
+
 [build-system]
 build-backend = 'mesonpy'
 requires = ['meson-python']

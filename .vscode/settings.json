@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "abatilo",
+        "addopts",
         "autofix",
         "automerge",
         "cibuildwheel",
@@ -9,20 +10,33 @@
         "devel",
         "eego",
         "fname",
+        "Heimes",
+        "Hristov",
         "inplace",
         "Kitwares",
         "libeep",
         "markdownlint",
         "matplotlib",
+        "mesonpy",
+        "MSVC",
         "nbstripout",
+        "numpy",
+        "oldeep",
         "pipx",
         "pyeep",
         "pypa",
         "pyplot",
+        "pytests",
         "pyupgrade",
+        "rsmies",
         "sdist",
+        "sheimes",
         "Smies",
+        "testpaths",
         "tstamp",
-        "typer"
+        "typer",
+        "Velko",
+        "vhristov",
+        "vsenv"
     ]
 }

@@ -4,7 +4,11 @@ version = meson.project_version().split('.')
 major = version[0]
 minor = version[1]
 patch = version[2]
-eep_version = ['-DLIBEEP_VERSION_MAJOR=' + major, '-DLIBEEP_VERSION_MINOR=' + minor, '-DLIBEEP_VERSION_PATCH=' + patch]
+eep_version = [
+    '-DLIBEEP_VERSION_MAJOR=' + major,
+    '-DLIBEEP_VERSION_MINOR=' + minor,
+    '-DLIBEEP_VERSION_PATCH=' + patch,
+]
 
 eep_h = include_directories('src')
 eep_c = [
@@ -25,19 +29,20 @@ eep_c = [
     'src/libeep/eepraw.c',
     'src/libeep/val.c',
     'src/libeep/var_string.c',
-    'src/v4/eep.c'
+    'src/v4/eep.c',
 ]
 
 if host_machine.system() == 'windows'
-    flags = [ eep_version,
-             '-D_CRT_SECURE_NO_WARNINGS',
-             '-DNOMINMAX',
-             '-DSTRICT',
-             '-D_USE_MATH_DEFINES',
-             '-DVC_EXTRALEAN',
-             '-DWIN32_LEAN_AND_MEAN',
-             '-DWIN32' #tested for in eepio.c but not defined when using ninja on windows
-             ]
+    flags = [
+        eep_version,
+        '-D_CRT_SECURE_NO_WARNINGS',
+        '-DNOMINMAX',
+        '-DSTRICT',
+        '-D_USE_MATH_DEFINES',
+        '-DVC_EXTRALEAN',
+        '-DWIN32_LEAN_AND_MEAN',
+        '-DWIN32',  #tested for in eepio.c but not defined when using ninja on windows
+    ]
     m_dep = ''
 else
     flags = [eep_version, '-Wall', '-Wextra', '-Werror=switch']
@@ -50,19 +55,64 @@ endif
 # the meson docs actually recommend to create the library as
 # eep = library('eep', eep_c, ...)
 # instead of specifying static/shared and leave this decision to the client
-eep_static = static_library('eep_static', eep_c,
-                           include_directories: eep_h,
-                           dependencies: m_dep,
-                           c_args: flags,
-                           install: false)
+eep_static = static_library(
+    'eep_static',
+    eep_c,
+    include_directories: eep_h,
+    dependencies: m_dep,
+    c_args: flags,
+    install: false,
+)
 
-executable('demo_read_avr', 'test/demo_read_avr.c', include_directories: eep_h, link_with: eep_static)
-executable('demo_read_cnt', 'test/demo_read_cnt.c', include_directories: eep_h, link_with: eep_static)
-executable('demo_read_evt', 'test/demo_read_evt.c', include_directories: eep_h, link_with: eep_static)
-executable('demo_v4_read_cnt', 'test/demo_v4_read_cnt.c', include_directories: eep_h, link_with: eep_static)
-executable('demo_v4_write_cnt', 'test/demo_v4_write_cnt.c', include_directories: eep_h, link_with: eep_static)
-executable('demo_write_avr', 'test/demo_write_avr.c', include_directories: eep_h, link_with: eep_static, dependencies: m_dep)
-executable('demo_write_cnt', 'test/demo_write_cnt.c', include_directories: eep_h, link_with: eep_static, dependencies: m_dep)
-executable('libeep_info', 'test/libeep_info.c', include_directories: eep_h, link_with: eep_static)
+executable(
+    'demo_read_avr',
+    'test/demo_read_avr.c',
+    include_directories: eep_h,
+    link_with: eep_static,
+)
+executable(
+    'demo_read_cnt',
+    'test/demo_read_cnt.c',
+    include_directories: eep_h,
+    link_with: eep_static,
+)
+executable(
+    'demo_read_evt',
+    'test/demo_read_evt.c',
+    include_directories: eep_h,
+    link_with: eep_static,
+)
+executable(
+    'demo_v4_read_cnt',
+    'test/demo_v4_read_cnt.c',
+    include_directories: eep_h,
+    link_with: eep_static,
+)
+executable(
+    'demo_v4_write_cnt',
+    'test/demo_v4_write_cnt.c',
+    include_directories: eep_h,
+    link_with: eep_static,
+)
+executable(
+    'demo_write_avr',
+    'test/demo_write_avr.c',
+    include_directories: eep_h,
+    link_with: eep_static,
+    dependencies: m_dep,
+)
+executable(
+    'demo_write_cnt',
+    'test/demo_write_cnt.c',
+    include_directories: eep_h,
+    link_with: eep_static,
+    dependencies: m_dep,
+)
+executable(
+    'libeep_info',
+    'test/libeep_info.c',
+    include_directories: eep_h,
+    link_with: eep_static,
+)
 
 subdir('python/libeep')

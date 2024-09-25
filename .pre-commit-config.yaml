@@ -91,3 +91,14 @@ repos:
     - --fix=lf
   - id: check-docstring-first
   - id: check-vcs-permalinks
+
+# Let's fix meson files
+- repo: local
+  hooks:
+  - id: meson-format
+    name: meson format
+    entry: meson format --inplace
+    types: [meson]
+    language: python
+    additional_dependencies:
+    - meson == 1.5.1

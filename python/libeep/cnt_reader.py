@@ -108,7 +108,7 @@ class CntReader:
         Example
         -------
 
-        data = cnt.get_samples(0,1)
+        data = cnt.get_samples(0, 1)
         # return the first sample for all channels
 
         """

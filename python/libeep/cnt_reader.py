@@ -144,14 +144,13 @@ class CntReader:
             information about this trigger in the following format
             (marker_type, sample_index, marker_value, Any, Any, Any)
         """
-        tc = self.get_trigger_count()
         if index < 0:
             raise IndexError(
                 f"{index} is smaller zero. Only positive indices are allowed"
             )
 
-        if index > tc or tc == 0:
-            raise IndexError(f"{index} larger than trigger count of {tc}")
+        if index >= self.get_trigger_count():
+            raise IndexError(f"{index=} is larger {self.get_trigger_count()=}")
         with self as f:
             info = pyeep.get_trigger(f._handle, index)
         return info

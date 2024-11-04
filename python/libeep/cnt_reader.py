@@ -141,8 +141,8 @@ class CntReader:
 
         returns
         info: Tuple[str, int, int, Any, Any, Any]
-            information about this trigger in tehe following format
-            (markertype, sample_index, markervalue, Any, Any, Any)
+            information about this trigger in the following format
+            (marker_type, sample_index, marker_value, Any, Any, Any)
         """
         tc = self.get_trigger_count()
         if index < 0:

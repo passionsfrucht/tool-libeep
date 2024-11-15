@@ -17,7 +17,7 @@ repos:
     - --preserve-quotes
 
 - repo: https://github.com/renovatebot/pre-commit-hooks
-  rev: 39.15.3
+  rev: 39.17.1
   hooks:
   - id: renovate-config-validator
 

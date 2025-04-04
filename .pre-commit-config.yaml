@@ -101,4 +101,4 @@ repos:
     types: [meson]
     language: python
     additional_dependencies:
-    - meson ==1.7.1
+    - meson ==1.7.2

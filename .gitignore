@@ -24,3 +24,6 @@ python/libeep/pyeep.so
 
 # pycharm etc settings - disabled for now
 .idea/
+
+# notebook checkpoints
+.ipynb_checkpoints/

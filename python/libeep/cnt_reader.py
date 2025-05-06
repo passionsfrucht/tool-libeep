@@ -2,7 +2,9 @@
 from pathlib import Path
 from typing import Any
 
-from libeep import pyeep
+from loguru import logger
+
+from . import pyeep
 
 
 class CntReader:
@@ -121,7 +123,10 @@ class CntReader:
             if steps > sample_count:
                 raise IndexError("Not enough samples available")
             for step in range(0, steps):
-                sample = pyeep.get_samples(f._handle, fro + step, fro + step + 1)
+                logger.debug(f"Loading sample {step}")
+                sample_range = fro + step, fro + step + 1
+                logger.debug(f"Sample range {sample_range}")
+                sample = pyeep.get_samples(f._handle, *sample_range)
                 data.append(sample)
         return data
 

@@ -32,7 +32,7 @@ def test_channels(tmp_cnt):
     assert c.get_channel_count() == channel_count
     for i in range(c.get_channel_count()):
         channel_label, channel_reference, channel_unit = c.get_channel_info(i)
-        assert channel_label == f"Ch{i+1}"
+        assert channel_label == f"Ch{i + 1}"
         assert channel_reference == "None"
         assert channel_unit == "uV"
 

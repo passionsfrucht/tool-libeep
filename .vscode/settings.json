@@ -15,6 +15,7 @@
         "inplace",
         "Kitwares",
         "libeep",
+        "loguru",
         "markdownlint",
         "matplotlib",
         "mesonpy",

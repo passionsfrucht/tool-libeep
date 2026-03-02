@@ -10,6 +10,10 @@ readme = "README.md"
 # Older versions are out of support starting from 2024-10 or earlier.
 requires-python = ">=3.9"
 
+dependencies = [
+  "loguru>=0.5.3",
+]
+
 [project.optional-dependencies]
 test = [
   "pytest>=8.3.2",

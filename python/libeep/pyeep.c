@@ -158,12 +158,14 @@ pyeep_get_samples(PyObject *self, PyObject *args)
 
   if (!PyArg_ParseTuple(args, "iii", &handle, &fro, &to))
   {
+    fprintf(stderr, "pyeep_get_samples: PyArg_ParseTuple failed\n");
     return NULL;
   }
 
   float *libeep_sample_data = libeep_get_samples(handle, fro, to);
   if (libeep_sample_data == NULL)
   {
+    fprintf(stderr, "pyeep_get_samples: libeep_get_samples failed\n");
     return NULL;
   }
 
@@ -171,6 +173,7 @@ pyeep_get_samples(PyObject *self, PyObject *args)
   PyObject *python_list = PyList_New(array_len);
   if (!python_list)
   {
+    fprintf(stderr, "pyeep_get_samples: PyList_New failed\n");
     return NULL;
   }
   for (i = 0; i < array_len; i++)
@@ -179,6 +182,7 @@ pyeep_get_samples(PyObject *self, PyObject *args)
     if (!num)
     {
       Py_DECREF(python_list);
+      fprintf(stderr, "pyeep_get_samples: PyFloat_FromDouble failed\n");
       return NULL;
     }
     PyList_SET_ITEM(python_list, i, num); // reference to num stolen
